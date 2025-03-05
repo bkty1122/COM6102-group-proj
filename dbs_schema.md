@@ -86,7 +86,7 @@ Exam
 | question_id   | UUID           | FK, NULLABLE     | Question-specific material. |
 | type          | VARCHAR(50)    | NOT NULL         | E.g., text, image, audio |
 | value         | TEXT           | NOT NULL         | Content URL or text |
-| description   | TEXT           | NULLABLE         | |
+| description   | TEXT           | NULLABLE         | Can be use for enhancing prompt |
 | metadata      | JSONB          | NULLABLE         | |
 | display_order | INTEGER        | NOT NULL         | Order on page |
 | created_at    | TIMESTAMP      | DEFAULT CURRENT_TIMESTAMP | |
