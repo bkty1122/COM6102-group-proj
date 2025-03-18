@@ -1,5 +1,5 @@
 import React from "react";
-import BlankPage from "./components/BlankPage";
+import BlankPage from "./components/formbuilder/FormBuilderPage";
 
 function App() {
   return (

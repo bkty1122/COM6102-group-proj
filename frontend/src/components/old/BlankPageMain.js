@@ -45,10 +45,12 @@ const BlankPage = () => {
   // Remove a card
   const removeCard = (type) => {
     setPages((prev) => {
-      const updatedPages = [...prev];
-      updatedPages[currentPage].cards = updatedPages[currentPage].cards.filter(
-        (card) => card !== type
-      );
+      const updatedPages = prev.map((page, index) => {
+        if (index === currentPage) {
+          return { ...page, cards: page.cards.filter((card) => card !== type) }; // Immutable update
+        }
+        return page;
+      });
       return updatedPages;
     });
   };
