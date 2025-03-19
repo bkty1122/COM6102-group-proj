@@ -1,17 +1,16 @@
 // BlankPage.js
 import React from "react";
 import { Box, Grid } from "@mui/material";
-import { useDroppable, useDraggable } from "@dnd-kit/core";
+import { useDroppable, useDraggable} from "@dnd-kit/core";
 import QuestionMaterialCard from "./QuestionMaterialCard";
 
 const BlankPage = ({ 
   cards = [], 
-  addCard, 
   removeCard, 
   cardContents = {}, 
-  reorderCards,
-  onRemoveContent, // Add this prop to fix the undefined error
-  onReorderContent // Add this new prop for content reordering
+  onRemoveContent,
+  onReorderContent,
+  onUpdateContent
 }) => {
   // This component should only use the useDroppable hook to make the area droppable
   // The actual drop logic will be handled in the parent's onDragEnd via the DndContext
@@ -24,7 +23,7 @@ const BlankPage = ({
         borderRadius: "8px",
         backgroundColor: "#f9f9f9",
         mt: 2,
-        position: "relative", // Add this for proper stacking context
+        position: "relative",
         zIndex: 1,
       }}
     >
@@ -49,14 +48,18 @@ const BlankPage = ({
               key={`${card}-${index}`}
               xs={cards.length === 1 ? 12 : 6} // Full width if 1 card, half width if 2 cards
             >
-              <DraggableCard 
-                card={card} 
-                index={index}
-                onRemove={() => removeCard(card)}
-                contents={cardContents[card] || []}
-                onRemoveContent={onRemoveContent}
-                onReorderContent={onReorderContent}
-              />
+              {/* Add CardDroppableArea to make each grid cell a drop target */}
+              <CardDroppableArea index={index}>
+                <DraggableCard 
+                  card={card} 
+                  index={index}
+                  onRemove={() => removeCard(card)}
+                  contents={cardContents[card] || []}
+                  onRemoveContent={onRemoveContent}
+                  onReorderContent={onReorderContent}
+                  onUpdateContent={onUpdateContent}
+                />
+              </CardDroppableArea>
             </Grid>
           ))}
         </Grid>
@@ -98,7 +101,7 @@ const DraggableItem = ({ id, label }) => {
 };
 
 // Draggable Card Component
-const DraggableCard = ({ card, index, onRemove, contents, onRemoveContent, onReorderContent }) => {
+const DraggableCard = ({ card, index, onRemove, contents, onRemoveContent, onReorderContent, onUpdateContent }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `card-${card}-${index}`,
     data: {
@@ -116,6 +119,7 @@ const DraggableCard = ({ card, index, onRemove, contents, onRemoveContent, onReo
         zIndex: isDragging ? 999 : 1,
         opacity: isDragging ? 0.8 : 1,
         cursor: isDragging ? "grabbing" : "grab",
+        height: "100%", // Make sure the card fills the container height
       }}
       style={{
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -145,6 +149,7 @@ const DraggableCard = ({ card, index, onRemove, contents, onRemoveContent, onReo
         contents={contents}
         onRemoveContent={onRemoveContent}
         onReorderContent={onReorderContent}
+        onUpdateContent={onUpdateContent}
       />
     </Box>
   );
@@ -190,12 +195,12 @@ const CardDroppableArea = ({ index, children }) => {
         position: "relative",
         backgroundColor: isOver ? "rgba(25, 118, 210, 0.1)" : "transparent",
         transition: "background-color 0.2s ease",
+        border: isOver ? "2px dashed #1976d2" : "2px dashed transparent",
+        borderRadius: "8px",
       }}
     >
       {children}
-      
     </Box>
-    
   );
 };
 

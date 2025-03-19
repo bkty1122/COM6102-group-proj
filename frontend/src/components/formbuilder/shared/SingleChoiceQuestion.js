@@ -1,179 +1,180 @@
-//Single Choice Question Component for the form builder
-import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  TextField,
-  IconButton,
-  Button,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
+// SingleChoiceQuestion.js
+import React, { useState, useEffect } from "react";
+import { 
+  Box, Typography, TextField, Radio, RadioGroup, 
+  FormControlLabel, FormControl, IconButton,
+  Divider, Tooltip
 } from "@mui/material";
-import { Trash2, Plus} from "lucide-react"; 
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
-const SingleChoiceQuestion = ({
-  questionId,
-  defaultQuestion = "Enter your question here...",
+const SingleChoiceQuestion = ({ 
+  questionId, 
+  defaultQuestion = "Enter your question here...", 
   defaultOptions = ["Option 1", "Option 2"],
-  defaultAnswer = null,
-  onQuestionChange,
-  onOptionsChange,
-  onAnswerChange,
-  onQuestionIdChange,
+  defaultCorrectAnswer = null, // This will now be the value, not index
+  order_id,
+  answer_id,
+  onUpdate = () => {} // Add callback for updates
 }) => {
   const [question, setQuestion] = useState(defaultQuestion);
   const [options, setOptions] = useState(defaultOptions);
-  const [answer, setAnswer] = useState(defaultAnswer);
+  const [correctAnswer, setCorrectAnswer] = useState(defaultCorrectAnswer);
 
-  // Handle question text changes
-  const handleQuestionChange = (e) => {
-    const newQuestion = e.target.value;
-    setQuestion(newQuestion);
-    if (onQuestionChange) {
-      onQuestionChange(newQuestion);
-    }
-  };
+  // Update parent component when data changes
+  useEffect(() => {
+    onUpdate({
+      question,
+      options,
+      correctAnswer, // This is now the value, not the index
+      id: questionId,
+      order_id,
+      answer_id
+    });
+  }, [question, options, correctAnswer, questionId, order_id, answer_id, onUpdate]);
 
-  // Handle option changes
   const handleOptionChange = (index, value) => {
-    const updatedOptions = [...options];
-    updatedOptions[index] = value;
-    setOptions(updatedOptions);
-    if (onOptionsChange) {
-      onOptionsChange(updatedOptions);
+    const newOptions = [...options];
+    const oldValue = newOptions[index];
+    newOptions[index] = value;
+    setOptions(newOptions);
+    
+    // If this option was the correct answer, update correctAnswer with the new value
+    if (correctAnswer === oldValue) {
+      setCorrectAnswer(value);
     }
   };
 
-  // Add a new option
-  const addOption = () => {
-    const newOption = `Option ${options.length + 1}`;
-    const updatedOptions = [...options, newOption];
-    setOptions(updatedOptions);
-    if (onOptionsChange) {
-      onOptionsChange(updatedOptions);
+  const handleAddOption = () => {
+    setOptions([...options, `Option ${options.length + 1}`]);
+  };
+
+  const handleRemoveOption = (index) => {
+    if (options.length <= 2) return; // Maintain at least 2 options
+    
+    const optionToRemove = options[index];
+    const newOptions = options.filter((_, i) => i !== index);
+    setOptions(newOptions);
+    
+    // If the removed option was the correct answer, clear the correct answer
+    if (correctAnswer === optionToRemove) {
+      setCorrectAnswer(null);
     }
   };
 
-  // Remove an option
-  const removeOption = (index) => {
-    const updatedOptions = options.filter((_, i) => i !== index);
-    setOptions(updatedOptions);
-    // If the removed option was the selected answer, clear the answer
-    if (answer === options[index]) {
-      setAnswer(null);
-      if (onAnswerChange) {
-        onAnswerChange(null);
-      }
-    }
-    if (onOptionsChange) {
-      onOptionsChange(updatedOptions);
-    }
+  const handleCorrectAnswerChange = (optionValue) => {
+    setCorrectAnswer(optionValue);
   };
 
-  // Handle answer changes
-  const handleAnswerChange = (selectedAnswer) => {
-    setAnswer(selectedAnswer);
-    if (onAnswerChange) {
-      onAnswerChange(selectedAnswer);
-    }
-  };
-
-  // Handle question ID change (for drag-and-drop reordering)
-  const handleQuestionIdChange = (newId) => {
-    if (onQuestionIdChange) {
-      onQuestionIdChange(newId);
-    }
-  };
+  // Helper to find index of correct answer for display purposes
+  const correctAnswerIndex = options.findIndex(option => option === correctAnswer);
 
   return (
-    <Box
-      sx={{
-        p: 3,
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        backgroundColor: "#fff",
-        mb: 2,
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-        maxWidth: "600px",
-        position: "relative", // Position relative for absolute positioning of remove button
-      }}
-    >
-
-      {/* Question ID */}
-      <Typography variant="subtitle2" gutterBottom sx={{ mt: 1 }}>
-        Question ID: {questionId}
-      </Typography>
-
-      {/* Question Title */}
+    <Box>
+      {/* Display IDs for debugging */}
+      <Box sx={{ mb: 1, display: "flex", gap: 2, fontSize: "12px", color: "#666" }}>
+        <Typography variant="caption">Order ID: {order_id}</Typography>
+        <Typography variant="caption">Answer ID: {answer_id}</Typography>
+        <Typography variant="caption">Component ID: {questionId}</Typography>
+      </Box>
+    
       <TextField
         fullWidth
+        variant="outlined"
         label="Question"
         value={question}
-        onChange={handleQuestionChange}
-        placeholder="Enter your question here..."
-        sx={{ mb: 3, mt: 1 }}
+        onChange={(e) => setQuestion(e.target.value)}
+        sx={{ mb: 2 }}
       />
 
-      {/* Options */}
-      <Typography variant="subtitle1" gutterBottom>
-        Options:
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+        Options (select the correct answer with the checkmark)
       </Typography>
-      {options.map((option, index) => (
-        <Box
-          key={index}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            mb: 2,
-          }}
-        >
-          <TextField
-            fullWidth
-            value={option}
-            onChange={(e) => handleOptionChange(index, e.target.value)}
-            placeholder={`Option ${index + 1}`}
-          />
-          <IconButton
-            color="error"
-            onClick={() => removeOption(index)}
-            disabled={options.length === 1} // Prevent removing the last option
-          >
-            <Trash2 size={20} />
-          </IconButton>
-        </Box>
-      ))}
 
-      {/* Add New Option Button */}
-      <Button
-        startIcon={<Plus size={16} />}
-        variant="outlined"
-        onClick={addOption}
-      >
-        Add Option
-      </Button>
-
-      {/* Correct Answer */}
-      <Typography variant="subtitle1" sx={{ mt: 3 }} gutterBottom>
-        Answer (Optional):
-      </Typography>
-      <FormControl component="fieldset">
-        <RadioGroup
-          value={answer}
-          onChange={(e) => handleAnswerChange(e.target.value)}
-        >
+      <FormControl component="fieldset" sx={{ width: "100%" }}>
+        <RadioGroup>
           {options.map((option, index) => (
-            <FormControlLabel
-              key={index}
-              value={option}
-              control={<Radio />}
-              label={option}
-            />
+            <Box key={index} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              {/* Correct answer selector */}
+              <Tooltip title="Set as correct answer">
+                <IconButton
+                  size="small"
+                  onClick={() => handleCorrectAnswerChange(option)}
+                  sx={{ 
+                    color: correctAnswer === option ? "success.main" : "action.disabled",
+                    mr: 1
+                  }}
+                >
+                  <CheckCircleOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              
+              {/* Option text field */}
+              <TextField
+                variant="outlined"
+                size="small"
+                value={option}
+                onChange={(e) => handleOptionChange(index, e.target.value)}
+                sx={{ 
+                  flexGrow: 1, 
+                  mr: 1,
+                  // Highlight the correct answer with a subtle border
+                  ...(correctAnswer === option ? {
+                    "& .MuiOutlinedInput-root": {
+                      border: "1px solid",
+                      borderColor: "success.light",
+                      backgroundColor: "rgba(76, 175, 80, 0.04)"
+                    }
+                  } : {})
+                }}
+                name={`question-${questionId}-option-${answer_id}-${index}`}
+                // Add a small indicator in the label for the correct answer
+                label={correctAnswer === option ? "Correct Answer" : ""}
+              />
+              
+              {/* Remove option button */}
+              {options.length > 2 && (
+                <IconButton
+                  size="small"
+                  onClick={() => handleRemoveOption(index)}
+                  sx={{ color: "error.main" }}
+                >
+                  <Box sx={{ fontSize: '16px', fontWeight: 'bold' }}>×</Box>
+                </IconButton>
+              )}
+            </Box>
           ))}
         </RadioGroup>
       </FormControl>
+
+      {/* Show correct answer summary */}
+      <Box sx={{ mt: 2, mb: 2, p: 1, backgroundColor: "rgba(76, 175, 80, 0.08)", borderRadius: 1 }}>
+        <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
+          Correct Answer: {correctAnswer !== null 
+            ? (correctAnswerIndex !== -1 ? `Option ${correctAnswerIndex + 1}` : "Value no longer in options") 
+            : "Not set"}
+        </Typography>
+        {correctAnswer !== null && (
+          <Typography variant="caption">
+            "{correctAnswer}"
+          </Typography>
+        )}
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
+
+      <Box sx={{ mt: 2 }}>
+        <Typography
+          variant="button"
+          sx={{
+            color: "primary.main",
+            cursor: "pointer",
+            "&:hover": { textDecoration: "underline" },
+          }}
+          onClick={handleAddOption}
+        >
+          + Add Option
+        </Typography>
+      </Box>
     </Box>
   );
 };
