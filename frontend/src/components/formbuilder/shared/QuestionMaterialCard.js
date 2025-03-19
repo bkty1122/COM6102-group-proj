@@ -5,7 +5,7 @@ import { useDroppable, DndContext, closestCenter,
          DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
-import SingleChoiceQuestion from "./SingleChoiceQuestion";
+import SingleChoiceQuestion from "./content/SingleChoiceQuestion";
 import { ArrowUp, ArrowDown, GripVertical } from "lucide-react"; 
 
 const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, onReorderContent, onUpdateContent }) => {
@@ -207,6 +207,26 @@ const SortableContentItem = ({
     }
   };
 
+  // Helper to extract media from options
+  const getOptionMediaFromOptions = (options) => {
+    if (!options || !Array.isArray(options)) return {};
+    
+    const mediaMap = {};
+    options.forEach((option, index) => {
+      if (typeof option === 'object') {
+        if (option.option_image) {
+          mediaMap[index] = option.option_image;
+        } else if (option.option_audio) {
+          mediaMap[index] = option.option_audio;
+        } else if (option.option_video) {
+          mediaMap[index] = option.option_video;
+        }
+      }
+    });
+    
+    return mediaMap;
+  };
+
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
@@ -214,6 +234,10 @@ const SortableContentItem = ({
     zIndex: isDragging ? 999 : 1,
   };
 
+  // Determine which media to use for the question
+  const questionMedia = content.question_image || content.question_audio || content.question_video || null;
+  const optionMedia = getOptionMediaFromOptions(content.options);
+  
   return (
     <Box 
       ref={setNodeRef}
@@ -326,6 +350,8 @@ const SortableContentItem = ({
           questionId={content.id}
           defaultQuestion={content.question || "Enter your question here..."}
           defaultOptions={content.options || ["Option 1", "Option 2"]}
+          defaultQuestionMedia={questionMedia} // Pass question media
+          defaultOptionMedia={optionMedia} // Pass option media
           defaultCorrectAnswer={content.correctAnswer}
           onRemove={onRemove}
           order_id={content.order_id} 

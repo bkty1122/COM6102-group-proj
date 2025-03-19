@@ -7,6 +7,7 @@ export default function useFormBuilder() {
   ]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  
 
   // Debug logging
   useEffect(() => {
@@ -156,41 +157,94 @@ export default function useFormBuilder() {
   };
 
   // Update card content when edited
-  const updateCardContent = (cardType, updatedContent) => {
-    console.log("Updating card content:", cardType, updatedContent);
-    
-    setPages(prevPages => {
-      return prevPages.map((page, index) => {
-        if (index !== currentPage) return page;
-        
-        // Skip if this card type doesn't exist or has no contents
-        if (!page.cardContents[cardType]) return page;
-        
-        // Update the specific content
-        const updatedContents = page.cardContents[cardType].map(content => {
-          if (content.id === updatedContent.id) {
-            // Return the updated content, preserving any existing fields
-            return {
-              ...content,
-              question: updatedContent.question,
-              options: updatedContent.options,
-              correctAnswer: updatedContent.correctAnswer
-            };
-          }
-          return content;
-        });
-        
-        // Return a new page object with updated cardContents
-        return {
-          ...page,
-          cardContents: {
-            ...page.cardContents,
-            [cardType]: updatedContents
-          }
-        };
+// Update card content when edited
+// In useFormBuilder.js
+const updateCardContent = (cardType, updatedContent) => {
+  console.log("Updating card content:", cardType, {
+    id: updatedContent.id,
+    media: {
+      question_image: updatedContent.question_image,
+      question_audio: updatedContent.question_audio,
+      question_video: updatedContent.question_video
+    }
+  });
+  
+  setPages(prevPages => {
+    return prevPages.map((page, index) => {
+      if (index !== currentPage) return page;
+      
+      // Skip if this card type doesn't exist or has no contents
+      if (!page.cardContents[cardType]) return page;
+      
+      // Update the specific content
+      const updatedContents = page.cardContents[cardType].map(content => {
+        if (content.id === updatedContent.id) {
+          // Create a deep copy of the content object to avoid reference issues
+          const newContent = JSON.parse(JSON.stringify(content));
+          
+          // For each key in updatedContent, properly update the content
+          Object.keys(updatedContent).forEach(key => {
+            // Special handling for media objects - deep clone them
+            if (key === 'question_image' || key === 'question_audio' || key === 'question_video') {
+              if (updatedContent[key]) {
+                // Make a complete deep copy of the media object
+                newContent[key] = JSON.parse(JSON.stringify(updatedContent[key]));
+              } else {
+                newContent[key] = null;
+              }
+            } 
+            // Special handling for options with media
+            else if (key === 'options' && Array.isArray(updatedContent.options)) {
+              newContent.options = updatedContent.options.map(option => {
+                // If option is a string, convert to object format
+                if (typeof option === 'string') {
+                  return {
+                    option_value: option,
+                    option_image: null,
+                    option_audio: null,
+                    option_video: null
+                  };
+                }
+                
+                // Make sure we preserve media inside options
+                const optionCopy = { ...option };
+                
+                // Deep copy media objects inside options
+                if (option.option_image) {
+                  optionCopy.option_image = JSON.parse(JSON.stringify(option.option_image));
+                }
+                if (option.option_audio) {
+                  optionCopy.option_audio = JSON.parse(JSON.stringify(option.option_audio));
+                }
+                if (option.option_video) {
+                  optionCopy.option_video = JSON.parse(JSON.stringify(option.option_video));
+                }
+                
+                return optionCopy;
+              });
+            }
+            // For other properties, just copy them over
+            else {
+              newContent[key] = updatedContent[key];
+            }
+          });
+          
+          return newContent;
+        }
+        return content;
       });
+      
+      // Return a new page object with updated cardContents
+      return {
+        ...page,
+        cardContents: {
+          ...page.cardContents,
+          [cardType]: updatedContents
+        }
+      };
     });
-  };
+  });
+};
 
   // Update the reorderContent function to update both order_id and answer_id
   const reorderContent = (cardType, contentId, direction, targetIndex) => {

@@ -1,6 +1,6 @@
 // src/components/formbuilder/FormBuilderPage.js
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import { DndContext } from "@dnd-kit/core";
 import NavigationBar from "./shared/NavigationBar";
 import BlankPage from "./shared/BlankPage";
@@ -8,6 +8,7 @@ import AvailableQuestions from "./shared/AvailableQuestions";
 import FormExport from "./FormExport";
 import useFormBuilder from "./hooks/useFormBuilder";
 import { createDragHandlers } from "./utils/dragAndDropUtils";
+import AvailableMedia from './shared/media/AvailableMedia';
 
 const FormBuilderPage = () => {
   const {
@@ -58,6 +59,7 @@ const FormBuilderPage = () => {
             zIndex: 1
           }}
         >
+          
           <NavigationBar
             pages={pages}
             currentPage={currentPage}
@@ -66,6 +68,18 @@ const FormBuilderPage = () => {
             deletePage={deletePage}
           />
           
+          <Divider sx={{ my: 2 }} />
+            <Box 
+            sx={{ 
+              flexGrow: 1, 
+              overflow: "auto", 
+              p: 2,
+              zIndex: 1
+            }}>
+              <AvailableMedia />
+            </Box>
+          <Divider sx={{ my: 2 }} />
+
           <BlankPage 
             cards={currentPageData.cards} 
             addCard={addCard} 
