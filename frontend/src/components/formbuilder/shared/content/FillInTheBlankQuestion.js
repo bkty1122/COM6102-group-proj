@@ -16,11 +16,13 @@ const FillInTheBlankQuestion = ({
   defaultBlanks = [], 
   order_id,
   startingAnswerId = 0,
-  onUpdate = () => {}
+  onUpdate = () => {},
+  defaultInstruction = "Fill in the blanks with the correct words." // Default instruction text
 }) => {
   const [question, setQuestion] = useState(defaultQuestion);
   const [blanks, setBlanks] = useState([]);
   const [nextAnswerId, setNextAnswerId] = useState(startingAnswerId);
+  const [instruction, setInstruction] = useState(defaultInstruction); // New state for instruction
   const questionRef = useRef(null);
   const [prevQuestion, setPrevQuestion] = useState(defaultQuestion);
   const blankRefs = useRef([]);
@@ -124,11 +126,12 @@ const FillInTheBlankQuestion = ({
       order_id,
       question,
       blanks,
+      instruction, // Include instruction in the update
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null
     });
-  }, [question, blanks, questionMedia, questionId, order_id, onUpdate]);
+  }, [question, blanks, instruction, questionMedia, questionId, order_id, onUpdate]);
 
   // Insert a new blank at cursor position
   const handleInsertBlank = () => {
@@ -342,7 +345,7 @@ const FillInTheBlankQuestion = ({
         <Typography variant="caption">Component ID: {questionId}</Typography>
       </Box>
 
-      {/* Instructions */}
+      {/* Instructions for the component author */}
       <Paper 
         elevation={0} 
         sx={{ 
@@ -357,6 +360,29 @@ const FillInTheBlankQuestion = ({
           For each blank, you can define one or more correct answers.
         </Typography>
       </Paper>
+      
+      {/* Student Instructions Field - NEW ADDITION */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          label="Instructions for students"
+          value={instruction}
+          onChange={(e) => setInstruction(e.target.value)}
+          helperText="These instructions will be shown to students when completing the exercise"
+          placeholder="Example: Fill in the blanks with the correct words."
+          size="small"
+          sx={{ 
+            mb: 1,
+            '& .MuiOutlinedInput-root': {
+              borderColor: '#2196f3',
+              '&.Mui-focused': {
+                borderColor: '#2196f3',
+              }
+            }
+          }}
+        />
+      </Box>
       
       {/* Question with blanks */}
       <Box sx={{ mb: 2 }}>
@@ -397,6 +423,23 @@ const FillInTheBlankQuestion = ({
           <InputLabel shrink sx={{ mb: 1, color: 'text.secondary' }}>
             Question Preview (click on blanks to navigate)
           </InputLabel>
+          
+          {/* Show instruction in preview as well */}
+          {instruction && (
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mb: 2, 
+                fontStyle: 'italic',
+                color: 'text.secondary',
+                borderLeft: '2px solid #2196f3',
+                pl: 1
+              }}
+            >
+              {instruction}
+            </Typography>
+          )}
+          
           <Typography variant="body1">
             {renderFormattedQuestion()}
           </Typography>

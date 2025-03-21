@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, RadioGroup, FormControl, IconButton,
-  Divider, Tooltip
+  Divider, Tooltip, Paper
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import QuestionMedia from "./QuestionMedia";
@@ -17,7 +17,8 @@ const SingleChoiceQuestion = ({
   defaultOptionMedia = {},
   order_id,
   answer_id,
-  onUpdate = () => {}
+  onUpdate = () => {},
+  defaultInstruction = "Select the correct answer from the options below." // Default instruction text
 }) => {
   const [question, setQuestion] = useState(defaultQuestion);
   const [options, setOptions] = useState(
@@ -27,6 +28,7 @@ const SingleChoiceQuestion = ({
   );
   const [correctAnswer, setCorrectAnswer] = useState(defaultCorrectAnswer);
   const [currentAnswerId] = useState(answer_id || 0);
+  const [instruction, setInstruction] = useState(defaultInstruction); // New state for instruction
   
   // Use the media hook
   const { 
@@ -35,12 +37,6 @@ const SingleChoiceQuestion = ({
     handleMediaChange,
     reindexOptionMedia
   } = useQuestionMedia(defaultQuestionMedia, defaultOptionMedia);
-
-  // Log current state for debugging
-  useEffect(() => {
-    console.log("Current question media:", questionMedia);
-    console.log("Current option media:", optionMedia);
-  }, [questionMedia, optionMedia]);
 
   // Update parent component when data changes
   useEffect(() => {
@@ -61,12 +57,13 @@ const SingleChoiceQuestion = ({
       answer_id: currentAnswerId,
       question,
       options: formattedOptions,
+      instruction, // Include instruction in the update
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null,
       correctAnswer
     });
-  }, [question, options, optionMedia, questionMedia, correctAnswer, questionId, order_id, currentAnswerId, onUpdate]);
+  }, [question, options, optionMedia, questionMedia, correctAnswer, instruction, questionId, order_id, currentAnswerId, onUpdate]);
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -115,6 +112,45 @@ const SingleChoiceQuestion = ({
         <Typography variant="caption">Answer ID: {currentAnswerId}</Typography>
         <Typography variant="caption">Component ID: {questionId}</Typography>
       </Box>
+      
+      {/* Instructions for the component author */}
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          mb: 2, 
+          p: 1.5, 
+          backgroundColor: "#f5f5f5", 
+          borderLeft: "4px solid #2196f3"
+        }}
+      >
+        <Typography variant="body2">
+          Create a single-choice question by entering your question text, adding options, and
+          selecting the correct answer using the checkmark.
+        </Typography>
+      </Paper>
+      
+      {/* Student Instructions Field - NEW ADDITION */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          label="Instructions for students"
+          value={instruction}
+          onChange={(e) => setInstruction(e.target.value)}
+          helperText="These instructions will be shown to students when completing the question"
+          placeholder="Example: Select the correct answer from the options below."
+          size="small"
+          sx={{ 
+            mb: 1,
+            '& .MuiOutlinedInput-root': {
+              borderColor: '#2196f3',
+              '&.Mui-focused': {
+                borderColor: '#2196f3',
+              }
+            }
+          }}
+        />
+      </Box>
     
       <TextField
         fullWidth
@@ -132,6 +168,86 @@ const SingleChoiceQuestion = ({
         label="Add Media to Question"
         type="question"
       />
+      
+      {/* Question preview with instruction */}
+      <Paper
+        variant="outlined"
+        sx={{ 
+          p: 2, 
+          my: 3, 
+          backgroundColor: '#fafafa',
+          lineHeight: 1.6
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+          Question Preview
+        </Typography>
+        
+        {/* Show instruction in preview */}
+        {instruction && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              mb: 2, 
+              fontStyle: 'italic',
+              color: 'text.secondary',
+              borderLeft: '2px solid #2196f3',
+              pl: 1
+            }}
+          >
+            {instruction}
+          </Typography>
+        )}
+        
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          {question}
+        </Typography>
+        
+        {/* Show options in preview */}
+        {options.map((option, index) => (
+          <Box 
+            key={index}
+            sx={{ 
+              mb: 1,
+              pl: 2,
+              display: 'flex',
+              alignItems: 'center',
+              ...(correctAnswer === option ? {
+                color: 'success.main',
+                fontWeight: 500
+              } : {})
+            }}
+          >
+            <Box 
+              sx={{ 
+                width: 16, 
+                height: 16, 
+                borderRadius: '50%', 
+                border: '1px solid', 
+                borderColor: correctAnswer === option ? 'success.main' : 'text.secondary', 
+                mr: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {correctAnswer === option && (
+                <Box 
+                  sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    bgcolor: 'success.main' 
+                  }} 
+                />
+              )}
+            </Box>
+            <Typography variant="body2">
+              {option}
+            </Typography>
+          </Box>
+        ))}
+      </Paper>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
         Options (select the correct answer with the checkmark)

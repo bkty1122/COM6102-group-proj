@@ -39,8 +39,6 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
     
     // Register all current answer_ids with the manager
     AnswerIdManager.trackPageContent(pageData);
-    
-    // Removed logging here
   }, [contents, type]);
 
   // Ensure contents have correct order_id values - only run when contents change
@@ -512,6 +510,7 @@ const SortableContentItem = memo(({
           defaultQuestionMedia={questionMedia}
           defaultOptionMedia={optionMedia}
           defaultCorrectAnswer={content.correctAnswer}
+          defaultInstruction={content.instruction || "Select the correct answer from the options below."} // ADDED
           onRemove={onRemove}
           order_id={content.order_id} 
           answer_id={content.answer_id}
@@ -523,6 +522,7 @@ const SortableContentItem = memo(({
           questionId={content.id}
           defaultQuestion={content.question || "Enter your question here..."}
           defaultBlanks={content.blanks || content.options || []}
+          defaultInstruction={content.instruction || "Fill in the blanks with the correct words."} // ADDED
           onRemove={onRemove}
           order_id={content.order_id} 
           startingAnswerId={content.answer_id || AnswerIdManager.getCurrentNextId()}
