@@ -1,10 +1,67 @@
-// src/utils/answerIdManager.js
-
 // Singleton to manage global answer IDs
 const AnswerIdManager = {
   nextAvailableId: 0,
   usedIds: new Set(),
   contentRegistry: [], // Tracks all content with their answer IDs
+  
+  // Find highest answer_id in content object
+  _scanForHighestId(obj) {
+    if (!obj) return 0;
+    let highestId = 0;
+    
+    // Check if object has an answer_id
+    if (obj.answer_id !== undefined && obj.answer_id > highestId) {
+      highestId = obj.answer_id;
+    }
+    
+    // Check blanks for fill-in-the-blank type
+    if (obj.type === 'fill-in-the-blank' && obj.blanks && Array.isArray(obj.blanks)) {
+      obj.blanks.forEach(blank => {
+        if (blank.answer_id !== undefined && blank.answer_id > highestId) {
+          highestId = blank.answer_id;
+        }
+      });
+    }
+    
+    // Check options for single-choice
+    if (obj.options && Array.isArray(obj.options)) {
+      obj.options.forEach(option => {
+        if (option.answer_id !== undefined && option.answer_id > highestId) {
+          highestId = option.answer_id;
+        }
+      });
+    }
+    
+    return highestId;
+  },
+  
+  // Register all answer_ids found in an object
+  _registerIds(obj) {
+    if (!obj) return;
+    
+    // Register object's own answer_id
+    if (obj.answer_id !== undefined) {
+      this.usedIds.add(obj.answer_id);
+    }
+    
+    // Register blanks' answer_ids
+    if (obj.type === 'fill-in-the-blank' && obj.blanks && Array.isArray(obj.blanks)) {
+      obj.blanks.forEach(blank => {
+        if (blank.answer_id !== undefined) {
+          this.usedIds.add(blank.answer_id);
+        }
+      });
+    }
+    
+    // Register options' answer_ids
+    if (obj.options && Array.isArray(obj.options)) {
+      obj.options.forEach(option => {
+        if (option.answer_id !== undefined) {
+          this.usedIds.add(option.answer_id);
+        }
+      });
+    }
+  },
   
   // Initialize with existing content
   initialize: (pages) => {
@@ -18,41 +75,37 @@ const AnswerIdManager = {
     
     if (pages && Array.isArray(pages)) {
       pages.forEach(page => {
-        if (page.cards && Array.isArray(page.cards)) {
-          page.cards.forEach(card => {
-            if (card.contents && Array.isArray(card.contents)) {
-              card.contents.forEach(content => {
-                if (content.answer_id !== undefined && content.answer_id > highestId) {
-                  highestId = content.answer_id;
+        // Process card contents structure
+        if (page.cardContents) {
+          Object.values(page.cardContents).forEach(contentArray => {
+            if (Array.isArray(contentArray)) {
+              contentArray.forEach(content => {
+                // Find highest ID in this content
+                const contentHighestId = AnswerIdManager._scanForHighestId(content);
+                if (contentHighestId > highestId) {
+                  highestId = contentHighestId;
                 }
                 
-                if (content.type === 'fill-in-the-blank' && content.blanks && Array.isArray(content.blanks)) {
-                  content.blanks.forEach(blank => {
-                    if (blank.answer_id !== undefined && blank.answer_id > highestId) {
-                      highestId = blank.answer_id;
-                    }
-                  });
-                }
+                // Register all IDs in this content
+                AnswerIdManager._registerIds(content);
               });
             }
           });
         }
         
-        if (page.cardContents) {
-          Object.values(page.cardContents).forEach(contentArray => {
-            if (Array.isArray(contentArray)) {
-              contentArray.forEach(content => {
-                if (content.answer_id !== undefined && content.answer_id > highestId) {
-                  highestId = content.answer_id;
+        // Process cards structure (for backward compatibility)
+        if (page.cards && Array.isArray(page.cards)) {
+          page.cards.forEach(card => {
+            if (card.contents && Array.isArray(card.contents)) {
+              card.contents.forEach(content => {
+                // Find highest ID in this content
+                const contentHighestId = AnswerIdManager._scanForHighestId(content);
+                if (contentHighestId > highestId) {
+                  highestId = contentHighestId;
                 }
                 
-                if (content.type === 'fill-in-the-blank' && content.blanks && Array.isArray(content.blanks)) {
-                  content.blanks.forEach(blank => {
-                    if (blank.answer_id !== undefined && blank.answer_id > highestId) {
-                      highestId = blank.answer_id;
-                    }
-                  });
-                }
+                // Register all IDs in this content
+                AnswerIdManager._registerIds(content);
               });
             }
           });
@@ -63,54 +116,6 @@ const AnswerIdManager = {
     // Set next available ID to one higher than the highest found
     AnswerIdManager.nextAvailableId = highestId + 1;
     
-    // Collect all used IDs
-    if (pages && Array.isArray(pages)) {
-      pages.forEach(page => {
-        if (page.cards && Array.isArray(page.cards)) {
-          page.cards.forEach(card => {
-            if (card.contents && Array.isArray(card.contents)) {
-              card.contents.forEach(content => {
-                if (content.answer_id !== undefined) {
-                  AnswerIdManager.usedIds.add(content.answer_id);
-                }
-                
-                if (content.type === 'fill-in-the-blank' && content.blanks && Array.isArray(content.blanks)) {
-                  content.blanks.forEach(blank => {
-                    if (blank.answer_id !== undefined) {
-                      AnswerIdManager.usedIds.add(blank.answer_id);
-                    }
-                  });
-                }
-              });
-            }
-          });
-        }
-        
-        if (page.cardContents) {
-          Object.values(page.cardContents).forEach(contentArray => {
-            if (Array.isArray(contentArray)) {
-              contentArray.forEach(content => {
-                if (content.answer_id !== undefined) {
-                  AnswerIdManager.usedIds.add(content.answer_id);
-                }
-                
-                if (content.type === 'fill-in-the-blank' && content.blanks && Array.isArray(content.blanks)) {
-                  content.blanks.forEach(blank => {
-                    if (blank.answer_id !== undefined) {
-                      AnswerIdManager.usedIds.add(blank.answer_id);
-                    }
-                  });
-                }
-              });
-            }
-          });
-        }
-      });
-    }
-    
-    console.log(`AnswerIdManager initialized with nextAvailableId: ${AnswerIdManager.nextAvailableId}`);
-    console.log(`Used IDs: ${Array.from(AnswerIdManager.usedIds).sort((a, b) => a - b).join(', ')}`);
-    
     return highestId;
   },
   
@@ -119,15 +124,19 @@ const AnswerIdManager = {
     const id = AnswerIdManager.nextAvailableId;
     AnswerIdManager.nextAvailableId += 1;
     AnswerIdManager.usedIds.add(id);
-    console.log(`Assigned new answer_id: ${id}`);
     return id;
   },
   
   // Reserve a specific ID
   reserveId: (id) => {
-    AnswerIdManager.usedIds.add(id);
-    if (id >= AnswerIdManager.nextAvailableId) {
-      AnswerIdManager.nextAvailableId = id + 1;
+    if (id === undefined || id === null) return;
+    
+    const numId = Number(id);
+    if (isNaN(numId)) return;
+    
+    AnswerIdManager.usedIds.add(numId);
+    if (numId >= AnswerIdManager.nextAvailableId) {
+      AnswerIdManager.nextAvailableId = numId + 1;
     }
   },
   
@@ -154,59 +163,15 @@ const AnswerIdManager = {
         if (!Array.isArray(contentArray)) return;
         
         contentArray.forEach(content => {
-          // Track single-choice question answer_ids
-          if (content.type === 'single-choice' && content.answer_id !== undefined) {
-            AnswerIdManager.reserveId(content.answer_id);
-            
-            // Also track option answer_ids (should be the same)
-            if (content.options && Array.isArray(content.options)) {
-              content.options.forEach(option => {
-                if (option.answer_id !== undefined) {
-                  AnswerIdManager.reserveId(option.answer_id);
-                }
-              });
-            }
-          }
-          
-          // Track fill-in-the-blank blank answer_ids
-          if (content.type === 'fill-in-the-blank' && content.blanks && Array.isArray(content.blanks)) {
-            content.blanks.forEach(blank => {
-              if (blank.answer_id !== undefined) {
-                AnswerIdManager.reserveId(blank.answer_id);
-              }
-            });
-          }
+          AnswerIdManager._registerIds(content);
         });
       });
     } else if (Array.isArray(page)) {
       // If page is just an array of content
       page.forEach(content => {
-        // Track single-choice question answer_ids
-        if (content.type === 'single-choice' && content.answer_id !== undefined) {
-          AnswerIdManager.reserveId(content.answer_id);
-          
-          // Also track option answer_ids (should be the same)
-          if (content.options && Array.isArray(content.options)) {
-            content.options.forEach(option => {
-              if (option.answer_id !== undefined) {
-                AnswerIdManager.reserveId(option.answer_id);
-              }
-            });
-          }
-        }
-        
-        // Track fill-in-the-blank blank answer_ids
-        if (content.type === 'fill-in-the-blank' && content.blanks && Array.isArray(content.blanks)) {
-          content.blanks.forEach(blank => {
-            if (blank.answer_id !== undefined) {
-              AnswerIdManager.reserveId(blank.answer_id);
-            }
-          });
-        }
+        AnswerIdManager._registerIds(content);
       });
     }
-    
-    console.log(`AnswerIdManager tracked page content, next ID: ${AnswerIdManager.nextAvailableId}`);
   },
 
   // Check if an answer_id is already in use
@@ -262,8 +227,6 @@ const AnswerIdManager = {
       // Increment nextAvailableId by exactly 1 for single-choice
       AnswerIdManager.nextAvailableId = currentNextId + 1;
       AnswerIdManager.usedIds.add(currentNextId);
-      
-      console.log(`Added single-choice with answer_id: ${currentNextId}`);
     } 
     else if (contentCopy.type === 'fill-in-the-blank') {
       // Extract or create blanks
@@ -311,8 +274,6 @@ const AnswerIdManager = {
       
       // Update nextAvailableId to be after the last blank
       AnswerIdManager.nextAvailableId = currentNextId + contentCopy.blanks.length;
-      
-      console.log(`Added fill-in-the-blank with ${contentCopy.blanks.length} blanks, IDs: ${currentNextId}-${AnswerIdManager.nextAvailableId - 1}`);
     }
     
     return contentCopy;
@@ -348,10 +309,6 @@ const AnswerIdManager = {
           id: index // Ensure ID matches index
         };
       });
-      
-      if (modified) {
-        console.log("Fixed duplicates in fill-in-the-blank content");
-      }
     } else if (contentCopy.type === 'single-choice') {
       // Ensure options have matching answer_ids
       if (contentCopy.answer_id === undefined) {
@@ -469,7 +426,6 @@ const AnswerIdManager = {
     // Update manager state
     AnswerIdManager.nextAvailableId = nextId;
     
-    console.log(`Reorganized all pages with sequential answer_ids, next ID: ${nextId}`);
     return updatedPages;
   }
 };

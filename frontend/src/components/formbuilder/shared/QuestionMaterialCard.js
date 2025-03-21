@@ -1,5 +1,5 @@
 // QuestionMaterialCard.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { Box, Button, Typography, IconButton, Tooltip } from "@mui/material";
 import { useDroppable, DndContext, closestCenter, 
          DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -40,49 +40,43 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
     // Register all current answer_ids with the manager
     AnswerIdManager.trackPageContent(pageData);
     
-    console.log(`AnswerIdManager updated with contents, next ID: ${AnswerIdManager.getCurrentNextId()}`);
-  }, [contents]);
+    // Removed logging here
+  }, [contents, type]);
 
-  // Ensure contents have correct order_id values
+  // Ensure contents have correct order_id values - only run when contents change
   useEffect(() => {
     // Check if order_id values need to be updated
     const needsUpdate = contents.some((content, index) => content.order_id !== index);
     
-    if (needsUpdate) {
-      // Create updated contents with correct order_id values
+    if (needsUpdate && onUpdateContent) {
+      // Batch updates by creating an array of updated contents
       const updatedContents = contents.map((content, index) => ({
         ...content,
         order_id: index
       }));
       
-      // Send the updated contents back to parent
-      if (onUpdateContent) {
-        updatedContents.forEach(content => {
-          onUpdateContent(type, content);
-        });
-      }
+      // Process updates in a single batch if possible
+      updatedContents.forEach(content => {
+        onUpdateContent(type, content);
+      });
     }
-  }, [contents]);
+  }, [contents, onUpdateContent, type]);
 
-  // Handler for removing a specific content item
-  const handleRemoveContent = (contentId) => {
+  // Memoize event handlers to prevent recreation on every render
+  const handleRemoveContent = useCallback((contentId) => {
     if (onRemoveContent) {
       onRemoveContent(type, contentId);
     }
-  };
+  }, [onRemoveContent, type]);
 
-  // Handler for reordering content items
-  const handleReorderContent = (contentId, direction) => {
-    console.log(`Attempting to reorder: ${contentId} in direction: ${direction}`);
+  const handleReorderContent = useCallback((contentId, direction) => {
     if (onReorderContent) {
       onReorderContent(type, contentId, direction);
     }
-  };
+  }, [onReorderContent, type]);
 
   // Handle content updates from child components and pass to parent
-  const handleContentUpdate = (updatedContent) => {
-    console.log("Content updated in QuestionMaterialCard:", updatedContent);
-    
+  const handleContentUpdate = useCallback((updatedContent) => {
     // Before updating, check for answer_id conflicts and fix them
     if (updatedContent.type === 'fill-in-the-blank' && updatedContent.blanks) {
       // Check each blank to ensure it has a unique answer_id
@@ -119,8 +113,6 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
             
           // Get a new unique ID
           const newAnswerId = AnswerIdManager.getNextId();
-          console.log(`Fixing answer_id conflict: ${blank.answer_id} -> ${newAnswerId}`);
-          
           modified = true;
           return {
             ...blank,
@@ -132,10 +124,6 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
         seenInThisContent.add(blank.answer_id);
         return blank;
       });
-      
-      if (modified) {
-        console.log("Fixed answer_id conflicts in fill-in-the-blank question");
-      }
     }
     
     // For single-choice questions, check and fix answer_id conflicts
@@ -156,8 +144,6 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
       // If there's a conflict, assign a new answer_id
       if (hasConflict) {
         const newAnswerId = AnswerIdManager.getNextId();
-        console.log(`Fixing single-choice answer_id conflict: ${updatedContent.answer_id} -> ${newAnswerId}`);
-        
         updatedContent.answer_id = newAnswerId;
         
         // Update all options with the new answer_id
@@ -174,15 +160,15 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
     if (onUpdateContent) {
       onUpdateContent(type, updatedContent);
     }
-  };
+  }, [contents, onUpdateContent, type]);
 
   // Handler for drag start
-  const handleDragStart = (event) => {
+  const handleDragStart = useCallback((event) => {
     setActiveId(event.active.id);
-  };
+  }, []);
 
   // Handler for drag end - reorder content based on drag result
-  const handleDragEnd = (event) => {
+  const handleDragEnd = useCallback((event) => {
     const { active, over } = event;
     setActiveId(null);
     
@@ -191,18 +177,16 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
       const activeIndex = contents.findIndex(item => item.id === active.id);
       const overIndex = contents.findIndex(item => item.id === over.id);
       
-      console.log(`Dragged item ${activeIndex} over item ${overIndex}`);
-      
-      // Call the same reorderContent function with appropriate direction
+      // Call the reorderContent function with appropriate direction
       if (activeIndex !== -1 && overIndex !== -1) {
         onReorderContent(type, active.id, 'custom', overIndex);
       }
     }
-  };
+  }, [contents, onReorderContent, type]);
 
   // Helper to check if this content can be moved up or down
-  const canMoveUp = (index) => index > 0;
-  const canMoveDown = (index) => index < contents.length - 1;
+  const canMoveUp = useCallback((index) => index > 0, []);
+  const canMoveDown = useCallback((index) => index < contents.length - 1, [contents.length]);
 
   return (
     <Box
@@ -223,7 +207,7 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
           {type === "question" ? "Question Card" : "Material Card"}
         </Typography>
         
-        {/* Debug info for answer_id tracking */}
+        {/* Simplified debug info */}
         <Typography variant="caption" sx={{ display: 'block', mb: 1, color: '#666' }}>
           Next answer ID: {AnswerIdManager.getCurrentNextId()}
         </Typography>
@@ -264,7 +248,7 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
                     onRemove={() => handleRemoveContent(content.id)}
                     canMoveUp={canMoveUp(index)}
                     canMoveDown={canMoveDown(index)}
-                    onContentUpdate={handleContentUpdate} // Pass the update handler down
+                    onContentUpdate={handleContentUpdate}
                   />
                 ))}
               </SortableContext>
@@ -310,8 +294,8 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
   );
 };
 
-// Sortable Content Item Component
-const SortableContentItem = ({ 
+// Memoize the SortableContentItem to prevent unnecessary re-renders
+const SortableContentItem = memo(({ 
   content, 
   index,
   onMoveUp, 
@@ -319,7 +303,7 @@ const SortableContentItem = ({
   onRemove,
   canMoveUp,
   canMoveDown,
-  onContentUpdate // Receive the content update callback
+  onContentUpdate
 }) => {
   const {
     attributes,
@@ -330,7 +314,7 @@ const SortableContentItem = ({
     isDragging,
   } = useSortable({ id: content.id });
 
-  // Check if order_id needs updating and update if needed
+  // Check if order_id needs updating, but with a dependency array to reduce updates
   useEffect(() => {
     if (content.order_id !== index) {
       // Update the content with the correct order_id
@@ -339,12 +323,10 @@ const SortableContentItem = ({
         order_id: index
       });
     }
-  }, [index, content.order_id]);
+  }, [index, content.order_id, onContentUpdate, content.id]);
 
   // Define the handleContentUpdate function to pass updates to parent
-  const handleContentUpdate = (updatedData) => {
-    console.log("Content updated in SortableContentItem:", updatedData);
-    
+  const handleContentUpdate = useCallback((updatedData) => {
     // Check for answer_id conflicts in the component itself
     if (updatedData.type === 'fill-in-the-blank' && updatedData.blanks) {
       const seenIds = new Set();
@@ -365,10 +347,6 @@ const SortableContentItem = ({
         seenIds.add(blank.answer_id);
         return blank;
       });
-      
-      if (modified) {
-        console.log("Fixed internal answer_id conflicts in fill-in-the-blank");
-      }
     }
     
     // Ensure we preserve the order_id when updating content
@@ -380,10 +358,10 @@ const SortableContentItem = ({
     if (onContentUpdate) {
       onContentUpdate(updatedContent);
     }
-  };
+  }, [index, onContentUpdate]);
 
-  // Helper to extract media from options
-  const getOptionMediaFromOptions = (options) => {
+  // Helper to extract media from options - memoized to prevent recalculation
+  const getOptionMediaFromOptions = useCallback((options) => {
     if (!options || !Array.isArray(options)) return {};
     
     const mediaMap = {};
@@ -400,7 +378,7 @@ const SortableContentItem = ({
     });
     
     return mediaMap;
-  };
+  }, []);
 
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -431,11 +409,10 @@ const SortableContentItem = ({
         },
       }}
     >
-      {/* Display order_id and answer_id for debugging */}
+      {/* Minimal debug info */}
       <Box sx={{ position: "absolute", top: "5px", left: "30px", fontSize: "10px", color: "#999" }}>
-        Order: {content.order_id}
         {content.type === 'single-choice' && 
-          ` | Answer ID: ${content.answer_id}`}
+          `Answer ID: ${content.answer_id}`}
       </Box>
       
       {/* Drag handle */}
@@ -474,7 +451,7 @@ const SortableContentItem = ({
         }}
       >
         <Tooltip title={canMoveUp ? "Move Up" : "Already at top"}>
-          <span> {/* Wrap in span so tooltip works even when button is disabled */}
+          <span>
             <IconButton 
               size="small" 
               disabled={!canMoveUp} 
@@ -492,7 +469,7 @@ const SortableContentItem = ({
         </Tooltip>
         
         <Tooltip title={canMoveDown ? "Move Down" : "Already at bottom"}>
-          <span> {/* Wrap in span so tooltip works even when button is disabled */}
+          <span>
             <IconButton 
               size="small" 
               disabled={!canMoveDown} 
@@ -539,7 +516,7 @@ const SortableContentItem = ({
           order_id={content.order_id} 
           answer_id={content.answer_id}
           onUpdate={handleContentUpdate}
-          useAnswerIdManager={true} // Add flag to use the global manager
+          useAnswerIdManager={true}
         />
       ) : content.type === "fill-in-the-blank" ? (
         <FillInTheBlankQuestion
@@ -550,13 +527,13 @@ const SortableContentItem = ({
           order_id={content.order_id} 
           startingAnswerId={content.answer_id || AnswerIdManager.getCurrentNextId()}
           onUpdate={handleContentUpdate}
-          useAnswerIdManager={true} // Add flag to use the global manager
+          useAnswerIdManager={true}
         />
       ) : (
         <Typography>Unknown content type: {content.type}</Typography>
       )}
     </Box>
   );
-};
+});
 
 export default QuestionMaterialCard;
