@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, RadioGroup, FormControl, IconButton,
-  Divider, Tooltip, Button
+  Divider, Tooltip
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { MediaSelector, MediaPreview, MediaPicker } from "../media/MediaComponents";
+import QuestionMedia from "./QuestionMedia";
+import useQuestionMedia from "../../hooks/useQuestionMedia";
 
 const SingleChoiceQuestion = ({ 
   questionId, 
@@ -19,25 +20,34 @@ const SingleChoiceQuestion = ({
   onUpdate = () => {}
 }) => {
   const [question, setQuestion] = useState(defaultQuestion);
-  const [questionMedia, setQuestionMedia] = useState(defaultQuestionMedia);
   const [options, setOptions] = useState(
     Array.isArray(defaultOptions) 
       ? defaultOptions.map(opt => typeof opt === 'string' ? opt : opt.option_value || '') 
       : ["Option 1", "Option 2"]
   );
-  const [optionMedia, setOptionMedia] = useState(defaultOptionMedia || {});
   const [correctAnswer, setCorrectAnswer] = useState(defaultCorrectAnswer);
+  const [currentAnswerId] = useState(answer_id || 0);
   
-  // Media picker state
-  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
-  const [mediaTarget, setMediaTarget] = useState({ type: null, index: null });
+  // Use the media hook
+  const { 
+    questionMedia, 
+    optionMedia, 
+    handleMediaChange,
+    reindexOptionMedia
+  } = useQuestionMedia(defaultQuestionMedia, defaultOptionMedia);
+
+  // Log current state for debugging
+  useEffect(() => {
+    console.log("Current question media:", questionMedia);
+    console.log("Current option media:", optionMedia);
+  }, [questionMedia, optionMedia]);
 
   // Update parent component when data changes
   useEffect(() => {
-    // Convert options to the complex format
+    // Convert options to the complex format with answer_id
     const formattedOptions = options.map((option, idx) => ({
-      id: idx + 1,
-      answer_id: idx,
+      id: idx,
+      answer_id: currentAnswerId,
       option_value: option,
       option_image: optionMedia[idx]?.type === 'image' ? optionMedia[idx] : null,
       option_audio: optionMedia[idx]?.type === 'audio' ? optionMedia[idx] : null,
@@ -46,8 +56,9 @@ const SingleChoiceQuestion = ({
 
     onUpdate({
       id: questionId,
+      type: 'single-choice',
       order_id,
-      answer_id,
+      answer_id: currentAnswerId,
       question,
       options: formattedOptions,
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
@@ -55,7 +66,7 @@ const SingleChoiceQuestion = ({
       question_video: questionMedia?.type === 'video' ? questionMedia : null,
       correctAnswer
     });
-  }, [question, options, optionMedia, questionMedia, correctAnswer, questionId, order_id, answer_id, onUpdate]);
+  }, [question, options, optionMedia, questionMedia, correctAnswer, questionId, order_id, currentAnswerId, onUpdate]);
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -85,57 +96,12 @@ const SingleChoiceQuestion = ({
       setCorrectAnswer(null);
     }
     
-    // Remove media for this option
-    const newOptionMedia = { ...optionMedia };
-    delete newOptionMedia[index];
-    
     // Reindex the media objects for options after the deleted one
-    const updatedOptionMedia = {};
-    Object.keys(newOptionMedia).forEach(key => {
-      const keyIndex = parseInt(key);
-      if (keyIndex > index) {
-        updatedOptionMedia[keyIndex - 1] = newOptionMedia[keyIndex];
-      } else {
-        updatedOptionMedia[keyIndex] = newOptionMedia[keyIndex];
-      }
-    });
-    
-    setOptionMedia(updatedOptionMedia);
+    reindexOptionMedia(index);
   };
 
   const handleCorrectAnswerChange = (optionValue) => {
     setCorrectAnswer(optionValue);
-  };
-
-  // Open media picker
-  const handleOpenMediaPicker = (type, index = null) => {
-    setMediaTarget({ type, index });
-    setMediaDialogOpen(true);
-  };
-
-  // Handle media selection
-  const handleSelectMedia = (media) => {
-    if (mediaTarget.type === 'question') {
-      setQuestionMedia(media);
-    } else if (mediaTarget.type === 'option' && mediaTarget.index !== null) {
-      setOptionMedia(prev => ({
-        ...prev,
-        [mediaTarget.index]: media
-      }));
-    }
-  };
-
-  // Remove media
-  const handleRemoveMedia = (type, index = null) => {
-    if (type === 'question') {
-      setQuestionMedia(null);
-    } else if (type === 'option' && index !== null) {
-      setOptionMedia(prev => {
-        const newOptionMedia = { ...prev };
-        delete newOptionMedia[index];
-        return newOptionMedia;
-      });
-    }
   };
 
   // Helper to find index of correct answer for display purposes
@@ -146,7 +112,7 @@ const SingleChoiceQuestion = ({
       {/* Display IDs for debugging */}
       <Box sx={{ mb: 1, display: "flex", gap: 2, fontSize: "12px", color: "#666" }}>
         <Typography variant="caption">Order ID: {order_id}</Typography>
-        <Typography variant="caption">Answer ID: {answer_id}</Typography>
+        <Typography variant="caption">Answer ID: {currentAnswerId}</Typography>
         <Typography variant="caption">Component ID: {questionId}</Typography>
       </Box>
     
@@ -159,17 +125,12 @@ const SingleChoiceQuestion = ({
         sx={{ mb: 1 }}
       />
       
-      {/* Question Media */}
-      <MediaSelector 
+      {/* Question Media - using the reusable component */}
+      <QuestionMedia
+        media={questionMedia}
+        onMediaChange={handleMediaChange}
         label="Add Media to Question"
-        currentMedia={questionMedia}
-        onSelectMedia={(media) => setQuestionMedia(media)}
-        onRemoveMedia={() => setQuestionMedia(null)}
-      />
-      
-      <MediaPreview 
-        media={questionMedia} 
-        onRemove={() => handleRemoveMedia('question')} 
+        type="question"
       />
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -213,7 +174,7 @@ const SingleChoiceQuestion = ({
                       }
                     } : {})
                   }}
-                  name={`question-${questionId}-option-${answer_id}-${index}`}
+                  name={`question-${questionId}-option-${index}`}
                   // Add a small indicator in the label for the correct answer
                   label={correctAnswer === option ? "Correct Answer" : ""}
                 />
@@ -230,23 +191,14 @@ const SingleChoiceQuestion = ({
                 )}
               </Box>
               
-              {/* Option media controls */}
+              {/* Option media controls - using the reusable component */}
               <Box sx={{ ml: 4 }}>
-                <MediaSelector
+                <QuestionMedia
+                  media={optionMedia[index]}
+                  onMediaChange={handleMediaChange}
                   label="Add Media to Option"
-                  currentMedia={optionMedia[index]}
-                  onSelectMedia={(media) => {
-                    setOptionMedia(prev => ({
-                      ...prev,
-                      [index]: media
-                    }));
-                  }}
-                  onRemoveMedia={() => handleRemoveMedia('option', index)}
-                />
-                
-                <MediaPreview 
-                  media={optionMedia[index]} 
-                  onRemove={() => handleRemoveMedia('option', index)} 
+                  type="option"
+                  index={index}
                 />
               </Box>
             </Box>
@@ -283,13 +235,6 @@ const SingleChoiceQuestion = ({
           + Add Option
         </Typography>
       </Box>
-
-      {/* Media Picker Dialog */}
-      <MediaPicker
-        open={mediaDialogOpen}
-        onClose={() => setMediaDialogOpen(false)}
-        onSelectMedia={handleSelectMedia}
-      />
     </Box>
   );
 };

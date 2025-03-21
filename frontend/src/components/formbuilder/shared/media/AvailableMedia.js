@@ -1,7 +1,6 @@
 // src/components/formbuilder/shared/AvailableMedia.js
 import React, { useState } from 'react';
-import { Box, Typography, Button } from "@mui/material";
-import { useDraggable } from '@dnd-kit/core';
+import { Box, Typography, Button, Paper } from "@mui/material";
 import ImageIcon from '@mui/icons-material/Image';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { MediaPicker } from './MediaComponents';
@@ -9,24 +8,15 @@ import { MediaPicker } from './MediaComponents';
 const AddMediaButton = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: "media",
-    data: {
-      type: 'media-component'
-    }
-  });
-
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+  const handleOpenMediaDialog = () => {
+    setDialogOpen(true);
+  };
 
   return (
     <>
-      <Box
-        ref={setNodeRef}
-        style={style}
-        {...listeners}
-        {...attributes}
+      <Paper
+        elevation={1}
+        onClick={handleOpenMediaDialog}
         sx={{
           p: 2,
           mb: 2,
@@ -37,25 +27,31 @@ const AddMediaButton = () => {
           alignItems: 'center',
           justifyContent: 'center',
           flexDirection: 'column',
-          cursor: isDragging ? 'grabbing' : 'grab',
-          opacity: isDragging ? 0.6 : 1,
-          boxShadow: isDragging ? 3 : 1,
-          transition: 'box-shadow 0.2s, opacity 0.2s',
-          width: '100%'
+          cursor: 'pointer',
+          transition: 'box-shadow 0.2s, transform 0.2s',
+          width: '100%',
+          '&:hover': {
+            boxShadow: 3,
+            transform: 'translateY(-2px)',
+            backgroundColor: '#d0e8fd',
+          },
+          '&:active': {
+            transform: 'translateY(0px)',
+          }
         }}
       >
         <ImageIcon sx={{ fontSize: '2rem', mb: 1 }} />
         <Typography variant="subtitle2">Add Media</Typography>
         <Typography variant="caption" color="text.secondary">
-          Drag to add images, audio, or video
+          Click to upload images, audio, or video
         </Typography>
-      </Box>
+      </Paper>
 
       <Button
         variant="outlined"
         color="primary"
         startIcon={<CloudUploadIcon />}
-        onClick={() => setDialogOpen(true)}
+        onClick={handleOpenMediaDialog}
         fullWidth
         sx={{ mb: 2 }}
       >

@@ -1,5 +1,6 @@
 // src/components/formbuilder/hooks/useFormBuilder.js
 import { useState, useEffect } from "react";
+import AnswerIdManager from '../utils/answerIdManager';
 
 export default function useFormBuilder() {
   const [pages, setPages] = useState([
@@ -8,10 +9,17 @@ export default function useFormBuilder() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   
+  // Initialize the AnswerIdManager when the hook is first used
+  useEffect(() => {
+    // Initialize with empty pages
+    AnswerIdManager.initialize(pages);
+    console.log(`AnswerIdManager initialized with nextAvailableId: ${AnswerIdManager.getCurrentNextId()}`);
+  }, []);
 
   // Debug logging
   useEffect(() => {
     console.log("Current page state:", pages[currentPage]);
+    console.log("Current next answer ID:", AnswerIdManager.getCurrentNextId());
   }, [pages, currentPage]);
 
   // Add a new page - immutably
@@ -115,7 +123,7 @@ export default function useFormBuilder() {
     });
   };
 
-  // When adding content to a card
+  // Add a new content to a card - using AnswerIdManager for ID consistency
   const addCardContent = (cardType, contentType) => {
     setPages(prevPages => {
       return prevPages.map((page, index) => {
@@ -124,22 +132,70 @@ export default function useFormBuilder() {
         // Get current contents for this card type
         const currentContents = page.cardContents[cardType] || [];
         
-        // Generate a stable component ID (this never changes)
+        // Generate a stable component ID
         const contentId = `${contentType}-${Date.now()}`;
         
-        // Create a new content item with order_id and answer_id
-        const newContent = {
+        // Create a new content item with the right properties based on type
+        let newContent = {
           id: contentId,
           type: contentType,
-          order_id: currentContents.length, // Zero-based order_id
-          answer_id: currentContents.length, // Zero-based answer_id
-          // Add other default properties based on content type
-          ...(contentType === 'single-choice' && {
-            question: 'Enter your question here...',
-            options: ['Option 1', 'Option 2', 'Option 3'],
-            correctAnswer: null
-          })
+          order_id: currentContents.length,
         };
+        
+        // For single-choice questions, add answer_id at question level
+        if (contentType === 'single-choice') {
+          // Get a new answer_id for the question
+          const newAnswerId = AnswerIdManager.getNextId();
+          
+          newContent = {
+            ...newContent,
+            answer_id: newAnswerId,
+            question: 'Enter your question here...',
+            options: [
+              { 
+                id: 0, 
+                answer_id: newAnswerId, // Same answer_id for all options
+                option_value: 'Option 1',
+                option_image: null,
+                option_audio: null,
+                option_video: null 
+              },
+              { 
+                id: 1, 
+                answer_id: newAnswerId, // Same answer_id for all options
+                option_value: 'Option 2',
+                option_image: null,
+                option_audio: null,
+                option_video: null 
+              },
+              { 
+                id: 2, 
+                answer_id: newAnswerId, // Same answer_id for all options
+                option_value: 'Option 3',
+                option_image: null,
+                option_audio: null,
+                option_video: null 
+              }
+            ],
+            correctAnswer: null
+          };
+        } 
+        // For fill-in-the-blank, don't add answer_id at question level
+        else if (contentType === 'fill-in-the-blank') {
+          // Get a new answer_id for the first blank
+          const firstBlankAnswerId = AnswerIdManager.getNextId();
+          
+          newContent = {
+            ...newContent,
+            question: 'Enter your question with [blank_1] placeholders...',
+            blanks: [{
+              id: 0,
+              answer_id: firstBlankAnswerId,
+              placeholder: '[blank_1]',
+              correctAnswers: ['']
+            }]
+          };
+        }
         
         // Create a new contents array with the new item
         const newContents = [...currentContents, newContent];
@@ -156,97 +212,148 @@ export default function useFormBuilder() {
     });
   };
 
-  // Update card content when edited
-// Update card content when edited
-// In useFormBuilder.js
-const updateCardContent = (cardType, updatedContent) => {
-  console.log("Updating card content:", cardType, {
-    id: updatedContent.id,
-    media: {
-      question_image: updatedContent.question_image,
-      question_audio: updatedContent.question_audio,
-      question_video: updatedContent.question_video
-    }
-  });
-  
-  setPages(prevPages => {
-    return prevPages.map((page, index) => {
-      if (index !== currentPage) return page;
-      
-      // Skip if this card type doesn't exist or has no contents
-      if (!page.cardContents[cardType]) return page;
-      
-      // Update the specific content
-      const updatedContents = page.cardContents[cardType].map(content => {
-        if (content.id === updatedContent.id) {
-          // Create a deep copy of the content object to avoid reference issues
-          const newContent = JSON.parse(JSON.stringify(content));
-          
-          // For each key in updatedContent, properly update the content
-          Object.keys(updatedContent).forEach(key => {
-            // Special handling for media objects - deep clone them
-            if (key === 'question_image' || key === 'question_audio' || key === 'question_video') {
-              if (updatedContent[key]) {
-                // Make a complete deep copy of the media object
-                newContent[key] = JSON.parse(JSON.stringify(updatedContent[key]));
-              } else {
-                newContent[key] = null;
-              }
-            } 
-            // Special handling for options with media
-            else if (key === 'options' && Array.isArray(updatedContent.options)) {
-              newContent.options = updatedContent.options.map(option => {
-                // If option is a string, convert to object format
-                if (typeof option === 'string') {
-                  return {
-                    option_value: option,
-                    option_image: null,
-                    option_audio: null,
-                    option_video: null
-                  };
-                }
-                
-                // Make sure we preserve media inside options
-                const optionCopy = { ...option };
-                
-                // Deep copy media objects inside options
-                if (option.option_image) {
-                  optionCopy.option_image = JSON.parse(JSON.stringify(option.option_image));
-                }
-                if (option.option_audio) {
-                  optionCopy.option_audio = JSON.parse(JSON.stringify(option.option_audio));
-                }
-                if (option.option_video) {
-                  optionCopy.option_video = JSON.parse(JSON.stringify(option.option_video));
-                }
-                
-                return optionCopy;
-              });
-            }
-            // For other properties, just copy them over
-            else {
-              newContent[key] = updatedContent[key];
-            }
-          });
-          
-          return newContent;
-        }
-        return content;
-      });
-      
-      // Return a new page object with updated cardContents
-      return {
-        ...page,
-        cardContents: {
-          ...page.cardContents,
-          [cardType]: updatedContents
-        }
-      };
+  // Update card content when edited - using AnswerIdManager for consistency
+  const updateCardContent = (cardType, updatedContent) => {
+    console.log("Updating card content:", cardType, {
+      id: updatedContent.id,
+      answer_id: updatedContent.answer_id,
+      media: {
+        question_image: updatedContent.question_image,
+        question_audio: updatedContent.question_audio,
+        question_video: updatedContent.question_video
+      }
     });
-  });
-};
+    
+    // Update AnswerIdManager with any new answer_ids from this content
+    if (updatedContent.answer_id !== undefined) {
+      AnswerIdManager.reserveId(updatedContent.answer_id);
+    }
+    
+    // For fill-in-the-blank, check all blanks
+    if (updatedContent.type === 'fill-in-the-blank' && updatedContent.blanks) {
+      updatedContent.blanks.forEach(blank => {
+        if (blank.answer_id !== undefined) {
+          AnswerIdManager.reserveId(blank.answer_id);
+        }
+      });
+    }
+    
+    setPages(prevPages => {
+      return prevPages.map((page, index) => {
+        if (index !== currentPage) return page;
+        
+        // Skip if this card type doesn't exist or has no contents
+        if (!page.cardContents[cardType]) return page;
+        
+        // Update the specific content
+        const updatedContents = page.cardContents[cardType].map(content => {
+          if (content.id === updatedContent.id) {
+            // Create a deep copy of the content object to avoid reference issues
+            const newContent = JSON.parse(JSON.stringify(content));
+            
+            // Preserve the original answer_id if not provided in updatedContent
+            const answer_id = updatedContent.answer_id !== undefined 
+              ? updatedContent.answer_id 
+              : content.answer_id;
+            
+            // For each key in updatedContent, properly update the content
+            Object.keys(updatedContent).forEach(key => {
+              // Special handling for media objects - deep clone them
+              if (key === 'question_image' || key === 'question_audio' || key === 'question_video') {
+                if (updatedContent[key]) {
+                  // Make a complete deep copy of the media object
+                  newContent[key] = JSON.parse(JSON.stringify(updatedContent[key]));
+                } else {
+                  newContent[key] = null;
+                }
+              } 
+              // Special handling for options with media in single-choice
+              else if (key === 'options' && Array.isArray(updatedContent.options)) {
+                newContent.options = updatedContent.options.map(option => {
+                  // If option is a string, convert to object format with answer_id
+                  if (typeof option === 'string') {
+                    return {
+                      option_value: option,
+                      answer_id: answer_id, // Add answer_id to each option
+                      option_image: null,
+                      option_audio: null,
+                      option_video: null
+                    };
+                  }
+                  
+                  // Make sure we preserve media inside options
+                  const optionCopy = { ...option };
+                  
+                  // Ensure answer_id is set for each option
+                  optionCopy.answer_id = answer_id;
+                  
+                  // Deep copy media objects inside options
+                  if (option.option_image) {
+                    optionCopy.option_image = JSON.parse(JSON.stringify(option.option_image));
+                  }
+                  if (option.option_audio) {
+                    optionCopy.option_audio = JSON.parse(JSON.stringify(option.option_audio));
+                  }
+                  if (option.option_video) {
+                    optionCopy.option_video = JSON.parse(JSON.stringify(option.option_video));
+                  }
+                  
+                  return optionCopy;
+                });
+              }
+              // Special handling for blanks in fill-in-the-blank
+              else if (key === 'blanks' && Array.isArray(updatedContent.blanks)) {
+                newContent.blanks = updatedContent.blanks.map(blank => {
+                  // Ensure each blank has a valid answer_id
+                  if (blank.answer_id === undefined) {
+                    // If no answer_id, assign a new one
+                    blank.answer_id = AnswerIdManager.getNextId();
+                  } else {
+                    // Reserve this ID to ensure future IDs are higher
+                    AnswerIdManager.reserveId(blank.answer_id);
+                  }
+                  
+                  // Return a deep copy of the blank
+                  return JSON.parse(JSON.stringify(blank));
+                });
+              }
+              // For other properties, just copy them over
+              else {
+                newContent[key] = updatedContent[key];
+              }
+            });
+            
+            // For single-choice, ensure answer_id is always set
+            if (newContent.type === 'single-choice') {
+              newContent.answer_id = answer_id;
+              
+              // Make sure options have the same answer_id
+              if (newContent.options) {
+                newContent.options = newContent.options.map(option => ({
+                  ...option,
+                  answer_id: answer_id
+                }));
+              }
+            }
+            
+            return newContent;
+          }
+          return content;
+        });
+        
+        // Return a new page object with updated cardContents
+        return {
+          ...page,
+          cardContents: {
+            ...page.cardContents,
+            [cardType]: updatedContents
+          }
+        };
+      });
+    });
+  };
 
-  // Update the reorderContent function to update both order_id and answer_id
+  // Update the reorderContent function to update order_id but maintain each item's answer_id
   const reorderContent = (cardType, contentId, direction, targetIndex) => {
     console.log(`Reordering content: ${contentId} in ${cardType} direction: ${direction}`);
     
@@ -283,11 +390,12 @@ const updateCardContent = (cardType, updatedContent) => {
         const [removed] = newContents.splice(contentIndex, 1);
         newContents.splice(newIndex, 0, removed);
         
-        // Update order_id and answer_id for all items based on their new positions
+        // Update only order_id for all items based on their new positions
+        // Maintain each item's original answer_id
         const updatedContents = newContents.map((item, idx) => ({
           ...item,
           order_id: idx, // Update order_id based on new position (zero-based)
-          answer_id: idx  // Update answer_id based on new position (zero-based)
+          // Keep the original answer_id unchanged
         }));
         
         // Return new page object with updated contents
@@ -339,6 +447,24 @@ const updateCardContent = (cardType, updatedContent) => {
     setPages(newPages);
   };
 
+  // Load form data function to initialize from existing data
+  const loadFormData = (formData) => {
+    if (!formData || !formData.pages) {
+      console.error("Invalid form data provided");
+      return;
+    }
+    
+    // Set the pages from the form data
+    setPages(formData.pages);
+    
+    // Initialize the AnswerIdManager with the loaded data
+    const highestId = AnswerIdManager.initialize(formData.pages);
+    console.log("AnswerIdManager initialized with highest ID:", highestId);
+    
+    // Set current page to 0
+    setCurrentPage(0);
+  };
+
   // Get the current page data safely
   const currentPageData = pages[currentPage] || { cards: [], cardContents: {} };
 
@@ -350,6 +476,7 @@ const updateCardContent = (cardType, updatedContent) => {
     isDragging,
     setIsDragging,
     currentPageData,
+    nextAnswerId: AnswerIdManager.getCurrentNextId(), // Expose the current next ID
     addPage,
     deletePage,
     addCard,
@@ -358,6 +485,7 @@ const updateCardContent = (cardType, updatedContent) => {
     removeCardContent,
     updateCardContent,
     reorderContent,
-    reorderCards
+    reorderCards,
+    loadFormData
   };
 }

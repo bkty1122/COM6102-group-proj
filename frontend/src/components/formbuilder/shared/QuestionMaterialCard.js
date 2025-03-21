@@ -1,12 +1,14 @@
 // QuestionMaterialCard.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Typography, IconButton, Tooltip } from "@mui/material";
 import { useDroppable, DndContext, closestCenter, 
          DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import SingleChoiceQuestion from "./content/SingleChoiceQuestion";
+import FillInTheBlankQuestion from "./content/FillInTheBlankQuestion";
 import { ArrowUp, ArrowDown, GripVertical } from "lucide-react"; 
+import AnswerIdManager from '../utils/answerIdManager';
 
 const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, onReorderContent, onUpdateContent }) => {
   // Create a unique ID for this droppable area
@@ -26,6 +28,42 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
     id: droppableId,
   });
 
+  // Initialize AnswerIdManager with current contents on mount and updates
+  useEffect(() => {
+    // Create a structure similar to what AnswerIdManager expects
+    const pageData = {
+      cardContents: {
+        [type]: contents
+      }
+    };
+    
+    // Register all current answer_ids with the manager
+    AnswerIdManager.trackPageContent(pageData);
+    
+    console.log(`AnswerIdManager updated with contents, next ID: ${AnswerIdManager.getCurrentNextId()}`);
+  }, [contents]);
+
+  // Ensure contents have correct order_id values
+  useEffect(() => {
+    // Check if order_id values need to be updated
+    const needsUpdate = contents.some((content, index) => content.order_id !== index);
+    
+    if (needsUpdate) {
+      // Create updated contents with correct order_id values
+      const updatedContents = contents.map((content, index) => ({
+        ...content,
+        order_id: index
+      }));
+      
+      // Send the updated contents back to parent
+      if (onUpdateContent) {
+        updatedContents.forEach(content => {
+          onUpdateContent(type, content);
+        });
+      }
+    }
+  }, [contents]);
+
   // Handler for removing a specific content item
   const handleRemoveContent = (contentId) => {
     if (onRemoveContent) {
@@ -44,6 +82,95 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
   // Handle content updates from child components and pass to parent
   const handleContentUpdate = (updatedContent) => {
     console.log("Content updated in QuestionMaterialCard:", updatedContent);
+    
+    // Before updating, check for answer_id conflicts and fix them
+    if (updatedContent.type === 'fill-in-the-blank' && updatedContent.blanks) {
+      // Check each blank to ensure it has a unique answer_id
+      const existingAnswerIds = new Set();
+      
+      // First collect all answer_ids from other content items
+      contents.forEach(content => {
+        if (content.id !== updatedContent.id) {
+          // For single-choice, register the answer_id
+          if (content.type === 'single-choice' && content.answer_id !== undefined) {
+            existingAnswerIds.add(content.answer_id);
+          }
+          
+          // For fill-in-the-blank, register each blank's answer_id
+          if (content.type === 'fill-in-the-blank' && content.blanks) {
+            content.blanks.forEach(blank => {
+              if (blank.answer_id !== undefined) {
+                existingAnswerIds.add(blank.answer_id);
+              }
+            });
+          }
+        }
+      });
+      
+      // Then fix any answer_id conflicts in the updated content
+      const seenInThisContent = new Set();
+      let modified = false;
+      
+      updatedContent.blanks = updatedContent.blanks.map(blank => {
+        // If this blank has no answer_id or has a duplicate, assign a new one
+        if (blank.answer_id === undefined || 
+            existingAnswerIds.has(blank.answer_id) || 
+            seenInThisContent.has(blank.answer_id)) {
+            
+          // Get a new unique ID
+          const newAnswerId = AnswerIdManager.getNextId();
+          console.log(`Fixing answer_id conflict: ${blank.answer_id} -> ${newAnswerId}`);
+          
+          modified = true;
+          return {
+            ...blank,
+            answer_id: newAnswerId
+          };
+        }
+        
+        // Register this answer_id as seen
+        seenInThisContent.add(blank.answer_id);
+        return blank;
+      });
+      
+      if (modified) {
+        console.log("Fixed answer_id conflicts in fill-in-the-blank question");
+      }
+    }
+    
+    // For single-choice questions, check and fix answer_id conflicts
+    if (updatedContent.type === 'single-choice' && updatedContent.answer_id !== undefined) {
+      let hasConflict = false;
+      
+      // Check if this answer_id conflicts with any existing fill-in-the-blank blanks
+      contents.forEach(content => {
+        if (content.id !== updatedContent.id && content.type === 'fill-in-the-blank' && content.blanks) {
+          content.blanks.forEach(blank => {
+            if (blank.answer_id === updatedContent.answer_id) {
+              hasConflict = true;
+            }
+          });
+        }
+      });
+      
+      // If there's a conflict, assign a new answer_id
+      if (hasConflict) {
+        const newAnswerId = AnswerIdManager.getNextId();
+        console.log(`Fixing single-choice answer_id conflict: ${updatedContent.answer_id} -> ${newAnswerId}`);
+        
+        updatedContent.answer_id = newAnswerId;
+        
+        // Update all options with the new answer_id
+        if (updatedContent.options) {
+          updatedContent.options = updatedContent.options.map(option => ({
+            ...option,
+            answer_id: newAnswerId
+          }));
+        }
+      }
+    }
+    
+    // Now we can safely update the content
     if (onUpdateContent) {
       onUpdateContent(type, updatedContent);
     }
@@ -94,6 +221,11 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
       <Box>
         <Typography variant="h6" sx={{ mb: 2 }}>
           {type === "question" ? "Question Card" : "Material Card"}
+        </Typography>
+        
+        {/* Debug info for answer_id tracking */}
+        <Typography variant="caption" sx={{ display: 'block', mb: 1, color: '#666' }}>
+          Next answer ID: {AnswerIdManager.getCurrentNextId()}
         </Typography>
         
         {/* Droppable area for components */}
@@ -181,8 +313,7 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
 // Sortable Content Item Component
 const SortableContentItem = ({ 
   content, 
-  index, 
-  totalItems,
+  index,
   onMoveUp, 
   onMoveDown, 
   onRemove,
@@ -199,11 +330,55 @@ const SortableContentItem = ({
     isDragging,
   } = useSortable({ id: content.id });
 
+  // Check if order_id needs updating and update if needed
+  useEffect(() => {
+    if (content.order_id !== index) {
+      // Update the content with the correct order_id
+      onContentUpdate({
+        ...content,
+        order_id: index
+      });
+    }
+  }, [index, content.order_id]);
+
   // Define the handleContentUpdate function to pass updates to parent
   const handleContentUpdate = (updatedData) => {
     console.log("Content updated in SortableContentItem:", updatedData);
+    
+    // Check for answer_id conflicts in the component itself
+    if (updatedData.type === 'fill-in-the-blank' && updatedData.blanks) {
+      const seenIds = new Set();
+      let modified = false;
+      
+      // Fix any duplicate answer_ids within this component
+      updatedData.blanks = updatedData.blanks.map(blank => {
+        if (blank.answer_id === undefined || seenIds.has(blank.answer_id)) {
+          // Assign a new answer_id
+          const newAnswerId = AnswerIdManager.getNextId();
+          modified = true;
+          return {
+            ...blank,
+            answer_id: newAnswerId
+          };
+        }
+        
+        seenIds.add(blank.answer_id);
+        return blank;
+      });
+      
+      if (modified) {
+        console.log("Fixed internal answer_id conflicts in fill-in-the-blank");
+      }
+    }
+    
+    // Ensure we preserve the order_id when updating content
+    const updatedContent = {
+      ...updatedData,
+      order_id: index // Always use the current index as order_id
+    };
+    
     if (onContentUpdate) {
-      onContentUpdate(updatedData);
+      onContentUpdate(updatedContent);
     }
   };
 
@@ -256,6 +431,13 @@ const SortableContentItem = ({
         },
       }}
     >
+      {/* Display order_id and answer_id for debugging */}
+      <Box sx={{ position: "absolute", top: "5px", left: "30px", fontSize: "10px", color: "#999" }}>
+        Order: {content.order_id}
+        {content.type === 'single-choice' && 
+          ` | Answer ID: ${content.answer_id}`}
+      </Box>
+      
       {/* Drag handle */}
       <Box 
         {...attributes} 
@@ -350,13 +532,25 @@ const SortableContentItem = ({
           questionId={content.id}
           defaultQuestion={content.question || "Enter your question here..."}
           defaultOptions={content.options || ["Option 1", "Option 2"]}
-          defaultQuestionMedia={questionMedia} // Pass question media
-          defaultOptionMedia={optionMedia} // Pass option media
+          defaultQuestionMedia={questionMedia}
+          defaultOptionMedia={optionMedia}
           defaultCorrectAnswer={content.correctAnswer}
           onRemove={onRemove}
           order_id={content.order_id} 
           answer_id={content.answer_id}
-          onUpdate={handleContentUpdate} // Pass the update handler
+          onUpdate={handleContentUpdate}
+          useAnswerIdManager={true} // Add flag to use the global manager
+        />
+      ) : content.type === "fill-in-the-blank" ? (
+        <FillInTheBlankQuestion
+          questionId={content.id}
+          defaultQuestion={content.question || "Enter your question here..."}
+          defaultBlanks={content.blanks || content.options || []}
+          onRemove={onRemove}
+          order_id={content.order_id} 
+          startingAnswerId={content.answer_id || AnswerIdManager.getCurrentNextId()}
+          onUpdate={handleContentUpdate}
+          useAnswerIdManager={true} // Add flag to use the global manager
         />
       ) : (
         <Typography>Unknown content type: {content.type}</Typography>

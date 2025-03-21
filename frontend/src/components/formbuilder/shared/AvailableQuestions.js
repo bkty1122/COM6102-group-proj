@@ -15,6 +15,7 @@ import { useDraggable } from "@dnd-kit/core";
 const AvailableQuestions = () => {
   const questionTypes = [
     { id: "single-choice", label: "Single Choice Question" },
+    { id: "fill-in-the-blank", label: "Fill in the Blank Question" },
   ];
 
   return (
