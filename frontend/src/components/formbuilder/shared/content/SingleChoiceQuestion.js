@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, RadioGroup, FormControl, IconButton,
-  Divider, Tooltip, Paper
+  Divider, Tooltip, Paper, Chip, InputAdornment
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../hooks/useQuestionMedia";
+import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const SingleChoiceQuestion = ({ 
   questionId, 
@@ -15,10 +17,12 @@ const SingleChoiceQuestion = ({
   defaultCorrectAnswer = null,
   defaultQuestionMedia = null,
   defaultOptionMedia = {},
+  defaultDifficulty = 'medium',
+  defaultMarks = 1,
   order_id,
   answer_id,
   onUpdate = () => {},
-  defaultInstruction = "Select the correct answer from the options below." // Default instruction text
+  defaultInstruction = "Select the correct answer from the options below."
 }) => {
   const [question, setQuestion] = useState(defaultQuestion);
   const [options, setOptions] = useState(
@@ -28,7 +32,9 @@ const SingleChoiceQuestion = ({
   );
   const [correctAnswer, setCorrectAnswer] = useState(defaultCorrectAnswer);
   const [currentAnswerId] = useState(answer_id || 0);
-  const [instruction, setInstruction] = useState(defaultInstruction); // New state for instruction
+  const [instruction, setInstruction] = useState(defaultInstruction);
+  const [difficulty, setDifficulty] = useState(defaultDifficulty);
+  const [marks, setMarks] = useState(defaultMarks);
   
   // Use the media hook
   const { 
@@ -57,13 +63,15 @@ const SingleChoiceQuestion = ({
       answer_id: currentAnswerId,
       question,
       options: formattedOptions,
-      instruction, // Include instruction in the update
+      instruction,
+      difficulty,
+      marks,
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null,
       correctAnswer
     });
-  }, [question, options, optionMedia, questionMedia, correctAnswer, instruction, questionId, order_id, currentAnswerId, onUpdate]);
+  }, [question, options, optionMedia, questionMedia, correctAnswer, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -101,6 +109,12 @@ const SingleChoiceQuestion = ({
     setCorrectAnswer(optionValue);
   };
 
+  // Handle changing the mark value
+  const handleMarksChange = (value) => {
+    const newValue = Math.max(1, parseInt(value) || 1);
+    setMarks(Math.min(10, newValue)); // Cap at a maximum of 10 points
+  };
+
   // Helper to find index of correct answer for display purposes
   const correctAnswerIndex = options.findIndex(option => option === correctAnswer);
 
@@ -111,6 +125,7 @@ const SingleChoiceQuestion = ({
         <Typography variant="caption">Order ID: {order_id}</Typography>
         <Typography variant="caption">Answer ID: {currentAnswerId}</Typography>
         <Typography variant="caption">Component ID: {questionId}</Typography>
+        <Typography variant="caption">Points: {marks}</Typography>
       </Box>
       
       {/* Instructions for the component author */}
@@ -125,11 +140,41 @@ const SingleChoiceQuestion = ({
       >
         <Typography variant="body2">
           Create a single-choice question by entering your question text, adding options, and
-          selecting the correct answer using the checkmark.
+          selecting the correct answer using the checkmark. Set the difficulty and point value.
         </Typography>
       </Paper>
       
-      {/* Student Instructions Field - NEW ADDITION */}
+      {/* Difficulty Selector Component */}
+      <Box sx={{ mb: 3 }}>
+        <DifficultySelector 
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+          totalMarks={marks}
+        />
+      </Box>
+      
+      {/* Points/Marks input */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          size="small"
+          label="Points for this question"
+          type="number"
+          value={marks}
+          onChange={(e) => handleMarksChange(e.target.value)}
+          inputProps={{ min: 1, max: 10 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <GradeIcon fontSize="small" sx={{ color: getDifficultyColor(difficulty) }} />
+              </InputAdornment>
+            ),
+          }}
+          helperText="Points awarded for selecting the correct answer (1-10)"
+        />
+      </Box>
+      
+      {/* Student Instructions Field */}
       <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
@@ -179,9 +224,31 @@ const SingleChoiceQuestion = ({
           lineHeight: 1.6
         }}
       >
-        <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
-          Question Preview
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+            Question Preview
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+              size="small"
+              sx={{ 
+                bgcolor: getDifficultyColor(difficulty) + '20',
+                color: getDifficultyColor(difficulty),
+                borderColor: getDifficultyColor(difficulty),
+                fontWeight: 'medium'
+              }}
+              variant="outlined"
+            />
+            <Chip
+              icon={<GradeIcon fontSize="small" />}
+              label={`${marks} ${marks === 1 ? 'point' : 'points'}`}
+              size="small"
+              sx={{ fontWeight: 'medium' }}
+            />
+          </Box>
+        </Box>
         
         {/* Show instruction in preview */}
         {instruction && (
@@ -324,11 +391,25 @@ const SingleChoiceQuestion = ({
 
       {/* Show correct answer summary */}
       <Box sx={{ mt: 2, mb: 2, p: 1, backgroundColor: "rgba(76, 175, 80, 0.08)", borderRadius: 1 }}>
-        <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
-          Correct Answer: {correctAnswer !== null 
-            ? (correctAnswerIndex !== -1 ? `Option ${correctAnswerIndex + 1}` : "Value no longer in options") 
-            : "Not set"}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
+            Correct Answer: {correctAnswer !== null 
+              ? (correctAnswerIndex !== -1 ? `Option ${correctAnswerIndex + 1}` : "Value no longer in options") 
+              : "Not set"}
+          </Typography>
+          
+          <Chip
+            icon={<GradeIcon fontSize="small" />}
+            label={`${marks} ${marks === 1 ? 'point' : 'points'}`}
+            size="small"
+            sx={{ 
+              backgroundColor: getDifficultyColor(difficulty) + '20',
+              color: getDifficultyColor(difficulty),
+              fontWeight: 'medium'
+            }}
+          />
+        </Box>
+        
         {correctAnswer !== null && (
           <Typography variant="caption">
             "{correctAnswer}"
@@ -349,6 +430,24 @@ const SingleChoiceQuestion = ({
           onClick={handleAddOption}
         >
           + Add Option
+        </Typography>
+      </Box>
+      
+      <Box sx={{ mt: 2, bgcolor: '#f5f5f5', p: 2, borderRadius: 1 }}>
+        <Typography variant="subtitle2" gutterBottom>
+          About This Question Type:
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Students select one answer from the available options
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • You can set a difficulty level and assign point value to the question
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Each option can include text, images, audio, or video
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Only one answer can be marked as correct
         </Typography>
       </Box>
     </Box>

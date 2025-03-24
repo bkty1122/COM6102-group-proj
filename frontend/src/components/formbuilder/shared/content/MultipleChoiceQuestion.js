@@ -2,12 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, FormControl, IconButton,
-  Divider, Tooltip, Paper, Checkbox
+  Divider, Tooltip, Paper, Checkbox, Chip, InputAdornment
 } from "@mui/material";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../hooks/useQuestionMedia";
+import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const MultipleChoiceQuestion = ({ 
   questionId, 
@@ -16,6 +18,8 @@ const MultipleChoiceQuestion = ({
   defaultCorrectAnswers = [],
   defaultQuestionMedia = null,
   defaultOptionMedia = {},
+  defaultDifficulty = 'medium',
+  defaultMarks = 1,
   order_id,
   answer_id,
   onUpdate = () => {},
@@ -32,6 +36,8 @@ const MultipleChoiceQuestion = ({
   );
   const [currentAnswerId] = useState(answer_id || 0);
   const [instruction, setInstruction] = useState(defaultInstruction); // State for instruction
+  const [difficulty, setDifficulty] = useState(defaultDifficulty);
+  const [marks, setMarks] = useState(defaultMarks);
   
   // Use the media hook
   const { 
@@ -61,12 +67,14 @@ const MultipleChoiceQuestion = ({
       question,
       options: formattedOptions,
       instruction,
+      difficulty,
+      marks,
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null,
       correctAnswers
     });
-  }, [question, options, optionMedia, questionMedia, correctAnswers, instruction, questionId, order_id, currentAnswerId, onUpdate]);
+  }, [question, options, optionMedia, questionMedia, correctAnswers, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -113,6 +121,12 @@ const MultipleChoiceQuestion = ({
     }
   };
 
+  // Handle changing the mark value
+  const handleMarksChange = (value) => {
+    const newValue = Math.max(1, parseInt(value) || 1);
+    setMarks(Math.min(10, newValue)); // Cap at a maximum of 10 points
+  };
+
   // Helper to find indices of correct answers for display purposes
   const getCorrectAnswerIndices = () => {
     return options
@@ -127,6 +141,7 @@ const MultipleChoiceQuestion = ({
         <Typography variant="caption">Order ID: {order_id}</Typography>
         <Typography variant="caption">Answer ID: {currentAnswerId}</Typography>
         <Typography variant="caption">Component ID: {questionId}</Typography>
+        <Typography variant="caption">Points: {marks}</Typography>
       </Box>
       
       {/* Instructions for the component author */}
@@ -141,9 +156,39 @@ const MultipleChoiceQuestion = ({
       >
         <Typography variant="body2">
           Create a multiple-choice question by entering your question text, adding options, and
-          selecting all correct answers using the checkboxes.
+          selecting all correct answers using the checkboxes. Set the difficulty and point value.
         </Typography>
       </Paper>
+      
+      {/* Difficulty Selector Component */}
+      <Box sx={{ mb: 3 }}>
+        <DifficultySelector 
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+          totalMarks={marks}
+        />
+      </Box>
+      
+      {/* Points/Marks input */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          size="small"
+          label="Points for this question"
+          type="number"
+          value={marks}
+          onChange={(e) => handleMarksChange(e.target.value)}
+          inputProps={{ min: 1, max: 10 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <GradeIcon fontSize="small" sx={{ color: getDifficultyColor(difficulty) }} />
+              </InputAdornment>
+            ),
+          }}
+          helperText="Points awarded for selecting all correct answers (1-10)"
+        />
+      </Box>
       
       {/* Student Instructions Field */}
       <Box sx={{ mb: 3 }}>
@@ -195,9 +240,31 @@ const MultipleChoiceQuestion = ({
           lineHeight: 1.6
         }}
       >
-        <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
-          Question Preview
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+            Question Preview
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+              size="small"
+              sx={{ 
+                bgcolor: getDifficultyColor(difficulty) + '20',
+                color: getDifficultyColor(difficulty),
+                borderColor: getDifficultyColor(difficulty),
+                fontWeight: 'medium'
+              }}
+              variant="outlined"
+            />
+            <Chip
+              icon={<GradeIcon fontSize="small" />}
+              label={`${marks} ${marks === 1 ? 'point' : 'points'}`}
+              size="small"
+              sx={{ fontWeight: 'medium' }}
+            />
+          </Box>
+        </Box>
         
         {/* Show instruction in preview */}
         {instruction && (
@@ -347,11 +414,25 @@ const MultipleChoiceQuestion = ({
 
       {/* Show correct answers summary */}
       <Box sx={{ mt: 2, mb: 2, p: 1, backgroundColor: "rgba(76, 175, 80, 0.08)", borderRadius: 1 }}>
-        <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
-          Correct Answers: {correctAnswers.length > 0 
-            ? getCorrectAnswerIndices().map(index => `Option ${index + 1}`).join(", ") 
-            : "None selected"}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
+            Correct Answers: {correctAnswers.length > 0 
+              ? getCorrectAnswerIndices().map(index => `Option ${index + 1}`).join(", ") 
+              : "None selected"}
+          </Typography>
+          
+          <Chip
+            icon={<GradeIcon fontSize="small" />}
+            label={`${marks} ${marks === 1 ? 'point' : 'points'}`}
+            size="small"
+            sx={{ 
+              backgroundColor: getDifficultyColor(difficulty) + '20',
+              color: getDifficultyColor(difficulty),
+              fontWeight: 'medium'
+            }}
+          />
+        </Box>
+        
         {correctAnswers.length > 0 && (
           <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
             Selected values: {correctAnswers.map(answer => `"${answer}"`).join(", ")}
@@ -372,6 +453,24 @@ const MultipleChoiceQuestion = ({
           onClick={handleAddOption}
         >
           + Add Option
+        </Typography>
+      </Box>
+      
+      <Box sx={{ mt: 2, bgcolor: '#f5f5f5', p: 2, borderRadius: 1 }}>
+        <Typography variant="subtitle2" gutterBottom>
+          About This Question Type:
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Students select multiple answers from the available options
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • You can set a difficulty level and assign point value to the question
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Each option can include text, images, audio, or video
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          • Students must select all correct answers to receive full points
         </Typography>
       </Box>
     </Box>

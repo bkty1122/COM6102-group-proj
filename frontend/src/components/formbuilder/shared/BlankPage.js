@@ -169,7 +169,7 @@ const DroppableArea = ({ children }) => {
         border: "2px dashed #ccc",
         borderRadius: "8px",
         minHeight: "200px",
-        backgroundColor: isOver ? "rgba(25, 118, 210, 0.08)" : "transparent", // Light highlight when hovering
+        backgroundColor: isOver ? "rgba(30, 60, 90, 0.08)" : "transparent", // Light highlight when hovering
         transition: "background-color 0.2s ease",
       }}
     >
@@ -195,7 +195,7 @@ const CardDroppableArea = ({ index, children }) => {
         position: "relative",
         backgroundColor: isOver ? "rgba(25, 118, 210, 0.1)" : "transparent",
         transition: "background-color 0.2s ease",
-        border: isOver ? "2px dashed #1976d2" : "2px dashed transparent",
+        border: isOver ? "2px dashedrgb(35, 91, 148)" : "2px dashed transparent",
         borderRadius: "8px",
       }}
     >

@@ -3,17 +3,20 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   Box, Typography, TextField, IconButton,
   Divider, Button, Chip, Paper, List, 
-  InputLabel
+  InputLabel, InputAdornment
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../hooks/useQuestionMedia";
+import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const FillInTheBlankQuestion = ({ 
   questionId, 
   defaultQuestion = "Enter your question with [blank] placeholders...",
   defaultBlanks = [], 
+  defaultDifficulty = 'medium',
   order_id,
   startingAnswerId = 0,
   onUpdate = () => {},
@@ -22,7 +25,8 @@ const FillInTheBlankQuestion = ({
   const [question, setQuestion] = useState(defaultQuestion);
   const [blanks, setBlanks] = useState([]);
   const [nextAnswerId, setNextAnswerId] = useState(startingAnswerId);
-  const [instruction, setInstruction] = useState(defaultInstruction); // New state for instruction
+  const [instruction, setInstruction] = useState(defaultInstruction);
+  const [difficulty, setDifficulty] = useState(defaultDifficulty);
   const questionRef = useRef(null);
   const [prevQuestion, setPrevQuestion] = useState(defaultQuestion);
   const blankRefs = useRef([]);
@@ -47,7 +51,8 @@ const FillInTheBlankQuestion = ({
           id: index,
           answer_id: answerId,
           placeholder: blank.placeholder || blank.option_value || `[blank_${index + 1}]`,
-          correctAnswers: blank.correctAnswers || blank.correctAnswer || [""]
+          correctAnswers: blank.correctAnswers || blank.correctAnswer || [""],
+          marks: blank.marks !== undefined ? blank.marks : 1 // Default 1 mark per blank
         };
       });
       
@@ -66,7 +71,8 @@ const FillInTheBlankQuestion = ({
           id: index,
           answer_id: startingAnswerId + index,  // Each blank gets incremented answer_id
           placeholder: match[0],
-          correctAnswers: [""]
+          correctAnswers: [""],
+          marks: 1 // Default 1 mark per blank
         }));
         
         setBlanks(extractedBlanks);
@@ -126,12 +132,13 @@ const FillInTheBlankQuestion = ({
       order_id,
       question,
       blanks,
-      instruction, // Include instruction in the update
+      instruction,
+      difficulty,
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null
     });
-  }, [question, blanks, instruction, questionMedia, questionId, order_id, onUpdate]);
+  }, [question, blanks, instruction, difficulty, questionMedia, questionId, order_id, onUpdate]);
 
   // Insert a new blank at cursor position
   const handleInsertBlank = () => {
@@ -150,7 +157,8 @@ const FillInTheBlankQuestion = ({
       id: newBlankId,
       answer_id: newAnswerId,  // Use the next available answer_id
       placeholder,
-      correctAnswers: [""]
+      correctAnswers: [""],
+      marks: 1 // Default 1 mark for new blank
     };
     
     // Increment nextAnswerId for next use
@@ -209,6 +217,13 @@ const FillInTheBlankQuestion = ({
     setBlanks(updatedBlanks);
   };
 
+  // Handle changing the mark value for a blank
+  const handleMarkChange = (blankIndex, value) => {
+    const updatedBlanks = [...blanks];
+    updatedBlanks[blankIndex].marks = value;
+    setBlanks(updatedBlanks);
+  };
+
   // Remove a blank
   const handleRemoveBlank = (blankIndex) => {
     // Get the blank to remove
@@ -240,6 +255,9 @@ const FillInTheBlankQuestion = ({
       });
     }
   };
+
+  // Calculate total marks for the question
+  const totalMarks = blanks.reduce((sum, blank) => sum + (blank.marks || 0), 0);
 
   // Create a formatted version of the question with highlighted blanks
   const renderFormattedQuestion = () => {
@@ -292,6 +310,7 @@ const FillInTheBlankQuestion = ({
               transition: 'all 0.2s',
               fontWeight: 'medium',
               border: `1px solid ${color.border}`,
+              position: 'relative',
               '&:hover': {
                 opacity: 0.8,
                 transform: 'scale(1.05)'
@@ -300,6 +319,29 @@ const FillInTheBlankQuestion = ({
             onClick={() => scrollToBlank(blankIndex)}
           >
             {placeholder}
+            {blank.marks > 1 && (
+              <Box
+                component="span"
+                sx={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -8,
+                  backgroundColor: 'white',
+                  color: getDifficultyColor(difficulty),
+                  borderRadius: '50%',
+                  width: 16,
+                  height: 16,
+                  fontSize: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: `1px solid ${getDifficultyColor(difficulty)}`,
+                  fontWeight: 'bold'
+                }}
+              >
+                {blank.marks}
+              </Box>
+            )}
           </Box>
         );
       } else {
@@ -343,6 +385,7 @@ const FillInTheBlankQuestion = ({
         <Typography variant="caption">Order ID: {order_id}</Typography>
         <Typography variant="caption">Next Answer ID: {nextAnswerId}</Typography>
         <Typography variant="caption">Component ID: {questionId}</Typography>
+        <Typography variant="caption">Total Marks: {totalMarks}</Typography>
       </Box>
 
       {/* Instructions for the component author */}
@@ -357,11 +400,20 @@ const FillInTheBlankQuestion = ({
       >
         <Typography variant="body2">
           Enter your question text and use the "Insert Blank" button to add blank spaces. 
-          For each blank, you can define one or more correct answers.
+          For each blank, you can define one or more correct answers and assign point values.
         </Typography>
       </Paper>
       
-      {/* Student Instructions Field - NEW ADDITION */}
+      {/* Difficulty Selector Component */}
+      <Box sx={{ mb: 3 }}>
+        <DifficultySelector 
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+          totalMarks={totalMarks}
+        />
+      </Box>
+      
+      {/* Student Instructions Field */}
       <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
@@ -420,9 +472,31 @@ const FillInTheBlankQuestion = ({
             lineHeight: 1.8
           }}
         >
-          <InputLabel shrink sx={{ mb: 1, color: 'text.secondary' }}>
-            Question Preview (click on blanks to navigate)
-          </InputLabel>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <InputLabel shrink sx={{ color: 'text.secondary', mb: 0 }}>
+              Question Preview (click on blanks to navigate)
+            </InputLabel>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip
+                label={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                size="small"
+                sx={{ 
+                  bgcolor: getDifficultyColor(difficulty) + '20',
+                  color: getDifficultyColor(difficulty),
+                  borderColor: getDifficultyColor(difficulty),
+                  fontWeight: 'medium'
+                }}
+                variant="outlined"
+              />
+              <Chip
+                icon={<GradeIcon fontSize="small" />}
+                label={`${totalMarks} ${totalMarks === 1 ? 'point' : 'points'}`}
+                size="small"
+                sx={{ fontWeight: 'medium' }}
+              />
+            </Box>
+          </Box>
           
           {/* Show instruction in preview as well */}
           {instruction && (
@@ -491,6 +565,12 @@ const FillInTheBlankQuestion = ({
                       size="small" 
                       sx={{ ml: 1, backgroundColor: color.bg, color: color.text }} 
                     />
+                    <Chip 
+                      icon={<GradeIcon fontSize="small" />}
+                      label={`${blank.marks} ${blank.marks === 1 ? 'point' : 'points'}`}
+                      size="small" 
+                      sx={{ ml: 1 }} 
+                    />
                   </Box>
                   
                   <IconButton 
@@ -523,6 +603,27 @@ const FillInTheBlankQuestion = ({
                       }
                     }}
                     helperText="This is how the blank appears in the question text"
+                  />
+                </Box>
+                
+                {/* Points/Marks input */}
+                <Box sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Points"
+                    type="number"
+                    value={blank.marks}
+                    onChange={(e) => handleMarkChange(blankIndex, Math.max(1, parseInt(e.target.value) || 1))}
+                    inputProps={{ min: 1, max: 10 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <GradeIcon fontSize="small" sx={{ color: getDifficultyColor(difficulty) }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText="Points awarded for correct answer (1-10)"
                   />
                 </Box>
                 
@@ -582,8 +683,6 @@ const FillInTheBlankQuestion = ({
           </Typography>
         </Box>
       )}
-
-      <Divider sx={{ my: 2 }} />
     </Box>
   );
 };

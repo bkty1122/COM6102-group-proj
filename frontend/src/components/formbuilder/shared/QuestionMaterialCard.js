@@ -185,7 +185,7 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
             borderRadius: "8px",
             minHeight: "100px",
             mb: 2,
-            backgroundColor: isOver ? "#e8f4ff" : "#ffffff60",
+            backgroundColor: isOver ? "#97dba6" : "#ffffff60",
             transition: "background-color 0.2s ease"
           }}
         >
@@ -540,7 +540,7 @@ const SortableContentItem = memo(({
           order_id={normalizedContent.order_id} 
           startingAnswerId={normalizedContent.answer_id || AnswerIdManager.getCurrentNextId()}
           onUpdate={handleContentUpdate}
-          
+
           useAnswerIdManager={true}
         />
       ) : (
