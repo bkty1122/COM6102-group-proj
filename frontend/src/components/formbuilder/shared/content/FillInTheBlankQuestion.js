@@ -1,8 +1,8 @@
 // src/components/formbuilder/shared/FillInTheBlankQuestion.js
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  Box, Typography, TextField, FormControl, IconButton,
-  Divider, Tooltip, Button, Chip, Paper, List, ListItem,
+  Box, Typography, TextField, IconButton,
+  Divider, Button, Chip, Paper, List, 
   InputLabel
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
