@@ -16,6 +16,10 @@ const AvailableQuestions = () => {
   const questionTypes = [
     { id: "single-choice", label: "Single Choice Question" },
     { id: "fill-in-the-blank", label: "Fill in the Blank Question" },
+    { id: "multiple-choice", label: "Multiple Choice Question" },
+    { id: "matching", label: "Matching Question" },
+    { id: "long-text", label: "Long Text Question" },
+    { id: "audio", label: "Audio Question" },
   ];
 
   return (

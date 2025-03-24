@@ -7,6 +7,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import SingleChoiceQuestion from "./content/SingleChoiceQuestion";
 import FillInTheBlankQuestion from "./content/FillInTheBlankQuestion";
+import MultipleChoiceQuestion from "./content/MultipleChoiceQuestion";
 import { ArrowUp, ArrowDown, GripVertical } from "lucide-react"; 
 import AnswerIdManager from '../utils/answerIdManager';
 
@@ -87,7 +88,12 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
           if (content.type === 'single-choice' && content.answer_id !== undefined) {
             existingAnswerIds.add(content.answer_id);
           }
-          
+
+          // For multiple-choice, similar logic as single-choice
+          if (content.type === 'multiple-choice' && content.answer_id !== undefined) {
+            existingAnswerIds.add(content.answer_id);
+          }
+
           // For fill-in-the-blank, register each blank's answer_id
           if (content.type === 'fill-in-the-blank' && content.blanks) {
             content.blanks.forEach(blank => {
@@ -124,8 +130,9 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
       });
     }
     
-    // For single-choice questions, check and fix answer_id conflicts
-    if (updatedContent.type === 'single-choice' && updatedContent.answer_id !== undefined) {
+    // For single-choice and multiple-choice questions, check and fix answer_id conflicts
+    if ((updatedContent.type === 'single-choice' || updatedContent.type === 'multiple-choice') && 
+        updatedContent.answer_id !== undefined) {
       let hasConflict = false;
       
       // Check if this answer_id conflicts with any existing fill-in-the-blank blanks
@@ -409,7 +416,7 @@ const SortableContentItem = memo(({
     >
       {/* Minimal debug info */}
       <Box sx={{ position: "absolute", top: "5px", left: "30px", fontSize: "10px", color: "#999" }}>
-        {content.type === 'single-choice' && 
+        {(content.type === 'single-choice' || content.type === 'multiple-choice') && 
           `Answer ID: ${content.answer_id}`}
       </Box>
       
@@ -510,7 +517,22 @@ const SortableContentItem = memo(({
           defaultQuestionMedia={questionMedia}
           defaultOptionMedia={optionMedia}
           defaultCorrectAnswer={content.correctAnswer}
-          defaultInstruction={content.instruction || "Select the correct answer from the options below."} // ADDED
+          defaultInstruction={content.instruction || "Select the correct answer from the options below."}
+          onRemove={onRemove}
+          order_id={content.order_id} 
+          answer_id={content.answer_id}
+          onUpdate={handleContentUpdate}
+          useAnswerIdManager={true}
+        />
+      ) : content.type === "multiple-choice" ? (
+        <MultipleChoiceQuestion
+          questionId={content.id}
+          defaultQuestion={content.question || "Enter your question here..."}
+          defaultOptions={content.options || ["Option 1", "Option 2"]}
+          defaultQuestionMedia={questionMedia}
+          defaultOptionMedia={optionMedia}
+          defaultCorrectAnswers={content.correctAnswers || []}
+          defaultInstruction={content.instruction || "Select all correct answers from the options below."}
           onRemove={onRemove}
           order_id={content.order_id} 
           answer_id={content.answer_id}
@@ -522,7 +544,7 @@ const SortableContentItem = memo(({
           questionId={content.id}
           defaultQuestion={content.question || "Enter your question here..."}
           defaultBlanks={content.blanks || content.options || []}
-          defaultInstruction={content.instruction || "Fill in the blanks with the correct words."} // ADDED
+          defaultInstruction={content.instruction || "Fill in the blanks with the correct words."}
           onRemove={onRemove}
           order_id={content.order_id} 
           startingAnswerId={content.answer_id || AnswerIdManager.getCurrentNextId()}
