@@ -1,4 +1,3 @@
-// QuestionMaterialCard.js
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { Box, Button, Typography, IconButton, Tooltip } from "@mui/material";
 import { useDroppable, DndContext, closestCenter, 
@@ -9,6 +8,8 @@ import SingleChoiceQuestion from "./content/SingleChoiceQuestion";
 import FillInTheBlankQuestion from "./content/FillInTheBlankQuestion";
 import MultipleChoiceQuestion from "./content/MultipleChoiceQuestion";
 import MatchingQuestion from "./content/MatchingQuestion";
+import LongTextQuestion from "./content/LongTextQuestion";
+import AudioQuestion from "./content/AudioQuestion";
 import { ArrowUp, ArrowDown, GripVertical } from "lucide-react"; 
 import AnswerIdManager from '../utils/answerIdManager';
 
@@ -345,6 +346,10 @@ const SortableContentItem = memo(({
     } else if (content.type === 'matching' || content.type === 'fill-in-the-blank') {
       const blankCount = content.blanks?.length || content.pairs?.length || 0;
       return `Blanks: ${blankCount}`;
+    } else if (content.type === 'long-text') {
+      return `Rows: ${content.rows || 4}`;
+    } else if (content.type === 'audio') {
+      return `Max: ${content.maxSeconds || 60}s`;
     }
     return `Type: ${content.type}`;
   }, [content]);
@@ -497,6 +502,8 @@ const SortableContentItem = memo(({
           defaultOptionMedia={optionMedia}
           defaultCorrectAnswer={normalizedContent.correctAnswer}
           defaultInstruction={normalizedContent.instruction || "Select the correct answer from the options below."}
+          defaultDifficulty={normalizedContent.difficulty || 'medium'}
+          defaultMarks={normalizedContent.marks || 1}
           onRemove={onRemove}
           order_id={normalizedContent.order_id} 
           answer_id={normalizedContent.answer_id}
@@ -512,6 +519,8 @@ const SortableContentItem = memo(({
           defaultOptionMedia={optionMedia}
           defaultCorrectAnswers={normalizedContent.correctAnswers || []}
           defaultInstruction={normalizedContent.instruction || "Select all correct answers from the options below."}
+          defaultDifficulty={normalizedContent.difficulty || 'medium'}
+          defaultMarks={normalizedContent.marks || 1}
           onRemove={onRemove}
           order_id={normalizedContent.order_id} 
           answer_id={normalizedContent.answer_id}
@@ -524,6 +533,7 @@ const SortableContentItem = memo(({
           defaultQuestion={normalizedContent.question || "Enter your question here..."}
           defaultBlanks={normalizedContent.blanks || normalizedContent.options || []}
           defaultInstruction={normalizedContent.instruction || "Fill in the blanks with the correct words."}
+          defaultDifficulty={normalizedContent.difficulty || 'medium'}
           onRemove={onRemove}
           order_id={normalizedContent.order_id} 
           startingAnswerId={normalizedContent.answer_id || AnswerIdManager.getCurrentNextId()}
@@ -536,11 +546,44 @@ const SortableContentItem = memo(({
           defaultQuestion={normalizedContent.question || normalizedContent.questionText || "Enter your question here..."}
           defaultBlanks={normalizedContent.blanks || []}
           defaultInstruction={normalizedContent.instruction || "Fill in the blanks with the correct answers below."}
+          defaultDifficulty={normalizedContent.difficulty || 'medium'}
           onRemove={onRemove}
           order_id={normalizedContent.order_id} 
           startingAnswerId={normalizedContent.answer_id || AnswerIdManager.getCurrentNextId()}
           onUpdate={handleContentUpdate}
-
+          useAnswerIdManager={true}
+        />
+      ) : normalizedContent.type === "long-text" ? (
+        <LongTextQuestion
+          questionId={normalizedContent.id}
+          defaultQuestion={normalizedContent.question || "Enter your question here..."}
+          defaultPlaceholder={normalizedContent.placeholder || "Write your answer here..."}
+          defaultRows={normalizedContent.rows || 4}
+          defaultSuggestedAnswer={normalizedContent.suggestedAnswer || ""}
+          defaultDifficulty={normalizedContent.difficulty || 'medium'}
+          defaultMarks={normalizedContent.marks || 1}
+          defaultInstruction={normalizedContent.instruction || "Provide a detailed response to the question below."}
+          onRemove={onRemove}
+          order_id={normalizedContent.order_id} 
+          answer_id={normalizedContent.answer_id || AnswerIdManager.getCurrentNextId()}
+          onUpdate={handleContentUpdate}
+          useAnswerIdManager={true}
+        />
+      ) : normalizedContent.type === "audio" ? (
+        <AudioQuestion
+          questionId={normalizedContent.id}
+          defaultQuestion={normalizedContent.question || "Record your answer to the question below."}
+          defaultMaxSeconds={normalizedContent.maxSeconds || 60}
+          defaultDifficulty={normalizedContent.difficulty || 'medium'}
+          defaultMarks={normalizedContent.marks || 1}
+          defaultInstruction={normalizedContent.instruction || "Click the record button and speak your answer clearly."}
+          defaultAllowRerecording={normalizedContent.allowRerecording !== false}
+          defaultAllowPause={normalizedContent.allowPause !== false}
+          defaultShowTimer={normalizedContent.showTimer !== false}
+          onRemove={onRemove}
+          order_id={normalizedContent.order_id} 
+          answer_id={normalizedContent.answer_id || AnswerIdManager.getCurrentNextId()}
+          onUpdate={handleContentUpdate}
           useAnswerIdManager={true}
         />
       ) : (
