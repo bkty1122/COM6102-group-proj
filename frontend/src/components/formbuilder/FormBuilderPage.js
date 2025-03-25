@@ -5,6 +5,7 @@ import { DndContext } from "@dnd-kit/core";
 import NavigationBar from "./shared/NavigationBar";
 import BlankPage from "./shared/BlankPage";
 import AvailableQuestions from "./shared/AvailableQuestions";
+import AvailableMaterials from "./shared/AvailableMaterials";
 import FormExport from "./FormExport";
 import useFormBuilder from "./hooks/useFormBuilder";
 import { createDragHandlers } from "./utils/dragAndDropUtils";
@@ -50,6 +51,20 @@ const FormBuilderPage = () => {
           zIndex: 1
         }}
       >
+        {/* Available Materials panel on the left */}
+        <Box 
+          sx={{ 
+            width: "250px", 
+            backgroundColor: "#f5f5f5", 
+            p: 2, 
+            borderRight: "1px solid #ddd",
+            overflowY: "auto",
+            zIndex: 2 // Slightly higher than main content
+          }}
+        >
+          <AvailableMaterials />
+        </Box>
+
         {/* Main content area */}
         <Box 
           sx={{ 
