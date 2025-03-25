@@ -10,7 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import QuestionMedia from "./QuestionMedia";
-import useQuestionMedia from "../../hooks/useQuestionMedia";
+import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const LongTextQuestion = ({

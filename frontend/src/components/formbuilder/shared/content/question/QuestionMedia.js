@@ -1,6 +1,6 @@
 // src/components/formbuilder/shared/QuestionMedia.js
 import React, { useState } from "react";
-import { MediaSelector, MediaPreview, MediaPicker } from "../media/MediaComponents";
+import { MediaSelector, MediaPreview, MediaPicker } from "../../media/MediaComponents";
 
 const QuestionMedia = ({ 
   media, 

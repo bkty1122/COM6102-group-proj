@@ -14,7 +14,7 @@ import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
-import useQuestionMedia from "../../hooks/useQuestionMedia";
+import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const MatchingQuestion = ({ 

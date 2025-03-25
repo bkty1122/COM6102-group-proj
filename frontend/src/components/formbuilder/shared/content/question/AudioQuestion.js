@@ -14,7 +14,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import QuestionMedia from "./QuestionMedia";
-import useQuestionMedia from "../../hooks/useQuestionMedia";
+import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const AudioQuestion = ({

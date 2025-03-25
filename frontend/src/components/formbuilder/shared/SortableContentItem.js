@@ -1,10 +1,11 @@
 // SortableContentItem.js
-import React, { useEffect, useCallback, memo } from "react";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import React, { useState, useEffect, useCallback, memo } from "react";
+import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import { useSortable } from "@dnd-kit/sortable";
 import { ArrowUp, ArrowDown, GripVertical } from "lucide-react"; 
 import AnswerIdManager from '../utils/answerIdManager';
 import { QuestionComponentRenderer } from './QuestionTypeMap';
+import { MaterialComponentRenderer } from './MaterialTypeMap';
 
 // Memoize the SortableContentItem to prevent unnecessary re-renders
 const SortableContentItem = memo(({ 
@@ -16,7 +17,9 @@ const SortableContentItem = memo(({
   canMoveUp,
   canMoveDown,
   onContentUpdate,
-  questionTypeMap
+  cardType,
+  questionTypeMap,
+  materialTypeMap
 }) => {
   const {
     attributes,
@@ -39,41 +42,44 @@ const SortableContentItem = memo(({
 
   // Handle content updates
   const handleContentUpdate = useCallback((updatedData) => {
-    // Handle duplicate answer_ids in blanks
-    if (updatedData.blanks) {
-      const seenIds = new Set();
-      
-      updatedData.blanks = updatedData.blanks.map(blank => {
-        if (blank.answer_id === undefined || seenIds.has(blank.answer_id)) {
-          return {
-            ...blank,
-            answer_id: AnswerIdManager.getNextId()
-          };
-        }
+    // Handle question-specific logic for question cards
+    if (cardType === "question") {
+      // Handle duplicate answer_ids in blanks
+      if (updatedData.blanks) {
+        const seenIds = new Set();
         
-        seenIds.add(blank.answer_id);
-        return blank;
-      });
-    }
-    
-    // Convert matching pairs to blanks format
-    if (updatedData.type === 'matching' && updatedData.pairs && !updatedData.blanks) {
-      updatedData.blanks = updatedData.pairs.map((pair, idx) => ({
-        id: idx,
-        answer_id: pair.answer_id || AnswerIdManager.getNextId(),
-        label: pair.leftItem || `Blank ${idx + 1}`,
-        correctAnswers: [pair.rightItem || ""],
-        placeholder: pair.placeholder || "Enter your answer"
-      }));
+        updatedData.blanks = updatedData.blanks.map(blank => {
+          if (blank.answer_id === undefined || seenIds.has(blank.answer_id)) {
+            return {
+              ...blank,
+              answer_id: AnswerIdManager.getNextId()
+            };
+          }
+          
+          seenIds.add(blank.answer_id);
+          return blank;
+        });
+      }
       
-      delete updatedData.pairs;
+      // Convert matching pairs to blanks format
+      if (updatedData.type === 'matching' && updatedData.pairs && !updatedData.blanks) {
+        updatedData.blanks = updatedData.pairs.map((pair, idx) => ({
+          id: idx,
+          answer_id: pair.answer_id || AnswerIdManager.getNextId(),
+          label: pair.leftItem || `Blank ${idx + 1}`,
+          correctAnswers: [pair.rightItem || ""],
+          placeholder: pair.placeholder || "Enter your answer"
+        }));
+        
+        delete updatedData.pairs;
+      }
     }
     
     onContentUpdate({
       ...updatedData,
       order_id: index // Always use the current index as order_id
     });
-  }, [index, onContentUpdate]);
+  }, [index, onContentUpdate, cardType]);
 
   // Helper to extract media from options
   const getOptionMediaFromOptions = useCallback((options) => {
@@ -93,6 +99,10 @@ const SortableContentItem = memo(({
 
   // Get debug info text
   const getDebugInfo = useCallback(() => {
+    if (cardType === "material") {
+      return `Material Type: ${content.type}`;
+    }
+    
     if (content.type === 'single-choice' || content.type === 'multiple-choice') {
       return `Answer ID: ${content.answer_id}`;
     } else if (content.type === 'matching' || content.type === 'fill-in-the-blank') {
@@ -104,7 +114,7 @@ const SortableContentItem = memo(({
       return `Max: ${content.maxSeconds || 60}s`;
     }
     return `Type: ${content.type}`;
-  }, [content]);
+  }, [content, cardType]);
 
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -113,15 +123,15 @@ const SortableContentItem = memo(({
     zIndex: isDragging ? 999 : 1,
   };
 
-  // Determine which media to use
+  // Determine which media to use (only for question types)
   const questionMedia = content.question_image || content.question_audio || content.question_video || null;
-  const optionMedia = getOptionMediaFromOptions(content.options);
+  const optionMedia = cardType === "question" ? getOptionMediaFromOptions(content.options) : {};
   
   // Create normalized content with proper structure
   const normalizedContent = {...content};
   
-  // Convert legacy matching format
-  if (normalizedContent.type === 'matching' && normalizedContent.pairs && !normalizedContent.blanks) {
+  // Convert legacy matching format (only for questions)
+  if (cardType === "question" && normalizedContent.type === 'matching' && normalizedContent.pairs && !normalizedContent.blanks) {
     normalizedContent.blanks = normalizedContent.pairs.map((pair, idx) => ({
       id: idx,
       answer_id: pair.answer_id || AnswerIdManager.getNextId(),
@@ -228,7 +238,7 @@ const SortableContentItem = memo(({
         </Tooltip>
         
         {/* Remove button */}
-        <Tooltip title="Remove Question">
+        <Tooltip title="Remove Item">
           <IconButton 
             size="small" 
             onClick={onRemove}
@@ -244,15 +254,24 @@ const SortableContentItem = memo(({
         </Tooltip>
       </Box>
       
-      {/* Render the question component based on type using the renderer */}
-      <QuestionComponentRenderer
-        normalizedContent={normalizedContent}
-        questionMedia={questionMedia}
-        optionMedia={optionMedia}
-        onRemove={onRemove}
-        handleContentUpdate={handleContentUpdate}
-        questionTypeMap={questionTypeMap}
-      />
+      {/* Render the appropriate component based on card type */}
+      {cardType === "question" ? (
+        <QuestionComponentRenderer
+          normalizedContent={normalizedContent}
+          questionMedia={questionMedia}
+          optionMedia={optionMedia}
+          onRemove={onRemove}
+          handleContentUpdate={handleContentUpdate}
+          questionTypeMap={questionTypeMap}
+        />
+      ) : (
+        <MaterialComponentRenderer
+          normalizedContent={normalizedContent}
+          onRemove={onRemove}
+          handleContentUpdate={handleContentUpdate}
+          materialTypeMap={materialTypeMap}
+        />
+      )}
     </Box>
   );
 });

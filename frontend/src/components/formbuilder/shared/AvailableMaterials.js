@@ -1,10 +1,5 @@
 // AvailableMaterials.js
 // This component will render a list of available materials that can be dragged and dropped into the form builder. It will use the useDraggable hook from the @dnd-kit/core library to make the buttons draggable.
-// Potential material types
-// id: "text", label: "Text"
-// id: "image", label: "Image"
-// id: "video", label: "Video"
-// id: "audio", label: "Audio"
 // id: "llm-session", label: "LLM Interactive Session" (for setting the param for the llm discussion session, e.g. response text, requirement, etc.)
 
 import React from "react";
@@ -23,7 +18,7 @@ const AvailableMaterials = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Typography variant="h6" sx={{ mb: 2, px: 1 }}>
-        Available Question Types
+        Available Material Types
       </Typography>
       
       <Box
@@ -80,7 +75,7 @@ const DraggableButton = ({ id, label }) => {
       {...attributes}
       variant="contained"
       sx={{
-        backgroundColor: "#1976d2",
+        backgroundColor: "#eb8a8a",
         color: "#fff",
         textTransform: "none",
         padding: "10px 16px",
@@ -90,7 +85,7 @@ const DraggableButton = ({ id, label }) => {
         cursor: isDragging ? "grabbing" : "grab",
         transition: "background-color 0.2s",
         "&:hover": {
-          backgroundColor: "#1565c0",
+          backgroundColor: "#d47d7d",
         },
         width: "100%", // Make buttons full width
         justifyContent: "flex-start", // Align text to left

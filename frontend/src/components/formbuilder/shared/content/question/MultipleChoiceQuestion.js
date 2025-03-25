@@ -1,20 +1,21 @@
-// src/components/formbuilder/shared/SingleChoiceQuestion.js
+// src/components/formbuilder/shared/MultipleChoiceQuestion.js
 import React, { useState, useEffect } from "react";
 import { 
-  Box, Typography, TextField, RadioGroup, FormControl, IconButton,
-  Divider, Tooltip, Paper, Chip, InputAdornment
+  Box, Typography, TextField, FormControl, IconButton,
+  Divider, Tooltip, Paper, Checkbox, Chip, InputAdornment
 } from "@mui/material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
-import useQuestionMedia from "../../hooks/useQuestionMedia";
+import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
-const SingleChoiceQuestion = ({ 
+const MultipleChoiceQuestion = ({ 
   questionId, 
   defaultQuestion = "Enter your question here...", 
   defaultOptions = ["Option 1", "Option 2"],
-  defaultCorrectAnswer = null,
+  defaultCorrectAnswers = [],
   defaultQuestionMedia = null,
   defaultOptionMedia = {},
   defaultDifficulty = 'medium',
@@ -22,7 +23,7 @@ const SingleChoiceQuestion = ({
   order_id,
   answer_id,
   onUpdate = () => {},
-  defaultInstruction = "Select the correct answer from the options below."
+  defaultInstruction = "Select all correct answers from the options below." // Default instruction text
 }) => {
   const [question, setQuestion] = useState(defaultQuestion);
   const [options, setOptions] = useState(
@@ -30,9 +31,11 @@ const SingleChoiceQuestion = ({
       ? defaultOptions.map(opt => typeof opt === 'string' ? opt : opt.option_value || '') 
       : ["Option 1", "Option 2"]
   );
-  const [correctAnswer, setCorrectAnswer] = useState(defaultCorrectAnswer);
+  const [correctAnswers, setCorrectAnswers] = useState(
+    Array.isArray(defaultCorrectAnswers) ? defaultCorrectAnswers : []
+  );
   const [currentAnswerId] = useState(answer_id || 0);
-  const [instruction, setInstruction] = useState(defaultInstruction);
+  const [instruction, setInstruction] = useState(defaultInstruction); // State for instruction
   const [difficulty, setDifficulty] = useState(defaultDifficulty);
   const [marks, setMarks] = useState(defaultMarks);
   
@@ -58,7 +61,7 @@ const SingleChoiceQuestion = ({
 
     onUpdate({
       id: questionId,
-      type: 'single-choice',
+      type: 'multiple-choice',
       order_id,
       answer_id: currentAnswerId,
       question,
@@ -69,9 +72,9 @@ const SingleChoiceQuestion = ({
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null,
-      correctAnswer
+      correctAnswers
     });
-  }, [question, options, optionMedia, questionMedia, correctAnswer, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
+  }, [question, options, optionMedia, questionMedia, correctAnswers, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -79,9 +82,12 @@ const SingleChoiceQuestion = ({
     newOptions[index] = value;
     setOptions(newOptions);
     
-    // If this option was the correct answer, update correctAnswer with the new value
-    if (correctAnswer === oldValue) {
-      setCorrectAnswer(value);
+    // If this option was in the correct answers, update it there too
+    if (correctAnswers.includes(oldValue)) {
+      const newCorrectAnswers = correctAnswers.map(answer => 
+        answer === oldValue ? value : answer
+      );
+      setCorrectAnswers(newCorrectAnswers);
     }
   };
 
@@ -96,17 +102,23 @@ const SingleChoiceQuestion = ({
     const newOptions = options.filter((_, i) => i !== index);
     setOptions(newOptions);
     
-    // If the removed option was the correct answer, clear the correct answer
-    if (correctAnswer === optionToRemove) {
-      setCorrectAnswer(null);
+    // Remove from correctAnswers if it was selected
+    if (correctAnswers.includes(optionToRemove)) {
+      setCorrectAnswers(correctAnswers.filter(answer => answer !== optionToRemove));
     }
     
     // Reindex the media objects for options after the deleted one
     reindexOptionMedia(index);
   };
 
-  const handleCorrectAnswerChange = (optionValue) => {
-    setCorrectAnswer(optionValue);
+  const handleCorrectAnswerToggle = (optionValue) => {
+    if (correctAnswers.includes(optionValue)) {
+      // Remove from correct answers
+      setCorrectAnswers(correctAnswers.filter(answer => answer !== optionValue));
+    } else {
+      // Add to correct answers
+      setCorrectAnswers([...correctAnswers, optionValue]);
+    }
   };
 
   // Handle changing the mark value
@@ -115,8 +127,12 @@ const SingleChoiceQuestion = ({
     setMarks(Math.min(10, newValue)); // Cap at a maximum of 10 points
   };
 
-  // Helper to find index of correct answer for display purposes
-  const correctAnswerIndex = options.findIndex(option => option === correctAnswer);
+  // Helper to find indices of correct answers for display purposes
+  const getCorrectAnswerIndices = () => {
+    return options
+      .map((option, index) => correctAnswers.includes(option) ? index : -1)
+      .filter(index => index !== -1);
+  };
 
   return (
     <Box>
@@ -139,8 +155,8 @@ const SingleChoiceQuestion = ({
         }}
       >
         <Typography variant="body2">
-          Create a single-choice question by entering your question text, adding options, and
-          selecting the correct answer using the checkmark. Set the difficulty and point value.
+          Create a multiple-choice question by entering your question text, adding options, and
+          selecting all correct answers using the checkboxes. Set the difficulty and point value.
         </Typography>
       </Paper>
       
@@ -170,7 +186,7 @@ const SingleChoiceQuestion = ({
               </InputAdornment>
             ),
           }}
-          helperText="Points awarded for selecting the correct answer (1-10)"
+          helperText="Points awarded for selecting all correct answers (1-10)"
         />
       </Box>
       
@@ -183,7 +199,7 @@ const SingleChoiceQuestion = ({
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
           helperText="These instructions will be shown to students when completing the question"
-          placeholder="Example: Select the correct answer from the options below."
+          placeholder="Example: Select all correct answers from the options below."
           size="small"
           sx={{ 
             mb: 1,
@@ -279,7 +295,7 @@ const SingleChoiceQuestion = ({
               pl: 2,
               display: 'flex',
               alignItems: 'center',
-              ...(correctAnswer === option ? {
+              ...(correctAnswers.includes(option) ? {
                 color: 'success.main',
                 fontWeight: 500
               } : {})
@@ -289,24 +305,28 @@ const SingleChoiceQuestion = ({
               sx={{ 
                 width: 16, 
                 height: 16, 
-                borderRadius: '50%', 
+                borderRadius: '2px', 
                 border: '1px solid', 
-                borderColor: correctAnswer === option ? 'success.main' : 'text.secondary', 
+                borderColor: correctAnswers.includes(option) ? 'success.main' : 'text.secondary', 
                 mr: 1,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                backgroundColor: correctAnswers.includes(option) ? 'success.main' : 'transparent'
               }}
             >
-              {correctAnswer === option && (
+              {correctAnswers.includes(option) && (
                 <Box 
+                  component="span"
                   sx={{ 
-                    width: 8, 
-                    height: 8, 
-                    borderRadius: '50%', 
-                    bgcolor: 'success.main' 
-                  }} 
-                />
+                    color: 'white',
+                    fontSize: '12px',
+                    lineHeight: 1,
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ✓
+                </Box>
               )}
             </Box>
             <Typography variant="body2">
@@ -317,26 +337,29 @@ const SingleChoiceQuestion = ({
       </Paper>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        Options (select the correct answer with the checkmark)
+        Options (select all correct answers with the checkboxes)
       </Typography>
 
       <FormControl component="fieldset" sx={{ width: "100%" }}>
-        <RadioGroup>
+        <Box>
           {options.map((option, index) => (
             <Box key={index} sx={{ mb: 3, border: '1px solid #eee', borderRadius: 1, p: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                 {/* Correct answer selector */}
-                <Tooltip title="Set as correct answer">
-                  <IconButton
-                    size="small"
-                    onClick={() => handleCorrectAnswerChange(option)}
+                <Tooltip title={correctAnswers.includes(option) ? "Remove as correct answer" : "Add as correct answer"}>
+                  <Checkbox
+                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                    checkedIcon={<CheckBoxIcon fontSize="small" />}
+                    checked={correctAnswers.includes(option)}
+                    onChange={() => handleCorrectAnswerToggle(option)}
                     sx={{ 
-                      color: correctAnswer === option ? "success.main" : "action.disabled",
+                      color: "action.disabled",
+                      '&.Mui-checked': {
+                        color: "success.main",
+                      },
                       mr: 1
                     }}
-                  >
-                    <CheckCircleOutlineIcon fontSize="small" />
-                  </IconButton>
+                  />
                 </Tooltip>
                 
                 {/* Option text field */}
@@ -349,7 +372,7 @@ const SingleChoiceQuestion = ({
                     flexGrow: 1, 
                     mr: 1,
                     // Highlight the correct answer with a subtle border
-                    ...(correctAnswer === option ? {
+                    ...(correctAnswers.includes(option) ? {
                       "& .MuiOutlinedInput-root": {
                         border: "1px solid",
                         borderColor: "success.light",
@@ -359,7 +382,7 @@ const SingleChoiceQuestion = ({
                   }}
                   name={`question-${questionId}-option-${index}`}
                   // Add a small indicator in the label for the correct answer
-                  label={correctAnswer === option ? "Correct Answer" : ""}
+                  label={correctAnswers.includes(option) ? "Correct Answer" : ""}
                 />
                 
                 {/* Remove option button */}
@@ -386,16 +409,16 @@ const SingleChoiceQuestion = ({
               </Box>
             </Box>
           ))}
-        </RadioGroup>
+        </Box>
       </FormControl>
 
-      {/* Show correct answer summary */}
+      {/* Show correct answers summary */}
       <Box sx={{ mt: 2, mb: 2, p: 1, backgroundColor: "rgba(76, 175, 80, 0.08)", borderRadius: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
-            Correct Answer: {correctAnswer !== null 
-              ? (correctAnswerIndex !== -1 ? `Option ${correctAnswerIndex + 1}` : "Value no longer in options") 
-              : "Not set"}
+            Correct Answers: {correctAnswers.length > 0 
+              ? getCorrectAnswerIndices().map(index => `Option ${index + 1}`).join(", ") 
+              : "None selected"}
           </Typography>
           
           <Chip
@@ -410,9 +433,9 @@ const SingleChoiceQuestion = ({
           />
         </Box>
         
-        {correctAnswer !== null && (
-          <Typography variant="caption">
-            "{correctAnswer}"
+        {correctAnswers.length > 0 && (
+          <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
+            Selected values: {correctAnswers.map(answer => `"${answer}"`).join(", ")}
           </Typography>
         )}
       </Box>
@@ -438,7 +461,7 @@ const SingleChoiceQuestion = ({
           About This Question Type:
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • Students select one answer from the available options
+          • Students select multiple answers from the available options
         </Typography>
         <Typography variant="body2" color="text.secondary">
           • You can set a difficulty level and assign point value to the question
@@ -447,11 +470,11 @@ const SingleChoiceQuestion = ({
           • Each option can include text, images, audio, or video
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          • Only one answer can be marked as correct
+          • Students must select all correct answers to receive full points
         </Typography>
       </Box>
     </Box>
   );
 };
 
-export default SingleChoiceQuestion;
+export default MultipleChoiceQuestion;

@@ -1,11 +1,11 @@
 // QuestionTypeMap.js
 import { Typography } from "@mui/material";
-import SingleChoiceQuestion from "./content/SingleChoiceQuestion";
-import FillInTheBlankQuestion from "./content/FillInTheBlankQuestion";
-import MultipleChoiceQuestion from "./content/MultipleChoiceQuestion";
-import MatchingQuestion from "./content/MatchingQuestion";
-import LongTextQuestion from "./content/LongTextQuestion";
-import AudioQuestion from "./content/AudioQuestion";
+import SingleChoiceQuestion from "./content/question/SingleChoiceQuestion";
+import FillInTheBlankQuestion from "./content/question/FillInTheBlankQuestion";
+import MultipleChoiceQuestion from "./content/question/MultipleChoiceQuestion";
+import MatchingQuestion from "./content/question/MatchingQuestion";
+import LongTextQuestion from "./content/question/LongTextQuestion";
+import AudioQuestion from "./content/question/AudioQuestion";
 
 // Question type mapping configuration
 export const QUESTION_TYPE_MAP = {
