@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Box, Typography, Paper, Tooltip, Chip } from "@mui/material";
 import { useDraggable } from "@dnd-kit/core";
 import { 
-  FileText, Image, Video, Headphones, MessageSquare, 
+  FileText, Video, MessageSquare, 
   GripHorizontal, Layers, Move
 } from "lucide-react";
 
@@ -17,25 +17,11 @@ const AvailableMaterials = () => {
       color: "#f06292"
     },
     { 
-      id: "image-material", 
-      label: "Image Material",
-      description: "Add images, diagrams, or visual content",
-      icon: <Image size={18} />,
-      color: "#ec407a"
-    },
-    { 
-      id: "video-material", 
-      label: "Video Material",
-      description: "Add videos or animated content",
+      id: "multimedia-material", 
+      label: "Multimedia Material",
+      description: "Add images, videos, or audio files",
       icon: <Video size={18} />,
-      color: "#d81b60"
-    },
-    { 
-      id: "audio-material", 
-      label: "Audio Material",
-      description: "Add audio clips, pronunciations, or sound examples",
-      icon: <Headphones size={18} />,
-      color: "#c2185b"
+      color: "#ec407a"
     },
     { 
       id: "llm-session-material", 

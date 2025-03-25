@@ -2,6 +2,7 @@
 import { Typography } from "@mui/material";
 import TextMaterial from "./content/material/TextMaterial";
 import LLMSessionMaterial from "./content/material/LLMSessionMaterial";
+import MultimediaMaterial from "./content/material/MultimediaMaterial";
 
 // Material type mapping configuration
 export const MATERIAL_TYPE_MAP = {
@@ -47,13 +48,61 @@ export const MATERIAL_TYPE_MAP = {
       defaultShowTitle: true,
       defaultTitleStyle: "h2"
     }
+  },
+  "multimedia-material": {
+    component: MultimediaMaterial,
+    defaultProps: {
+      defaultTitle: "Multimedia Content",
+      defaultShowTitle: true,
+      defaultTitleStyle: "h2",
+      defaultMediaType: "image",
+      defaultMedia: null,
+      defaultSettings: {
+        common: {
+          alignment: "center",
+          size: "medium",
+          customSize: 50,
+          caption: "",
+          showBorder: true,
+          addAttribution: false,
+          attribution: {
+            creator: "",
+            source: "",
+            license: "CC BY"
+          }
+        },
+        image: {
+          altText: "",
+          cropMode: "none",
+          clickToEnlarge: true
+        },
+        video: {
+          displayMode: "normal",
+          startTime: 0,
+          endTime: null,
+          showControls: true,
+          autoplay: false,
+          muted: false,
+          loop: false,
+          thumbnailUrl: "",
+          showThumbnail: true
+        },
+        audio: {
+          playerStyle: "standard",
+          startTime: 0,
+          endTime: null,
+          showControls: true,
+          autoplay: false,
+          loop: false,
+          showTranscript: false,
+          transcript: ""
+        }
+      }
+    }
   }
-  // Add future material types here, such as:
-  // "image-material": { ... }
-  // "video-material": { ... }
-  // "audio-material": { ... }
 };
 
+// Component for rendering the appropriate material component
 // Component for rendering the appropriate material component
 export const MaterialComponentRenderer = ({ 
   normalizedContent, 
@@ -84,14 +133,6 @@ export const MaterialComponentRenderer = ({
   // Build type-specific props based on material type
   const specificProps = {};
   
-  // Add media props for types that support them
-  if (normalizedContent.type === 'text-material') {
-    // No specific props needed for text materials beyond the defaults
-  } else if (normalizedContent.type === 'llm-session-material') {
-    // Add any specific props for LLM session if needed
-  }
-  // For future material types, add their specific props here
-  
   // Override defaults with content values
   const overrideProps = {};
   
@@ -102,6 +143,23 @@ export const MaterialComponentRenderer = ({
     overrideProps.defaultShowTitle = normalizedContent.showTitle !== undefined ? 
       normalizedContent.showTitle : defaultProps.defaultShowTitle;
     overrideProps.defaultTitleStyle = normalizedContent.titleStyle || defaultProps.defaultTitleStyle;
+  } else if (normalizedContent.type === 'multimedia-material') {
+    overrideProps.defaultTitle = normalizedContent.title || defaultProps.defaultTitle;
+    overrideProps.defaultShowTitle = normalizedContent.showTitle !== undefined ? 
+      normalizedContent.showTitle : defaultProps.defaultShowTitle;
+    overrideProps.defaultTitleStyle = normalizedContent.titleStyle || defaultProps.defaultTitleStyle;
+    overrideProps.defaultMediaType = normalizedContent.mediaType || defaultProps.defaultMediaType;
+    overrideProps.defaultMedia = normalizedContent.media || defaultProps.defaultMedia;
+    
+    // Merge settings objects if they exist
+    if (normalizedContent.settings) {
+      overrideProps.defaultSettings = {
+        common: { ...defaultProps.defaultSettings.common, ...normalizedContent.settings?.common },
+        image: { ...defaultProps.defaultSettings.image, ...normalizedContent.settings?.image },
+        video: { ...defaultProps.defaultSettings.video, ...normalizedContent.settings?.video },
+        audio: { ...defaultProps.defaultSettings.audio, ...normalizedContent.settings?.audio }
+      };
+    }
   } else if (normalizedContent.type === 'llm-session-material') {
     overrideProps.defaultTitle = normalizedContent.title || defaultProps.defaultTitle;
     overrideProps.defaultShowTitle = normalizedContent.showTitle !== undefined ? 
@@ -122,7 +180,6 @@ export const MaterialComponentRenderer = ({
       };
     }
   }
-  // For future material types, add their override props here
   
   // Combine all props
   const combinedProps = {

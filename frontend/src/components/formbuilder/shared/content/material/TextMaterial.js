@@ -263,45 +263,7 @@ const TextMaterial = ({
         </Typography>
       </Paper>
       
-      {/* Design tips */}
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          Tips for creating effective reading materials:
-        </Typography>
-        
-        <Box component="ul" sx={{ pl: 2 }}>
-          <Typography component="li" variant="body2" color="text.secondary">
-            Keep passages concise and focused on the learning objective
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            Consider the reading level of your target audience
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            Break up long text with subheadings or paragraphs for better readability
-          </Typography>
-          <Typography component="li" variant="body2" color="text.secondary">
-            Provide context or background information when necessary
-          </Typography>
-        </Box>
-      </Box>
-      
-      <Divider sx={{ my: 3 }} />
-      
-      {/* Additional information */}
-      <Box sx={{ 
-        p: 2, 
-        backgroundColor: '#f5f5f5', 
-        borderRadius: 1,
-      }}>
-        <Typography variant="subtitle2" gutterBottom>
-          About Text Materials
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Text materials are display-only content that doesn't require student responses. 
-          They're ideal for providing context, instructions, reading passages, or explanatory text 
-          before questions or interactive elements.
-        </Typography>
-      </Box>
+ 
     </Box>
   );
 };
