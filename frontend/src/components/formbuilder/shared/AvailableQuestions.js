@@ -1,6 +1,6 @@
 // AvailableQuestions.js - With backward compatibility fix
 import React, { useState } from "react";
-import { Box, Typography, Paper, Tooltip, Chip, Badge } from "@mui/material";
+import { Box, Typography, Paper, Tooltip, Chip } from "@mui/material";
 import { useDraggable } from "@dnd-kit/core";
 import { 
   CircleDot, ListChecks, ArrowRightLeft, TextCursorInput, 
