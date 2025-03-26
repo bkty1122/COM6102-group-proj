@@ -1,4 +1,4 @@
-// components/AddCategoryDialog.js
+// AddCategoryDialog.js
 import React from "react";
 import {
   Dialog,
@@ -23,7 +23,7 @@ const AddCategoryDialog = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
-        {selectedPath ? "Add Child Category" : "Add Root Category"}
+        Add Root Category
       </DialogTitle>
       <DialogContent>
         <TextField

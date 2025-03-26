@@ -1,0 +1,327 @@
+{
+    "exam_language": {
+      "label": "Exam Language",
+      "options": [
+        {
+          "id": "en",
+          "label": "English",
+          "children": {
+            "exam_types": {
+              "label": "Exam Types",
+              "options": [
+                {
+                  "id": "ielts",
+                  "label": "IELTS",
+                  "children": {
+                    "components": {
+                      "label": "Components",
+                      "options": [
+                        {
+                          "id": "speaking",
+                          "label": "Speaking",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" },
+                                { "id": "technology", "label": "Technology" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "reading",
+                          "label": "Reading",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" },
+                                { "id": "technology", "label": "Technology" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "listening",
+                          "label": "Listening",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" },
+                                { "id": "technology", "label": "Technology" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "writing",
+                          "label": "Writing",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "pie-chart", "label": "Pie Chart" },
+                                { "id": "line-chart", "label": "Line Chart" },
+                                { "id": "bar-graph", "label": "Bar Graph" },
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "toefl",
+                  "label": "TOEFL",
+                  "children": {
+                    "components": {
+                      "label": "Components",
+                      "options": [
+                        {
+                          "id": "speaking",
+                          "label": "Speaking",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "technology", "label": "Technology" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "reading",
+                          "label": "Reading",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "listening",
+                          "label": "Listening",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "writing",
+                          "label": "Writing",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "education", "label": "Education" },
+                                { "id": "environment", "label": "Environment" }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "general",
+                  "label": "General",
+                  "children": {
+                    "components": {
+                      "label": "Components",
+                      "options": [
+                        {
+                          "id": "grammar",
+                          "label": "Grammar"
+                        },
+                        {
+                          "id": "vocabulary",
+                          "label": "Vocabulary"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "fr",
+          "label": "French",
+          "children": {
+            "exam_types": {
+              "label": "Exam Types",
+              "options": [
+                {
+                  "id": "tcf",
+                  "label": "TCF",
+                  "children": {
+                    "components": {
+                      "label": "Components",
+                      "options": [
+                        {
+                          "id": "speaking",
+                          "label": "Speaking",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "politique", "label": "Politique" },
+                                { "id": "education", "label": "Education" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "reading",
+                          "label": "Reading",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "politique", "label": "Politique" },
+                                { "id": "education", "label": "Education" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "listening",
+                          "label": "Listening",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "politique", "label": "Politique" },
+                                { "id": "education", "label": "Education" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "writing",
+                          "label": "Writing",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "pie-chart", "label": "Pie Chart" },
+                                { "id": "line-chart", "label": "Line Chart" },
+                                { "id": "politique", "label": "Politique" }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "delf-b2",
+                  "label": "DELF-B2",
+                  "children": {
+                    "components": {
+                      "label": "Components",
+                      "options": [
+                        {
+                          "id": "speaking",
+                          "label": "Speaking",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "politique", "label": "Politique" },
+                                { "id": "education", "label": "Education" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "reading",
+                          "label": "Reading",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "politique", "label": "Politique" },
+                                { "id": "education", "label": "Education" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "listening",
+                          "label": "Listening",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "politique", "label": "Politique" },
+                                { "id": "education", "label": "Education" }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "writing",
+                          "label": "Writing",
+                          "children": {
+                            "categories": {
+                              "label": "Categories",
+                              "options": [
+                                { "id": "pie-chart", "label": "Pie Chart" },
+                                { "id": "line-chart", "label": "Line Chart" },
+                                { "id": "politique", "label": "Politique" }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "general",
+                  "label": "General",
+                  "children": {
+                    "components": {
+                      "label": "Components",
+                      "options": [
+                        {
+                          "id": "grammar",
+                          "label": "Grammar"
+                        },
+                        {
+                          "id": "vocabulary",
+                          "label": "Vocabulary"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
