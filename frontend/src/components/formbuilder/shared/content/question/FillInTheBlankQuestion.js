@@ -1,4 +1,3 @@
-// src/components/formbuilder/shared/FillInTheBlankQuestion.js
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Box, Typography, TextField, IconButton,
@@ -17,6 +16,7 @@ const FillInTheBlankQuestion = ({
   defaultQuestion = "Enter your question with [blank] placeholders...",
   defaultBlanks = [], 
   defaultDifficulty = 'medium',
+  defaultQuestionMedia = null, // Added this prop for media persistence
   order_id,
   startingAnswerId = 0,
   onUpdate = () => {},
@@ -31,11 +31,11 @@ const FillInTheBlankQuestion = ({
   const [prevQuestion, setPrevQuestion] = useState(defaultQuestion);
   const blankRefs = useRef([]);
   
-  // Use the media hook for question media
+  // Use the media hook for question media - properly initialized with defaultQuestionMedia
   const { 
     questionMedia, 
     handleMediaChange
-  } = useQuestionMedia();
+  } = useQuestionMedia(defaultQuestionMedia);
 
   // Initialize blanks with proper answer_ids
   useEffect(() => {

@@ -38,6 +38,22 @@ export default function useFormBuilder() {
     }
   }, [pages.length, currentPage]);
 
+  // Add this new function to update page metadata
+  const updatePageMetadata = useCallback((pageId, metadata) => {
+  setPages(prevPages => 
+    prevPages.map((page, index) => {
+      // In your code, pages are indexed by array position, not by their id property
+      if (page.id === pageId) {
+        return {
+          ...page,
+          ...metadata
+        };
+      }
+      return page;
+    })
+  );
+}, []);  // Empty dependency array means this function won't change between renders
+
   const addCard = useCallback((type) => {
     setPages(prevPages => {
       const currentPageData = prevPages[currentPage] || { cards: [], cardContents: {} };
@@ -400,6 +416,7 @@ export default function useFormBuilder() {
     updateCardContent,
     reorderContent,
     reorderCards,
-    loadFormData
+    loadFormData,
+    updatePageMetadata  // Include the new function here
   };
 }

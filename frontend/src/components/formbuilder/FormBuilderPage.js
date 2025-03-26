@@ -6,6 +6,7 @@ import NavigationBar from "./shared/NavigationBar";
 import BlankPage from "./shared/BlankPage";
 import AvailableQuestions from "./shared/AvailableQuestions";
 import AvailableMaterials from "./shared/AvailableMaterials";
+import FormCategorySelector from "./shared/FormCategorySelector"; // Import the component
 import FormExport from "./FormExport";
 import useFormBuilder from "./hooks/useFormBuilder";
 import { createDragHandlers } from "./utils/dragAndDropUtils";
@@ -27,7 +28,8 @@ const FormBuilderPage = () => {
     removeCardContent,
     updateCardContent,
     reorderContent,
-    reorderCards
+    reorderCards,
+    updatePageMetadata // Make sure this is included
   } = useFormBuilder();
 
   // Create drag handlers
@@ -37,6 +39,12 @@ const FormBuilderPage = () => {
     addCardContent,
     reorderCards
   );
+
+  // Handler for category changes from FormCategorySelector
+  const handleCategoryChange = (categoryData) => {
+    // Use the currentPage index, not the page ID
+    updatePageMetadata(pages[currentPage].id, { examCategories: categoryData });
+  };
 
   return (
     <DndContext 
@@ -54,11 +62,12 @@ const FormBuilderPage = () => {
         {/* Available Materials panel on the left */}
         <Box 
           sx={{ 
-            width: "250px", 
+            width: "200px", 
             backgroundColor: "#f5f5f5", 
             p: 2, 
             borderRight: "1px solid #ddd",
             overflowY: "auto",
+            flexShrink: 0,
             zIndex: 2 // Slightly higher than main content
           }}
         >
@@ -84,7 +93,17 @@ const FormBuilderPage = () => {
           />
           
           <Divider sx={{ my: 2 }} />
-            <Box 
+
+          {/* // Then when rendering the FormCategorySelector */}
+          {currentPage >= 0 && currentPage < pages.length && (
+            <FormCategorySelector
+              pageId={currentPage}  // Pass the index, not the ID
+              initialValues={currentPageData.examCategories || {}}
+              onChange={handleCategoryChange}
+            />
+          )}
+          
+          <Box 
             sx={{ 
               flexGrow: 1, 
               overflow: "auto", 
@@ -110,11 +129,12 @@ const FormBuilderPage = () => {
         {/* Available Questions panel on the right */}
         <Box 
           sx={{ 
-            width: "250px", 
+            width: "200px", 
             backgroundColor: "#f5f5f5", 
             p: 2, 
             borderLeft: "1px solid #ddd",
             overflowY: "auto",
+            flexShrink: 0,
             zIndex: 2 // Slightly higher than main content
           }}
         >

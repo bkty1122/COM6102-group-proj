@@ -1,4 +1,3 @@
-// components/formbuilder/shared/MatchingQuestion.js
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Box, Typography, TextField, IconButton,
@@ -22,6 +21,7 @@ const MatchingQuestion = ({
   defaultQuestion = "Enter your question text here...",
   defaultBlanks = [], 
   defaultDifficulty = 'medium',
+  defaultQuestionMedia = null, // Media persistence prop
   order_id,
   startingAnswerId = 0,
   onUpdate = () => {},
@@ -33,9 +33,29 @@ const MatchingQuestion = ({
   const [instruction, setInstruction] = useState(defaultInstruction);
   const [difficulty, setDifficulty] = useState(defaultDifficulty);
   const blankRefs = useRef([]);
+
+  // Create an object to store blank media by index
+  const defaultBlankMedia = {};
+  if (defaultBlanks && defaultBlanks.length > 0) {
+    defaultBlanks.forEach((blank, index) => {
+      if (blank.option_image) {
+        defaultBlankMedia[index] = { ...blank.option_image, type: 'image' };
+      } else if (blank.option_audio) {
+        defaultBlankMedia[index] = { ...blank.option_audio, type: 'audio' };
+      } else if (blank.option_video) {
+        defaultBlankMedia[index] = { ...blank.option_video, type: 'video' };
+      }
+    });
+  }
   
-  // Use the media hook for question media
-  const { questionMedia, handleMediaChange } = useQuestionMedia();
+  // Use the media hook for question media and blank media
+  const { 
+    questionMedia, 
+    optionMedia: blankMedia, 
+    handleMediaChange,
+    reindexOptionMedia: reindexBlankMedia,
+    setOptionMedia: setBlankMedia 
+  } = useQuestionMedia(defaultQuestionMedia, defaultBlankMedia);
 
   // Initialize blanks with proper answer_ids
   useEffect(() => {
@@ -50,9 +70,6 @@ const MatchingQuestion = ({
           label: blank.label || `Blank ${index + 1}`,
           correctAnswers: blank.correctAnswers || blank.correctAnswer || [""],
           placeholder: blank.placeholder || "Enter your answer",
-          option_image: blank.option_image || null,
-          option_audio: blank.option_audio || null,
-          option_video: blank.option_video || null,
           marks: blank.marks !== undefined ? blank.marks : 1
         };
       });
@@ -71,9 +88,6 @@ const MatchingQuestion = ({
           label: "Blank 1",
           correctAnswers: [""],
           placeholder: "Enter your answer",
-          option_image: null,
-          option_audio: null,
-          option_video: null,
           marks: 1
         },
         {
@@ -82,9 +96,6 @@ const MatchingQuestion = ({
           label: "Blank 2",
           correctAnswers: [""],
           placeholder: "Enter your answer",
-          option_image: null,
-          option_audio: null,
-          option_video: null,
           marks: 1
         }
       ];
@@ -97,19 +108,27 @@ const MatchingQuestion = ({
 
   // Update parent component when data changes
   useEffect(() => {
+    // Format blanks with media for update
+    const formattedBlanks = blanks.map((blank, idx) => ({
+      ...blank,
+      option_image: blankMedia[idx]?.type === 'image' ? blankMedia[idx] : null,
+      option_audio: blankMedia[idx]?.type === 'audio' ? blankMedia[idx] : null,
+      option_video: blankMedia[idx]?.type === 'video' ? blankMedia[idx] : null,
+    }));
+
     onUpdate({
       id: questionId,
       type: 'matching',
       order_id,
       question,
-      blanks,
+      blanks: formattedBlanks,
       instruction,
       difficulty,
       question_image: questionMedia?.type === 'image' ? questionMedia : null,
       question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
       question_video: questionMedia?.type === 'video' ? questionMedia : null
     });
-  }, [question, blanks, instruction, difficulty, questionMedia, questionId, order_id, onUpdate]);
+  }, [question, blanks, blankMedia, instruction, difficulty, questionMedia, questionId, order_id, onUpdate]);
 
   // Add a new blank field
   const handleAddBlank = () => {
@@ -122,9 +141,6 @@ const MatchingQuestion = ({
       label: `Blank ${newBlankId + 1}`,
       correctAnswers: [""],
       placeholder: "Enter your answer",
-      option_image: null,
-      option_audio: null,
-      option_video: null,
       marks: 1
     };
     
@@ -178,19 +194,7 @@ const MatchingQuestion = ({
   // Handle changing the mark value for a blank
   const handleMarkChange = (blankIndex, value) => {
     const updatedBlanks = [...blanks];
-    updatedBlanks[blankIndex].marks = value;
-    setBlanks(updatedBlanks);
-  };
-
-  // Handle changing media for a blank
-  const handleBlankMediaChange = (blankIndex, media) => {
-    const updatedBlanks = [...blanks];
-    
-    // Update the media for this blank
-    updatedBlanks[blankIndex].option_image = media?.type === 'image' ? media : null;
-    updatedBlanks[blankIndex].option_audio = media?.type === 'audio' ? media : null;
-    updatedBlanks[blankIndex].option_video = media?.type === 'video' ? media : null;
-    
+    updatedBlanks[blankIndex].marks = Math.max(1, parseInt(value) || 1);
     setBlanks(updatedBlanks);
   };
 
@@ -209,6 +213,9 @@ const MatchingQuestion = ({
     
     setBlanks(updatedBlanks);
     blankRefs.current = updatedBlanks.map((_, index) => blankRefs.current[index] || React.createRef());
+    
+    // Reindex the blank media after deletion
+    reindexBlankMedia(blankIndex);
   };
 
   // Move a blank up or down in the list
@@ -231,6 +238,19 @@ const MatchingQuestion = ({
     });
     
     setBlanks(updatedBlanks);
+    
+    // Also swap the media
+    const updatedBlankMedia = { ...blankMedia };
+    const mediaAtIndex = updatedBlankMedia[blankIndex];
+    const mediaAtTarget = updatedBlankMedia[targetIndex];
+    
+    if (mediaAtIndex) updatedBlankMedia[targetIndex] = mediaAtIndex;
+    else delete updatedBlankMedia[targetIndex];
+    
+    if (mediaAtTarget) updatedBlankMedia[blankIndex] = mediaAtTarget;
+    else delete updatedBlankMedia[blankIndex];
+    
+    setBlankMedia(updatedBlankMedia);
   };
 
   // Scroll to the blank when clicked
@@ -258,27 +278,25 @@ const MatchingQuestion = ({
   };
 
   // Helper function to get the media icon for a blank
-  const getBlankMediaIcon = (blank) => {
-    if (blank.option_image) return <ImageIcon color="primary" fontSize="small" />;
-    if (blank.option_audio) return <AudiotrackIcon color="secondary" fontSize="small" />;
-    if (blank.option_video) return <VideocamIcon color="error" fontSize="small" />;
+  const getBlankMediaIcon = (index) => {
+    const media = blankMedia[index];
+    if (!media) return null;
+    
+    if (media.type === 'image') return <ImageIcon color="primary" fontSize="small" />;
+    if (media.type === 'audio') return <AudiotrackIcon color="secondary" fontSize="small" />;
+    if (media.type === 'video') return <VideocamIcon color="error" fontSize="small" />;
     return null;
   };
 
   // Helper function to get the media type label
-  const getBlankMediaLabel = (blank) => {
-    if (blank.option_image) return "Image";
-    if (blank.option_audio) return "Audio";
-    if (blank.option_video) return "Video";
-    return "None";
-  };
-
-  // Helper function to get current media object for a blank
-  const getBlankMedia = (blank) => {
-    if (blank.option_image) return { ...blank.option_image, type: 'image' };
-    if (blank.option_audio) return { ...blank.option_audio, type: 'audio' };
-    if (blank.option_video) return { ...blank.option_video, type: 'video' };
-    return null;
+  const getBlankMediaLabel = (index) => {
+    const media = blankMedia[index];
+    if (!media) return "None";
+    
+    if (media.type === 'image') return "Image";
+    if (media.type === 'audio') return "Audio";
+    if (media.type === 'video') return "Video";
+    return "Unknown";
   };
 
   // Calculate total marks for the question
@@ -402,7 +420,7 @@ const MatchingQuestion = ({
             <Box sx={{ mb: 3, textAlign: 'center' }}>
               <Box
                 component="img"
-                src={questionMedia.src || questionMedia.url}
+                src={questionMedia.url || questionMedia.src}
                 alt="Question media"
                 sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: '4px' }}
               />
@@ -414,7 +432,8 @@ const MatchingQuestion = ({
             <Grid container spacing={2}>
               {blanks.map((blank, blankIndex) => {
                 const color = getBlankColor(blankIndex);
-                const hasMedia = blank.option_image || blank.option_audio || blank.option_video;
+                const media = blankMedia[blankIndex];
+                const hasMedia = media !== undefined;
                 
                 return (
                   <Grid item xs={12} sm={6} md={4} key={`preview-blank-${blank.id}`}>
@@ -428,6 +447,9 @@ const MatchingQuestion = ({
                         cursor: 'pointer'
                       }}
                       onClick={() => scrollToBlank(blankIndex)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`View details for blank ${blankIndex + 1}: ${blank.label}`}
                     >
                       <Box sx={{
                         display: 'flex',
@@ -465,18 +487,24 @@ const MatchingQuestion = ({
                       </Box>
                       
                       {/* Display blank media preview if available */}
-                      {blank.option_image && (
+                      {media?.type === 'image' && (
                         <Box sx={{ mb: 1, textAlign: 'center' }}>
                           <Box
                             component="img"
-                            src={blank.option_image.src || blank.option_image.url}
-                            alt={blank.label}
-                            sx={{ maxWidth: '100%', height: 60, objectFit: 'contain', borderRadius: '4px' }}
+                            src={media.url || media.src}
+                            alt={`Media for ${blank.label}`}
+                            sx={{ 
+                              width: '100%', 
+                              maxHeight: 80, 
+                              objectFit: 'contain', 
+                              borderRadius: '4px',
+                              border: '1px solid #eee'
+                            }}
                           />
                         </Box>
                       )}
                       
-                      {blank.option_audio && (
+                      {media?.type === 'audio' && (
                         <Box sx={{ mb: 1, textAlign: 'center' }}>
                           <AudiotrackIcon color="secondary" />
                           <Typography variant="caption" sx={{ display: 'block' }}>
@@ -485,7 +513,7 @@ const MatchingQuestion = ({
                         </Box>
                       )}
                       
-                      {blank.option_video && (
+                      {media?.type === 'video' && (
                         <Box sx={{ mb: 1, textAlign: 'center' }}>
                           <VideocamIcon color="error" />
                           <Typography variant="caption" sx={{ display: 'block' }}>
@@ -536,8 +564,8 @@ const MatchingQuestion = ({
       <List>
         {blanks.map((blank, blankIndex) => {
           const color = getBlankColor(blankIndex);
-          const hasMedia = blank.option_image || blank.option_audio || blank.option_video;
-          const blankMedia = getBlankMedia(blank);
+          const media = blankMedia[blankIndex];
+          const hasMedia = media !== undefined;
           
           return (
             <Paper 
@@ -558,8 +586,8 @@ const MatchingQuestion = ({
                   />
                   {hasMedia && (
                     <Chip 
-                      icon={getBlankMediaIcon(blank)}
-                      label={getBlankMediaLabel(blank)}
+                      icon={getBlankMediaIcon(blankIndex)}
+                      label={getBlankMediaLabel(blankIndex)}
                       size="small" 
                       sx={{ ml: 1 }} 
                     />
@@ -567,44 +595,35 @@ const MatchingQuestion = ({
                 </Box>
                 
                 <Box>
-                  <Tooltip title="Move blank up">
-                    <span>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleMoveBlank(blankIndex, 'up')}
-                        disabled={blankIndex === 0}
-                        sx={{ mr: 1 }}
-                      >
-                        <DragIndicator fontSize="small" sx={{ transform: 'rotate(180deg)' }} />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleMoveBlank(blankIndex, 'up')}
+                    disabled={blankIndex === 0}
+                    sx={{ mr: 1 }}
+                    aria-label="Move blank up"
+                  >
+                    <DragIndicator fontSize="small" sx={{ transform: 'rotate(180deg)' }} />
+                  </IconButton>
                   
-                  <Tooltip title="Move blank down">
-                    <span>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleMoveBlank(blankIndex, 'down')}
-                        disabled={blankIndex === blanks.length - 1}
-                        sx={{ mr: 1 }}
-                      >
-                        <DragIndicator fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleMoveBlank(blankIndex, 'down')}
+                    disabled={blankIndex === blanks.length - 1}
+                    sx={{ mr: 1 }}
+                    aria-label="Move blank down"
+                  >
+                    <DragIndicator fontSize="small" />
+                  </IconButton>
                   
-                  <Tooltip title="Remove blank">
-                    <span>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleRemoveBlank(blankIndex)}
-                        color="error"
-                        disabled={blanks.length <= 1}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleRemoveBlank(blankIndex)}
+                    color="error"
+                    disabled={blanks.length <= 1}
+                    aria-label="Remove blank"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
                 </Box>
               </Box>
               
@@ -637,7 +656,7 @@ const MatchingQuestion = ({
                     label="Points"
                     type="number"
                     value={blank.marks}
-                    onChange={(e) => handleMarkChange(blankIndex, Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => handleMarkChange(blankIndex, e.target.value)}
                     inputProps={{ min: 1, max: 10 }}
                     InputProps={{
                       startAdornment: (
@@ -656,10 +675,11 @@ const MatchingQuestion = ({
                       Blank Media (Optional)
                     </FormLabel>
                     <QuestionMedia
-                      media={blankMedia}
-                      onMediaChange={(media) => handleBlankMediaChange(blankIndex, media)}
+                      media={media}
+                      onMediaChange={handleMediaChange}
                       label="Add Media to Blank"
-                      type="blank"
+                      type="option" // Use option type to match the hook's expectations
+                      index={blankIndex} // Important! Pass the index to match MultipleChoiceQuestion
                     />
                   </Box>
                 </Grid>
@@ -688,6 +708,7 @@ const MatchingQuestion = ({
                             size="small" 
                             onClick={() => handleRemoveAnswer(blankIndex, answerIndex)}
                             color="error"
+                            aria-label={`Remove answer ${answerIndex + 1}`}
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -724,23 +745,6 @@ const MatchingQuestion = ({
 
       <Divider sx={{ my: 2 }} />
       
-      <Box sx={{ mt: 2, bgcolor: '#f5f5f5', p: 2, borderRadius: 1 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          About This Question Type:
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Blank fields are displayed below the question text, not embedded within it
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Each blank can have an optional image, audio, or video attachment
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • You can specify multiple acceptable answers for each blank
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Each blank can be assigned different point values based on difficulty
-        </Typography>
-      </Box>
     </Box>
   );
 };

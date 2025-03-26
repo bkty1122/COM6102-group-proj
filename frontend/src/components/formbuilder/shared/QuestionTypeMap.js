@@ -114,10 +114,10 @@ export const QuestionComponentRenderer = ({
   }
   
   // Add media props for types that support them
-  if (['single-choice', 'multiple-choice'].includes(normalizedContent.type)) {
+  if (['single-choice', 'multiple-choice', 'fill-in-the-blank', 'matching', 'long-text', 'audio'].includes(normalizedContent.type)) {
     specificProps.defaultQuestionMedia = questionMedia;
     specificProps.defaultOptionMedia = optionMedia;
-  }
+  }// Option media is only relevant for choice-based questions
   
   // Override defaults with content values
   const overrideProps = {

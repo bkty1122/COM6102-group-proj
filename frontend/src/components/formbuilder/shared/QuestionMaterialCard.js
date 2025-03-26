@@ -165,6 +165,8 @@ const QuestionMaterialCard = ({ type, onRemove, contents = [], onRemoveContent, 
         }
       }
     }
+
+    
     
     if (onUpdateContent) {
       onUpdateContent(type, updatedContent);
