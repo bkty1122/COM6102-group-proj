@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import TestLinkedFieldManager from './components/linkedfieldmanager/TestLinkedFieldsManager.js';
 import { Box, CircularProgress, Typography, Snackbar, Alert, Button } from "@mui/material";
-import { examFieldsApi } from './services/api';
+import { examFieldsApi } from './services/api.js';
 
 function App() {
   const [linkedFieldsData, setLinkedFieldsData] = useState(null);
