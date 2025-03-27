@@ -1,4 +1,3 @@
-// src/components/formbuilder/shared/LongTextQuestion.js
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, Divider, Paper, Chip, 
@@ -21,6 +20,7 @@ const LongTextQuestion = ({
   defaultSuggestedAnswer = "",
   defaultDifficulty = 'medium',
   defaultMarks = 1,
+  defaultQuestionMedia = null, // Added defaultQuestionMedia prop
   order_id,
   answer_id,
   onUpdate = () => {},
@@ -37,11 +37,11 @@ const LongTextQuestion = ({
   const [currentAnswerId] = useState(answer_id || 0);
   const [suggestedAnswerExpanded, setSuggestedAnswerExpanded] = useState(false);
   
-  // Use the media hook for question media
+  // Use the media hook for question media - initialize with defaultQuestionMedia
   const { 
     questionMedia, 
     handleMediaChange
-  } = useQuestionMedia();
+  } = useQuestionMedia(defaultQuestionMedia);
 
   // Update parent component when data changes
   useEffect(() => {
@@ -309,7 +309,7 @@ const LongTextQuestion = ({
           <Box sx={{ mb: 3, textAlign: 'center' }}>
             <Box
               component="img"
-              src={questionMedia.src || questionMedia.url}
+              src={questionMedia.url || questionMedia.src}
               alt="Question media"
               sx={{ 
                 maxWidth: '100%', 
@@ -389,23 +389,6 @@ const LongTextQuestion = ({
       
       <Divider sx={{ my: 3 }} />
       
-      <Box sx={{ mt: 2, bgcolor: '#f5f5f5', p: 2, borderRadius: 1 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          About This Question Type:
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Allows students to provide extended text responses
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • You can customize the response field size and placeholder text
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Suggested answers can be provided for grading reference
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          • Requires manual grading by instructors
-        </Typography>
-      </Box>
     </Box>
   );
 };

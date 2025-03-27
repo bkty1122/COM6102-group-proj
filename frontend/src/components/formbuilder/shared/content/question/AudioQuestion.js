@@ -1,4 +1,3 @@
-// src/components/formbuilder/shared/AudioQuestion.js
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, Divider, Paper, Chip, 
@@ -23,6 +22,7 @@ const AudioQuestion = ({
   defaultMaxSeconds = 60,
   defaultDifficulty = 'medium',
   defaultMarks = 1,
+  defaultQuestionMedia = null, // Added defaultQuestionMedia prop
   order_id,
   answer_id,
   onUpdate = () => {},
@@ -45,11 +45,11 @@ const AudioQuestion = ({
   const [demoRecordingState, setDemoRecordingState] = useState('idle'); // idle, recording, paused, completed
   const [demoSeconds, setDemoSeconds] = useState(0);
   
-  // Use the media hook for question media
+  // Use the media hook for question media - initialize with defaultQuestionMedia
   const { 
     questionMedia, 
     handleMediaChange
-  } = useQuestionMedia();
+  } = useQuestionMedia(defaultQuestionMedia);
 
   // Format seconds to mm:ss
   const formatTime = (seconds) => {
@@ -343,7 +343,7 @@ const AudioQuestion = ({
           <Box sx={{ mb: 3, textAlign: 'center' }}>
             <Box
               component="img"
-              src={questionMedia.src || questionMedia.url}
+              src={questionMedia.url || questionMedia.src}
               alt="Question media"
               sx={{ 
                 maxWidth: '100%', 
