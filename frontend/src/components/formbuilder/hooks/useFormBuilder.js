@@ -4,7 +4,17 @@ import AnswerIdManager from '../utils/answerIdManager';
 
 export default function useFormBuilder() {
   const [pages, setPages] = useState([
-    { id: 1, cards: [], cardContents: {} },
+    { 
+      id: 1, 
+      cards: [], 
+      cardContents: {}, 
+      examCategories: {
+        exam_language: "en", // Default language
+        exam_type: "",
+        component: "",
+        category: ""
+      }
+    },
   ]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -26,7 +36,17 @@ export default function useFormBuilder() {
   const addPage = useCallback(() => {
     setPages(prevPages => [
       ...prevPages,
-      { id: prevPages.length + 1, cards: [], cardContents: {} }
+      { 
+        id: prevPages.length + 1, 
+        cards: [], 
+        cardContents: {},
+        examCategories: {
+          exam_language: "en", // Default language
+          exam_type: "",
+          component: "",
+          category: ""
+        }
+      }
     ]);
     setCurrentPage(prevPages => prevPages.length);
   }, []);
@@ -40,19 +60,36 @@ export default function useFormBuilder() {
 
   // Add this new function to update page metadata
   const updatePageMetadata = useCallback((pageId, metadata) => {
-  setPages(prevPages => 
-    prevPages.map((page, index) => {
-      // In your code, pages are indexed by array position, not by their id property
-      if (page.id === pageId) {
-        return {
-          ...page,
-          ...metadata
-        };
-      }
-      return page;
-    })
-  );
-}, []);  // Empty dependency array means this function won't change between renders
+    console.log("Updating metadata for page", pageId, metadata);
+    
+    setPages(prevPages => 
+      prevPages.map(page => {
+        if (page.id === pageId) {
+          // Handle examCategories specially to ensure proper nesting
+          if (metadata.examCategories) {
+            // Create a new object with all existing page properties
+            const updatedPage = { ...page };
+            
+            // Properly merge the examCategories object
+            updatedPage.examCategories = {
+              ...updatedPage.examCategories, // Keep existing categories
+              ...metadata.examCategories     // Add/update with new categories
+            };
+            
+            // Remove examCategories from metadata to avoid double-application
+            const { examCategories, ...otherMetadata } = metadata;
+            
+            // Apply any other metadata updates
+            return { ...updatedPage, ...otherMetadata };
+          }
+          
+          // If no examCategories in the update, just do a regular merge
+          return { ...page, ...metadata };
+        }
+        return page;
+      })
+    );
+  }, []);  // Empty dependency array means this function won't change between renders
 
   const addCard = useCallback((type) => {
     setPages(prevPages => {
@@ -381,14 +418,21 @@ export default function useFormBuilder() {
     });
   }, [currentPage]);
 
+  // Update the loadFormData function to ensure examCategories is preserved
   const loadFormData = useCallback((formData) => {
     if (!formData || !formData.pages) {
       console.error("Invalid form data provided");
       return;
     }
     
-    setPages(formData.pages);
-    AnswerIdManager.initialize(formData.pages);
+    // Ensure each page has examCategories
+    const pagesWithCategories = formData.pages.map(page => ({
+      ...page,
+      examCategories: page.examCategories || { exam_language: "en" }
+    }));
+    
+    setPages(pagesWithCategories);
+    AnswerIdManager.initialize(pagesWithCategories);
     setCurrentPage(0);
   }, []);
 

@@ -1,4 +1,3 @@
-// src/components/formbuilder/utils/exportUtils.js
 export const exportFormAsJson = (pages) => {
   try {
     // Create a structured representation of your form data
@@ -7,8 +6,11 @@ export const exportFormAsJson = (pages) => {
       exportDate: new Date().toISOString(),
       pages: pages.map((page, pageIndex) => {
         // Extract essential data from each page
+        // Include the page metadata like examCategories
         return {
           page_index: page.id || pageIndex,
+          exam_categories: page.examCategories || {}, // Include exam categories
+          exam_language: page.language || "en", // Include exam language with default
           cards: page.cards.map((cardType, cardIndex) => {
             // Get contents for this card
             const contents = page.cardContents?.[cardType] || [];
@@ -17,13 +19,11 @@ export const exportFormAsJson = (pages) => {
               card_type: cardType,
               position: cardIndex,
               contents: contents.map(content => {
-
-                  return {
-                    // ...baseContent,
-                    ...content
-                  };
-                }
-              )
+                return {
+                  // ...baseContent,
+                  ...content
+                };
+              })
             };
           })
         };

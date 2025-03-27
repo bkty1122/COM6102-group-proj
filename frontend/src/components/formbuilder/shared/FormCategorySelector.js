@@ -1,4 +1,3 @@
-// src/components/formbuilder/shared/FormCategorySelector.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
@@ -23,14 +22,13 @@ const FormCategorySelector = ({
   onChange,
   disabled = false
 }) => {
-  // Selected values state
-  const [examLanguage, setExamLanguage] = useState(initialValues.exam_language || '');
-  const [examType, setExamType] = useState(initialValues.exam_type || '');
-  const [component, setComponent] = useState(initialValues.component || '');
-  const [category, setCategory] = useState(initialValues.category || '');
-  
-  // Store previous values to check for changes
-  const [prevInitialValues, setPrevInitialValues] = useState(initialValues);
+  // Use a single state object for all values to avoid synchronization issues
+  const [values, setValues] = useState({
+    exam_language: initialValues.exam_language || '',
+    exam_type: initialValues.exam_type || '',
+    component: initialValues.component || '',
+    category: initialValues.category || ''
+  });
 
   // Available options based on selected values
   const [availableExamTypes, setAvailableExamTypes] = useState([]);
@@ -42,28 +40,27 @@ const FormCategorySelector = ({
 
   // Update local state when initialValues change (e.g., when switching pages)
   useEffect(() => {
-    // Only update if initialValues have actually changed to prevent loops
-    if (
-      JSON.stringify(initialValues) !== JSON.stringify(prevInitialValues)
-    ) {
-      setExamLanguage(initialValues.exam_language || '');
-      setExamType(initialValues.exam_type || '');
-      setComponent(initialValues.component || '');
-      setCategory(initialValues.category || '');
-      setPrevInitialValues(initialValues);
-    }
-  }, [initialValues, prevInitialValues]);
+    console.log("FormCategorySelector: initialValues changed for pageId", pageId, initialValues);
+    
+    // Update all values at once to maintain consistency
+    setValues({
+      exam_language: initialValues.exam_language || '',
+      exam_type: initialValues.exam_type || '',
+      component: initialValues.component || '',
+      category: initialValues.category || ''
+    });
+  }, [pageId, initialValues]);
 
   // Update available exam types when exam language changes
   useEffect(() => {
-    if (!examLanguage) {
+    if (!values.exam_language) {
       setAvailableExamTypes([]);
       return;
     }
 
     // Find the selected language in the data structure
     const languageData = examLanguages.find(
-      lang => lang.id === examLanguage
+      lang => lang.id === values.exam_language
     );
 
     if (languageData?.children?.exam_types?.options) {
@@ -71,26 +68,18 @@ const FormCategorySelector = ({
     } else {
       setAvailableExamTypes([]);
     }
-
-    // Only reset dependent fields if user manually changed the language
-    // (Don't reset during initialization from props)
-    if (examLanguage !== initialValues.exam_language) {
-      setExamType('');
-      setComponent('');
-      setCategory('');
-    }
-  }, [examLanguage, examLanguages, initialValues.exam_language]);
+  }, [values.exam_language, examLanguages]);
 
   // Update available components when exam type changes
   useEffect(() => {
-    if (!examLanguage || !examType) {
+    if (!values.exam_language || !values.exam_type) {
       setAvailableComponents([]);
       return;
     }
 
     // Find the selected language
     const languageData = examLanguages.find(
-      lang => lang.id === examLanguage
+      lang => lang.id === values.exam_language
     );
 
     if (!languageData?.children?.exam_types?.options) {
@@ -100,7 +89,7 @@ const FormCategorySelector = ({
 
     // Find the selected exam type
     const typeData = languageData.children.exam_types.options.find(
-      type => type.id === examType
+      type => type.id === values.exam_type
     );
 
     if (typeData?.children?.components?.options) {
@@ -108,24 +97,18 @@ const FormCategorySelector = ({
     } else {
       setAvailableComponents([]);
     }
-
-    // Only reset dependent fields if user manually changed the type
-    if (examType !== initialValues.exam_type) {
-      setComponent('');
-      setCategory('');
-    }
-  }, [examLanguage, examType, examLanguages, initialValues.exam_type]);
+  }, [values.exam_language, values.exam_type, examLanguages]);
 
   // Update available categories when component changes
   useEffect(() => {
-    if (!examLanguage || !examType || !component) {
+    if (!values.exam_language || !values.exam_type || !values.component) {
       setAvailableCategories([]);
       return;
     }
 
     // Find the selected language
     const languageData = examLanguages.find(
-      lang => lang.id === examLanguage
+      lang => lang.id === values.exam_language
     );
 
     if (!languageData?.children?.exam_types?.options) {
@@ -135,7 +118,7 @@ const FormCategorySelector = ({
 
     // Find the selected exam type
     const typeData = languageData.children.exam_types.options.find(
-      type => type.id === examType
+      type => type.id === values.exam_type
     );
 
     if (!typeData?.children?.components?.options) {
@@ -145,7 +128,7 @@ const FormCategorySelector = ({
 
     // Find the selected component
     const componentData = typeData.children.components.options.find(
-      comp => comp.id === component
+      comp => comp.id === values.component
     );
 
     if (componentData?.children?.categories?.options) {
@@ -153,62 +136,37 @@ const FormCategorySelector = ({
     } else {
       setAvailableCategories([]);
     }
+  }, [values.exam_language, values.exam_type, values.component, examLanguages]);
 
-    // Only reset dependent field if user manually changed the component
-    if (component !== initialValues.component) {
-      setCategory('');
+  // Generic handler for all field changes that maintains relationships
+  const handleFieldChange = useCallback((field, value) => {
+    // Create updated values based on the changed field
+    const updatedValues = { ...values };
+    
+    // Update the specified field
+    updatedValues[field] = value;
+    
+    // Reset dependent fields when a parent field changes
+    if (field === 'exam_language') {
+      updatedValues.exam_type = '';
+      updatedValues.component = '';
+      updatedValues.category = '';
+    } else if (field === 'exam_type') {
+      updatedValues.component = '';
+      updatedValues.category = '';
+    } else if (field === 'component') {
+      updatedValues.category = '';
     }
-  }, [examLanguage, examType, component, examLanguages, initialValues.component]);
-
-  // Memoize the notifyChange function to prevent unnecessary renders
-  const notifyChange = useCallback(() => {
-    if (onChange) {
-      const currentValues = {
-        exam_language: examLanguage,
-        exam_type: examType,
-        component: component,
-        category: category
-      };
-      
-      // Only call onChange if values have actually changed
-      if (JSON.stringify(currentValues) !== JSON.stringify(prevInitialValues)) {
-        onChange(currentValues);
-      }
-    }
-  }, [examLanguage, examType, component, category, onChange, prevInitialValues]);
-
-  // Use a separate effect for calling the onChange function
-  useEffect(() => {
-    // Skip initial render and only run on subsequent updates
-    if (prevInitialValues !== initialValues) {
-      notifyChange();
-    }
-  }, [examLanguage, examType, component, category, notifyChange, prevInitialValues, initialValues]);
-
-  // Log the relevant data structures for debugging
-  useEffect(() => {
-    console.log('examLanguages:', examLanguages);
-    console.log('availableExamTypes:', availableExamTypes);
-    console.log('availableComponents:', availableComponents);
-    console.log('availableCategories:', availableCategories);
-  }, [examLanguages, availableExamTypes, availableComponents, availableCategories]);
-
-  // Handlers to update the selections
-  const handleLanguageChange = (e) => {
-    setExamLanguage(e.target.value);
-  };
-
-  const handleTypeChange = (e) => {
-    setExamType(e.target.value);
-  };
-
-  const handleComponentChange = (e) => {
-    setComponent(e.target.value);
-  };
-
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
-  };
+    
+    // Log the change
+    console.log(`FormCategorySelector: ${field} changed to ${value}. Updated values:`, updatedValues);
+    
+    // Update state
+    setValues(updatedValues);
+    
+    // Notify parent component
+    onChange(updatedValues);
+  }, [values, onChange]);
 
   return (
     <Paper 
@@ -239,9 +197,9 @@ const FormCategorySelector = ({
           <InputLabel id="exam-language-label">Exam Language</InputLabel>
           <Select
             labelId="exam-language-label"
-            value={examLanguage}
+            value={values.exam_language}
             label="Exam Language"
-            onChange={handleLanguageChange}
+            onChange={(e) => handleFieldChange('exam_language', e.target.value)}
           >
             <MenuItem value="">
               <em>Select a language</em>
@@ -255,13 +213,13 @@ const FormCategorySelector = ({
         </FormControl>
 
         {/* Exam Type */}
-        <FormControl fullWidth size="small" disabled={!examLanguage || disabled}>
+        <FormControl fullWidth size="small" disabled={!values.exam_language || disabled}>
           <InputLabel id="exam-type-label">Exam Type</InputLabel>
           <Select
             labelId="exam-type-label"
-            value={examType}
+            value={values.exam_type}
             label="Exam Type"
-            onChange={handleTypeChange}
+            onChange={(e) => handleFieldChange('exam_type', e.target.value)}
           >
             <MenuItem value="">
               <em>Select an exam type</em>
@@ -272,7 +230,7 @@ const FormCategorySelector = ({
               </MenuItem>
             ))}
           </Select>
-          {examLanguage && availableExamTypes.length === 0 && (
+          {values.exam_language && availableExamTypes.length === 0 && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
               No exam types available for this language
             </Typography>
@@ -280,13 +238,13 @@ const FormCategorySelector = ({
         </FormControl>
 
         {/* Component */}
-        <FormControl fullWidth size="small" disabled={!examType || disabled}>
+        <FormControl fullWidth size="small" disabled={!values.exam_type || disabled}>
           <InputLabel id="component-label">Component</InputLabel>
           <Select
             labelId="component-label"
-            value={component}
+            value={values.component}
             label="Component"
-            onChange={handleComponentChange}
+            onChange={(e) => handleFieldChange('component', e.target.value)}
           >
             <MenuItem value="">
               <em>Select a component</em>
@@ -297,7 +255,7 @@ const FormCategorySelector = ({
               </MenuItem>
             ))}
           </Select>
-          {examType && availableComponents.length === 0 && (
+          {values.exam_type && availableComponents.length === 0 && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
               No components available for this exam type
             </Typography>
@@ -305,13 +263,13 @@ const FormCategorySelector = ({
         </FormControl>
 
         {/* Category */}
-        <FormControl fullWidth size="small" disabled={!component || disabled}>
+        <FormControl fullWidth size="small" disabled={!values.component || disabled}>
           <InputLabel id="category-label">Category</InputLabel>
           <Select
             labelId="category-label"
-            value={category}
+            value={values.category}
             label="Category"
-            onChange={handleCategoryChange}
+            onChange={(e) => handleFieldChange('category', e.target.value)}
           >
             <MenuItem value="">
               <em>Select a category</em>
@@ -322,7 +280,7 @@ const FormCategorySelector = ({
               </MenuItem>
             ))}
           </Select>
-          {component && availableCategories.length === 0 && (
+          {values.component && availableCategories.length === 0 && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
               No categories available for this component
             </Typography>
@@ -331,45 +289,55 @@ const FormCategorySelector = ({
       </Box>
 
       {/* Selection Summary */}
-      {(examLanguage || examType || component || category) && (
+      {(values.exam_language || values.exam_type || values.component || values.category) && (
         <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #e0e0e0' }}>
           <Typography variant="subtitle2" gutterBottom>
             Current Selection:
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {examLanguage && (
+            {values.exam_language && (
               <Chip 
                 size="small" 
-                label={`Language: ${examLanguages.find(l => l.id === examLanguage)?.label || examLanguage}`}
+                label={`Language: ${examLanguages.find(l => l.id === values.exam_language)?.label || values.exam_language}`}
                 color="primary"
                 variant="outlined"
               />
             )}
-            {examType && (
+            {values.exam_type && (
               <Chip 
                 size="small" 
-                label={`Type: ${availableExamTypes.find(t => t.id === examType)?.label || examType}`}
+                label={`Type: ${availableExamTypes.find(t => t.id === values.exam_type)?.label || values.exam_type}`}
                 color="primary"
                 variant="outlined"
               />
             )}
-            {component && (
+            {values.component && (
               <Chip 
                 size="small" 
-                label={`Component: ${availableComponents.find(c => c.id === component)?.label || component}`}
+                label={`Component: ${availableComponents.find(c => c.id === values.component)?.label || values.component}`}
                 color="primary"
                 variant="outlined"
               />
             )}
-            {category && (
+            {values.category && (
               <Chip 
                 size="small" 
-                label={`Category: ${availableCategories.find(c => c.id === category)?.label || category}`}
+                label={`Category: ${availableCategories.find(c => c.id === values.category)?.label || values.category}`}
                 color="primary"
                 variant="outlined"
               />
             )}
           </Box>
+        </Box>
+      )}
+
+      {/* Debug information - remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed #e0e0e0', fontSize: '10px', color: '#999' }}>
+          <Typography variant="caption">Debug Info (pageId: {pageId})</Typography>
+          <pre style={{ fontSize: '10px', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+            {JSON.stringify(values, null, 2)}
+          </pre>
         </Box>
       )}
     </Paper>
