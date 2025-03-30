@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 class FormProcessingService {
-  constructor(dbPath = path.join(__dirname, '../production_questionbank.db')) {
+  constructor(dbPath = path.join(__dirname, '../form_storage.db')) {
     this.db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
         console.error('Could not connect to database', err);
@@ -177,12 +177,14 @@ class FormProcessingService {
   
   // Process each content type
   async processSingleChoiceQuestion(cardId, content) {
+    // Store question media
     const mediaData = JSON.stringify({
       question_image: content.question_image,
       question_audio: content.question_audio,
       question_video: content.question_video
     });
     
+    // Store options with their media
     const optionsData = JSON.stringify(content.options || []);
     
     return this.run(
@@ -367,13 +369,10 @@ class FormProcessingService {
   }
   
   async processMultimediaMaterial(cardId, content) {
-    const mediaData = JSON.stringify({
-      url: content.url,
-      alt: content.alt,
-      caption: content.caption,
-      source: content.source
-    });
+    // Store the full media object
+    const mediaData = JSON.stringify(content.media || {});
     
+    // Store the full settings object
     const settingsData = JSON.stringify(content.settings || {});
     
     return this.run(
@@ -821,11 +820,8 @@ class FormProcessingService {
       showTitle: record.show_title === 1,
       titleStyle: record.title_style,
       mediaType: record.media_type,
-      url: media.url,
-      alt: media.alt,
-      caption: media.caption,
-      source: media.source,
-      settings: settings
+      media: media,  // Return the full media object
+      settings: settings  // Return the full settings object
     };
   }
   

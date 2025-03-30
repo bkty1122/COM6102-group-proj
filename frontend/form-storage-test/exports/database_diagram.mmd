@@ -1,0 +1,195 @@
+erDiagram
+    question_banks {
+        INTEGER PK id NULL
+        TEXT questionbank_id NOT_NULL
+        TEXT title NOT_NULL
+        TEXT description NULL
+        TEXT export_date NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+        TEXT status NULL
+        INTEGER author_id NULL
+        INTEGER version NULL
+    }
+    question_bank_pages {
+        INTEGER PK id NULL
+        TEXT questionbank_id NOT_NULL
+        INTEGER page_index NOT_NULL
+        TEXT exam_language NULL
+        TEXT exam_type NULL
+        TEXT component NULL
+        TEXT category NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    cards {
+        INTEGER PK id NULL
+        INTEGER page_id NOT_NULL
+        TEXT card_type NOT_NULL
+        INTEGER position NOT_NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    single_choice_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        INTEGER answer_id NULL
+        TEXT correct_answer NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        INTEGER marks NULL
+        TEXT options_data NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    multiple_choice_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        INTEGER answer_id NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        INTEGER marks NULL
+        TEXT options_data NULL
+        TEXT correct_answers NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    fill_in_blank_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        TEXT blanks_data NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    matching_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        TEXT options_data NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    long_text_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        TEXT placeholder NULL
+        INTEGER rows NULL
+        TEXT suggested_answer NULL
+        INTEGER marks NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    audio_response_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        INTEGER max_seconds NULL
+        INTEGER marks NULL
+        INTEGER allow_rerecording NULL
+        INTEGER allow_pause NULL
+        INTEGER show_timer NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    text_materials {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT title NULL
+        TEXT content NULL
+        INTEGER show_title NULL
+        TEXT title_style NULL
+        INTEGER is_rich_text NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    multimedia_materials {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT title NULL
+        INTEGER show_title NULL
+        TEXT title_style NULL
+        TEXT media_type NULL
+        TEXT media_data NULL
+        TEXT settings_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    llm_session_materials {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT title NULL
+        INTEGER show_title NULL
+        TEXT title_style NULL
+        TEXT session_settings NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    llm_audio_response_questions {
+        INTEGER PK id NULL
+        TEXT content_id NOT_NULL
+        INTEGER card_id NOT_NULL
+        INTEGER order_id NOT_NULL
+        TEXT question NOT_NULL
+        TEXT instruction NULL
+        TEXT difficulty NULL
+        INTEGER max_seconds NULL
+        INTEGER marks NULL
+        INTEGER allow_rerecording NULL
+        INTEGER allow_pause NULL
+        INTEGER show_timer NULL
+        INTEGER number_of_questions NULL
+        TEXT llm_session_type NULL
+        TEXT linked_llm_session_id NULL
+        TEXT question_specific_settings NULL
+        TEXT media_data NULL
+        TEXT created_at NULL
+        TEXT updated_at NULL
+    }
+    question_banks ||--o{ question_bank_pages : "foreign_key"
+    question_bank_pages ||--o{ cards : "foreign_key"
+    cards ||--o{ single_choice_questions : "foreign_key"
+    cards ||--o{ multiple_choice_questions : "foreign_key"
+    cards ||--o{ fill_in_blank_questions : "foreign_key"
+    cards ||--o{ matching_questions : "foreign_key"
+    cards ||--o{ long_text_questions : "foreign_key"
+    cards ||--o{ audio_response_questions : "foreign_key"
+    cards ||--o{ text_materials : "foreign_key"
+    cards ||--o{ multimedia_materials : "foreign_key"
+    cards ||--o{ llm_session_materials : "foreign_key"
+    cards ||--o{ llm_audio_response_questions : "foreign_key"

@@ -1,0 +1,209 @@
+@startuml
+entity question_banks {
+  * id : INTEGER
+  questionbank_id : TEXT
+  title : TEXT
+  description : TEXT
+  export_date : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+  status : TEXT
+  author_id : INTEGER
+  version : INTEGER
+}
+
+entity question_bank_pages {
+  * id : INTEGER
+  questionbank_id : TEXT
+  page_index : INTEGER
+  exam_language : TEXT
+  exam_type : TEXT
+  component : TEXT
+  category : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity cards {
+  * id : INTEGER
+  page_id : INTEGER
+  card_type : TEXT
+  position : INTEGER
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity single_choice_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  answer_id : INTEGER
+  correct_answer : TEXT
+  instruction : TEXT
+  difficulty : TEXT
+  marks : INTEGER
+  options_data : TEXT
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity multiple_choice_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  answer_id : INTEGER
+  instruction : TEXT
+  difficulty : TEXT
+  marks : INTEGER
+  options_data : TEXT
+  correct_answers : TEXT
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity fill_in_blank_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  instruction : TEXT
+  difficulty : TEXT
+  blanks_data : TEXT
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity matching_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  instruction : TEXT
+  difficulty : TEXT
+  options_data : TEXT
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity long_text_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  instruction : TEXT
+  difficulty : TEXT
+  placeholder : TEXT
+  rows : INTEGER
+  suggested_answer : TEXT
+  marks : INTEGER
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity audio_response_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  instruction : TEXT
+  difficulty : TEXT
+  max_seconds : INTEGER
+  marks : INTEGER
+  allow_rerecording : INTEGER
+  allow_pause : INTEGER
+  show_timer : INTEGER
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity text_materials {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  title : TEXT
+  content : TEXT
+  show_title : INTEGER
+  title_style : TEXT
+  is_rich_text : INTEGER
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity multimedia_materials {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  title : TEXT
+  show_title : INTEGER
+  title_style : TEXT
+  media_type : TEXT
+  media_data : TEXT
+  settings_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity llm_session_materials {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  title : TEXT
+  show_title : INTEGER
+  title_style : TEXT
+  session_settings : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity llm_audio_response_questions {
+  * id : INTEGER
+  content_id : TEXT
+  card_id : INTEGER
+  order_id : INTEGER
+  question : TEXT
+  instruction : TEXT
+  difficulty : TEXT
+  max_seconds : INTEGER
+  marks : INTEGER
+  allow_rerecording : INTEGER
+  allow_pause : INTEGER
+  show_timer : INTEGER
+  number_of_questions : INTEGER
+  llm_session_type : TEXT
+  linked_llm_session_id : TEXT
+  question_specific_settings : TEXT
+  media_data : TEXT
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+question_banks ||--o{ question_bank_pages
+question_bank_pages ||--o{ cards
+cards ||--o{ single_choice_questions
+cards ||--o{ multiple_choice_questions
+cards ||--o{ fill_in_blank_questions
+cards ||--o{ matching_questions
+cards ||--o{ long_text_questions
+cards ||--o{ audio_response_questions
+cards ||--o{ text_materials
+cards ||--o{ multimedia_materials
+cards ||--o{ llm_session_materials
+cards ||--o{ llm_audio_response_questions
+@enduml
