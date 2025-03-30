@@ -51,6 +51,13 @@ const AvailableQuestions = () => {
       icon: <Mic size={18} />,
       color: "#0a2351"
     },
+    { 
+      id: "llm-audio-response", 
+      label: "LLM Audio Response Setting",
+      description: "Students record audio responses to questions - corresponding to LLM",
+      icon: <Mic size={18} />,
+      color: "#0a2351"
+    },
   ];
 
   return (

@@ -1,0 +1,593 @@
+{
+  "title": "Form Builder Export",
+  "exportDate": "2025-03-30T05:42:39.024Z",
+  "pages": [
+    {
+      "page_index": 1,
+      "exam_categories": {
+        "exam_language": "en",
+        "exam_type": "ielts",
+        "component": "reading",
+        "category": "education"
+      },
+      "exam_language": "en",
+      "cards": [
+        {
+          "card_type": "question",
+          "position": 0,
+          "contents": [
+            {
+              "id": "single-choice-1743313072104",
+              "type": "single-choice",
+              "order_id": 0,
+              "answer_id": 2,
+              "question": "Enter your question here...",
+              "options": [
+                {
+                  "id": 0,
+                  "answer_id": 2,
+                  "option_value": "Option 1",
+                  "option_image": {
+                    "id": "img-001",
+                    "type": "image",
+                    "name": "Nature Landscape",
+                    "url": "https://picsum.photos/id/10/200",
+                    "thumbnail": "https://picsum.photos/id/10/50"
+                  },
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 1,
+                  "answer_id": 2,
+                  "option_value": "Option 2",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 2,
+                  "answer_id": 2,
+                  "option_value": "Option 3",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                }
+              ],
+              "correctAnswer": "Option 1",
+              "instruction": "Select the correct answer from the options below.",
+              "difficulty": "easy",
+              "marks": 1,
+              "question_image": {
+                "id": "img-001",
+                "type": "image",
+                "name": "Nature Landscape",
+                "url": "https://picsum.photos/id/10/200",
+                "thumbnail": "https://picsum.photos/id/10/50"
+              },
+              "question_audio": null,
+              "question_video": null
+            },
+            {
+              "id": "fill-in-the-blank-1743313090711",
+              "type": "fill-in-the-blank",
+              "order_id": 1,
+              "question": "Enter your question with [blank_1] placeholders[blank_2]...",
+              "blanks": [
+                {
+                  "id": 0,
+                  "answer_id": 4,
+                  "placeholder": "[blank_1]",
+                  "correctAnswers": [
+                    "ee",
+                    "ee"
+                  ],
+                  "marks": 1
+                },
+                {
+                  "id": 1,
+                  "answer_id": 5,
+                  "placeholder": "[blank_2]",
+                  "correctAnswers": [
+                    "ee",
+                    "ee"
+                  ],
+                  "marks": 1
+                }
+              ],
+              "instruction": "Fill in the blanks with the correct words.",
+              "difficulty": "medium",
+              "question_image": null,
+              "question_audio": null,
+              "question_video": null
+            },
+            {
+              "id": "multiple-choice-1743313144050",
+              "type": "multiple-choice",
+              "order_id": 2,
+              "answer_id": 0,
+              "question": "Enter your question here...",
+              "options": [
+                {
+                  "id": 0,
+                  "answer_id": 0,
+                  "option_value": "Option 1",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 1,
+                  "answer_id": 0,
+                  "option_value": "Option 2",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 2,
+                  "answer_id": 0,
+                  "option_value": "Option 3",
+                  "option_image": {
+                    "id": "img-001",
+                    "type": "image",
+                    "name": "Nature Landscape",
+                    "url": "https://picsum.photos/id/10/200",
+                    "thumbnail": "https://picsum.photos/id/10/50"
+                  },
+                  "option_audio": null,
+                  "option_video": null
+                }
+              ],
+              "instruction": "Select all correct answers from the options below.",
+              "difficulty": "medium",
+              "marks": 1,
+              "question_image": {
+                "id": "img-001",
+                "type": "image",
+                "name": "Nature Landscape",
+                "url": "https://picsum.photos/id/10/200",
+                "thumbnail": "https://picsum.photos/id/10/50"
+              },
+              "question_audio": null,
+              "question_video": null,
+              "correctAnswers": [
+                "Option 1",
+                "Option 2"
+              ]
+            },
+            {
+              "id": "matching-1743313162859",
+              "type": "matching",
+              "order_id": 3,
+              "question": "Enter your question here...",
+              "blanks": [
+                {
+                  "id": 0,
+                  "answer_id": 7,
+                  "label": "Blank 1",
+                  "correctAnswers": [
+                    "dd"
+                  ],
+                  "placeholder": "Enter your answer",
+                  "marks": 1,
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 1,
+                  "answer_id": 1,
+                  "label": "Blank 2",
+                  "correctAnswers": [
+                    "fdd"
+                  ],
+                  "placeholder": "Enter your answer",
+                  "marks": 1,
+                  "option_image": {
+                    "id": "img-001",
+                    "type": "image",
+                    "name": "Nature Landscape",
+                    "url": "https://picsum.photos/id/10/200",
+                    "thumbnail": "https://picsum.photos/id/10/50"
+                  },
+                  "option_audio": null,
+                  "option_video": null
+                }
+              ],
+              "instruction": "Fill in the blanks with the correct answers below.",
+              "difficulty": "medium",
+              "question_image": null,
+              "question_audio": null,
+              "question_video": null
+            },
+            {
+              "id": "long-text-1743313179060",
+              "type": "long-text",
+              "order_id": 4,
+              "answer_id": 0,
+              "question": "Enter your question here...",
+              "placeholder": "Write your answer here...",
+              "rows": 9,
+              "suggestedAnswer": "Hello world",
+              "instruction": "Provide a detailed response to the question below.",
+              "difficulty": "medium",
+              "marks": 1,
+              "question_image": null,
+              "question_audio": null,
+              "question_video": null
+            }
+          ]
+        },
+        {
+          "card_type": "material",
+          "position": 1,
+          "contents": [
+            {
+              "id": "text-material-1743313000561",
+              "type": "text-material",
+              "order_id": 0,
+              "title": "Reading Passage",
+              "content": "Enter the text content here. This could be a reading passage, instructions, or explanatory text.",
+              "showTitle": true,
+              "titleStyle": "h2",
+              "isRichText": false
+            },
+            {
+              "id": "text-material-1743313041031",
+              "type": "text-material",
+              "order_id": 1,
+              "title": "Bonne",
+              "content": "Enter the text content here. This could be a reading passage, instructions, or explanatory text.\n\nHello",
+              "showTitle": true,
+              "titleStyle": "h1",
+              "isRichText": false
+            },
+            {
+              "id": "multimedia-material-1743313003152",
+              "type": "multimedia-material",
+              "order_id": 2,
+              "title": "Multimedia Content",
+              "showTitle": true,
+              "titleStyle": "h2",
+              "media": {
+                "id": "img-001",
+                "type": "image",
+                "name": "Nature Landscape",
+                "url": "https://picsum.photos/id/10/200",
+                "thumbnail": "https://picsum.photos/id/10/50"
+              },
+              "mediaType": "image",
+              "settings": {
+                "common": {
+                  "alignment": "center",
+                  "size": "medium",
+                  "customSize": 50,
+                  "caption": "This",
+                  "showBorder": true,
+                  "addAttribution": false,
+                  "attribution": {
+                    "creator": "",
+                    "source": "",
+                    "license": "CC BY"
+                  }
+                },
+                "image": {
+                  "altText": "This",
+                  "cropMode": "none",
+                  "clickToEnlarge": true
+                },
+                "video": {
+                  "displayMode": "normal",
+                  "startTime": 0,
+                  "endTime": null,
+                  "showControls": true,
+                  "autoplay": false,
+                  "muted": false,
+                  "loop": false,
+                  "thumbnailUrl": "",
+                  "showThumbnail": true
+                },
+                "audio": {
+                  "playerStyle": "standard",
+                  "startTime": 0,
+                  "endTime": null,
+                  "showControls": true,
+                  "autoplay": false,
+                  "loop": false,
+                  "showTranscript": false,
+                  "transcript": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page_index": 2,
+      "exam_categories": {
+        "exam_language": "en",
+        "exam_type": "ielts",
+        "component": "reading",
+        "category": "education"
+      },
+      "exam_language": "en",
+      "cards": [
+        {
+          "card_type": "material",
+          "position": 0,
+          "contents": [
+            {
+              "id": "text-material-1743313257914",
+              "type": "text-material",
+              "order_id": 0,
+              "title": "Reading Passage",
+              "content": "Enter the text content here. This could be a reading passage, instructions, or explanatory text.",
+              "showTitle": true,
+              "titleStyle": "h2",
+              "isRichText": false
+            },
+            {
+              "id": "multimedia-material-1743313260092",
+              "type": "multimedia-material",
+              "order_id": 1,
+              "title": "Multimedia Content",
+              "showTitle": true,
+              "titleStyle": "h2",
+              "media": {
+                "id": "img-003",
+                "type": "image",
+                "name": "Abstract Art",
+                "url": "https://picsum.photos/id/30/200",
+                "thumbnail": "https://picsum.photos/id/30/50"
+              },
+              "mediaType": "audio",
+              "settings": {
+                "common": {
+                  "alignment": "center",
+                  "size": "medium",
+                  "customSize": 50,
+                  "caption": "",
+                  "showBorder": true,
+                  "addAttribution": false,
+                  "attribution": {
+                    "creator": "",
+                    "source": "",
+                    "license": "CC BY"
+                  }
+                },
+                "image": {
+                  "altText": "",
+                  "cropMode": "none",
+                  "clickToEnlarge": true
+                },
+                "video": {
+                  "displayMode": "normal",
+                  "startTime": 0,
+                  "endTime": null,
+                  "showControls": true,
+                  "autoplay": false,
+                  "muted": false,
+                  "loop": false,
+                  "thumbnailUrl": "",
+                  "showThumbnail": true
+                },
+                "audio": {
+                  "playerStyle": "standard",
+                  "startTime": 0,
+                  "endTime": null,
+                  "showControls": true,
+                  "autoplay": false,
+                  "loop": false,
+                  "showTranscript": false,
+                  "transcript": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "card_type": "question",
+          "position": 1,
+          "contents": [
+            {
+              "id": "single-choice-1743313282364",
+              "type": "single-choice",
+              "order_id": 0,
+              "answer_id": 10,
+              "question": "Enter your question here...",
+              "options": [
+                {
+                  "id": 0,
+                  "answer_id": 10,
+                  "option_value": "Option 1",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 1,
+                  "answer_id": 10,
+                  "option_value": "Option 2",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 2,
+                  "answer_id": 10,
+                  "option_value": "Option 3",
+                  "option_image": {
+                    "id": "img-003",
+                    "type": "image",
+                    "name": "Abstract Art",
+                    "url": "https://picsum.photos/id/30/200",
+                    "thumbnail": "https://picsum.photos/id/30/50"
+                  },
+                  "option_audio": null,
+                  "option_video": null
+                }
+              ],
+              "correctAnswer": "Option 1",
+              "instruction": "Select the correct answer from the options below.",
+              "difficulty": "medium",
+              "marks": 1,
+              "question_image": {
+                "id": "img-002",
+                "type": "image",
+                "name": "City View",
+                "url": "https://picsum.photos/id/20/200",
+                "thumbnail": "https://picsum.photos/id/20/50"
+              },
+              "question_audio": null,
+              "question_video": null
+            },
+            {
+              "id": "fill-in-the-blank-1743313283457",
+              "type": "fill-in-the-blank",
+              "order_id": 1,
+              "question": "Enter your question with [blank_1] placeholders...[blank_2]",
+              "blanks": [
+                {
+                  "id": 0,
+                  "answer_id": 12,
+                  "placeholder": "[blank_1]",
+                  "correctAnswers": [
+                    "sf"
+                  ],
+                  "marks": 1
+                },
+                {
+                  "id": 1,
+                  "answer_id": 13,
+                  "placeholder": "[blank_2]",
+                  "correctAnswers": [
+                    "cx",
+                    "fs"
+                  ],
+                  "marks": 1
+                }
+              ],
+              "instruction": "Fill in the blanks with the correct words.",
+              "difficulty": "medium",
+              "question_image": null,
+              "question_audio": null,
+              "question_video": null
+            },
+            {
+              "id": "multiple-choice-1743313284748",
+              "type": "multiple-choice",
+              "order_id": 2,
+              "answer_id": 0,
+              "question": "Enter your question here...",
+              "options": [
+                {
+                  "id": 0,
+                  "answer_id": 0,
+                  "option_value": "Option 1",
+                  "option_image": {
+                    "id": "img-003",
+                    "type": "image",
+                    "name": "Abstract Art",
+                    "url": "https://picsum.photos/id/30/200",
+                    "thumbnail": "https://picsum.photos/id/30/50"
+                  },
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 1,
+                  "answer_id": 0,
+                  "option_value": "Option 2",
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                }
+              ],
+              "instruction": "Select all correct answers from the options below.",
+              "difficulty": "medium",
+              "marks": 1,
+              "question_image": {
+                "id": "img-002",
+                "type": "image",
+                "name": "City View",
+                "url": "https://picsum.photos/id/20/200",
+                "thumbnail": "https://picsum.photos/id/20/50"
+              },
+              "question_audio": null,
+              "question_video": null,
+              "correctAnswers": [
+                "Option 1",
+                "Option 2"
+              ]
+            },
+            {
+              "id": "matching-1743313286268",
+              "type": "matching",
+              "order_id": 3,
+              "question": "Enter your question here...",
+              "blanks": [
+                {
+                  "id": 0,
+                  "answer_id": 14,
+                  "label": "Blank 1",
+                  "correctAnswers": [
+                    "sf",
+                    "f"
+                  ],
+                  "placeholder": "Enter your answer",
+                  "marks": 1,
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                },
+                {
+                  "id": 1,
+                  "answer_id": 1,
+                  "label": "Blank 2",
+                  "correctAnswers": [
+                    "sf",
+                    "fs"
+                  ],
+                  "placeholder": "Enter your answer",
+                  "marks": 1,
+                  "option_image": null,
+                  "option_audio": null,
+                  "option_video": null
+                }
+              ],
+              "instruction": "Fill in the blanks with the correct answers below.",
+              "difficulty": "medium",
+              "question_image": null,
+              "question_audio": null,
+              "question_video": null
+            },
+            {
+              "id": "long-text-1743313289169",
+              "type": "long-text",
+              "order_id": 4,
+              "answer_id": 0,
+              "question": "Enter your question here...",
+              "placeholder": "Write your answer here...",
+              "rows": 4,
+              "suggestedAnswer": "fsfsfs",
+              "instruction": "Provide a detailed response to the question below.",
+              "difficulty": "medium",
+              "marks": 1,
+              "question_image": {
+                "id": "img-003",
+                "type": "image",
+                "name": "Abstract Art",
+                "url": "https://picsum.photos/id/30/200",
+                "thumbnail": "https://picsum.photos/id/30/50"
+              },
+              "question_audio": null,
+              "question_video": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
