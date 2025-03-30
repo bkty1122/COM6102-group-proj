@@ -1,0 +1,59 @@
+{
+  "title": "IELTS Speaking Practice Test",
+  "exportDate": "2025-03-30T06:23:58.102Z",
+  "pages": [
+    {
+      "page_index": 1,
+      "exam_categories": {
+        "exam_language": "en",
+        "exam_type": "ielts",
+        "component": "reading",
+        "category": "education"
+      },
+      "exam_language": "en",
+      "cards": [
+        {
+          "card_type": "material",
+          "position": 0,
+          "contents": [
+            {
+              "id": "llm-session-speaking-123",
+              "type": "llm-session-material",
+              "order_id": 0,
+              "title": "Interactive LLM Session",
+              "showTitle": true,
+              "titleStyle": "h2",
+              "sessionSettings": {
+                "sessionTitle": "Interactive Conversation Practice",
+                "sessionDescription": "Practice your conversational skills with our AI assistant."
+              }
+            }
+          ]
+        },
+        {
+          "card_type": "289174",
+          "position": 1,
+          "contents": [
+            {
+              "id": "audio-123",
+              "type": "audio",
+              "order_id": 0,
+              "answer_id": 0,
+              "question": "Record your answer to the question below.",
+              "maxSeconds": 90,
+              "instruction": "Click the record button and speak your answer clearly.",
+              "difficulty": "medium",
+              "marks": 1,
+              "allowRerecording": true,
+              "allowPause": true,
+              "showTimer": true,
+              "question_image": null,
+              "question_audio": null,
+              "question_video": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
