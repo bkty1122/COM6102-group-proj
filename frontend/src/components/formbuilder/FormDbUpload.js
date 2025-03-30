@@ -1,0 +1,227 @@
+// src/components/formbuilder/FormDbUpload.js
+import React, { useState } from 'react';
+import { 
+  Button, 
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  TextField,
+  Switch,
+  FormControlLabel,
+  Alert,
+  CircularProgress,
+  Box,
+  Typography
+} from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { formApi } from '../../api/formApi';
+import { validateForm, checkForDuplicateIds, createSlugFromTitle } from '../../utils/formValidation';
+
+const FormDbUpload = ({ pages, title = "Form Builder Export", description = "" }) => {
+  const [open, setOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState(title);
+  const [formDescription, setFormDescription] = useState(description);
+  const [isPublished, setIsPublished] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [formId, setFormId] = useState(null);
+  
+  const handleOpen = () => {
+    setOpen(true);
+    setResult(null);
+    setValidationErrors([]);
+  };
+  
+  const handleClose = () => {
+    setOpen(false);
+  };
+  
+  const handleTitleChange = (e) => {
+    setFormTitle(e.target.value);
+  };
+  
+  const handleDescriptionChange = (e) => {
+    setFormDescription(e.target.value);
+  };
+  
+  const handlePublishedChange = (e) => {
+    setIsPublished(e.target.checked);
+  };
+  
+  const handleUpload = async () => {
+    try {
+      setLoading(true);
+      setResult(null);
+      setValidationErrors([]);
+      
+      // Prepare form data
+      const formData = {
+        title: formTitle,
+        description: formDescription,
+        exportDate: new Date().toISOString(),
+        pages
+      };
+      
+      // Validate form data
+      const validation = validateForm(formData);
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setLoading(false);
+        return;
+      }
+      
+      // Check for duplicate IDs
+      const duplicateCheck = checkForDuplicateIds(formData);
+      if (duplicateCheck.hasDuplicates) {
+        setValidationErrors([
+          { field: 'general', message: `Duplicate content IDs found: ${duplicateCheck.duplicateIds.join(', ')}` }
+        ]);
+        setLoading(false);
+        return;
+      }
+      
+      // Perform API call - either update or create
+      let response;
+      if (formId) {
+        response = await formApi.updateForm(formId, formData, isPublished);
+        setResult({
+          success: true,
+          message: `Form updated successfully with ID: ${response.data.form.id}`
+        });
+      } else {
+        response = await formApi.saveForm(formData, isPublished);
+        setFormId(response.data.form.id);
+        setResult({
+          success: true,
+          message: `Form saved successfully with ID: ${response.data.form.id}`
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading form:', error);
+      setResult({
+        success: false,
+        message: error.response?.data?.message || 'Error uploading form to the database',
+        error
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <>
+      <Button
+        variant="contained"
+        color="secondary"
+        startIcon={<CloudUploadIcon />}
+        onClick={handleOpen}
+        sx={{ ml: 2 }}
+      >
+        Save to DB
+      </Button>
+      
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {formId ? 'Update Form in Database' : 'Save Form to Database'}
+        </DialogTitle>
+        
+        <DialogContent>
+          {validationErrors.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <Alert severity="error">
+                <Typography variant="subtitle1">Please fix the following errors:</Typography>
+                <ul>
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error.message}</li>
+                  ))}
+                </ul>
+              </Alert>
+            </Box>
+          )}
+          
+          {result && (
+            <Alert severity={result.success ? "success" : "error"} sx={{ mb: 2 }}>
+              {result.message}
+            </Alert>
+          )}
+          
+          <DialogContentText>
+            Enter form details for database storage. This will save your form to the server.
+          </DialogContentText>
+          
+          <TextField
+            autoFocus
+            margin="dense"
+            id="title"
+            label="Form Title"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={formTitle}
+            onChange={handleTitleChange}
+            sx={{ mb: 2 }}
+          />
+          
+          <TextField
+            margin="dense"
+            id="description"
+            label="Form Description"
+            type="text"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={formDescription}
+            onChange={handleDescriptionChange}
+            sx={{ mb: 2 }}
+          />
+          
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={isPublished} 
+                onChange={handlePublishedChange} 
+                color="primary" 
+              />
+            }
+            label="Publish form (makes it available to users)"
+          />
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary">
+              Form data preview:
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              • {pages.length} page(s)
+              • {pages.reduce((count, page) => count + page.cards.length, 0)} card(s)
+              • {pages.reduce((count, page) => {
+                  return count + page.cards.reduce((cardCount, card) => 
+                    cardCount + card.contents.length, 0);
+                }, 0)} content item(s)
+            </Typography>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleUpload} 
+            color="primary" 
+            variant="contained"
+            disabled={loading || !formTitle}
+            startIcon={loading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+          >
+            {loading ? 'Saving...' : (formId ? 'Update Form' : 'Save Form')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
+export default FormDbUpload;

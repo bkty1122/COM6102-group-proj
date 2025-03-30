@@ -23,7 +23,7 @@ import TopAppBarLoggedIn from '../components/shared/TopAppBarLoggedIn';
 import BlankPage from "../components/formbuilder/shared/BlankPage";
 import AvailableQuestions from "../components/formbuilder/shared/AvailableQuestions";
 import AvailableMaterials from "../components/formbuilder/shared/AvailableMaterials";
-import FormExport from "../components/formbuilder/FormExport";
+import FormExport from "../components/formbuilder/FormExportTools";
 
 const FormBuilderPage = () => {
   const {
