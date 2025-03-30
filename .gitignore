@@ -1,2 +1,4 @@
 # ignore python virtual environment
 database/venv
+backend/node_modules
+frontend/form-storage-test/node_modules
