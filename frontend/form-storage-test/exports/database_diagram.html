@@ -1,451 +1,501 @@
-
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Database Diagram</title>
-      <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-          padding: 0;
-        }
-        h1 {
-          color: #333;
-        }
-        .diagram-container {
-          width: 100%;
-          overflow: auto;
-          border: 1px solid #ddd;
-          padding: 10px;
-        }
-        pre {
-          background-color: #f5f5f5;
-          padding: 10px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          overflow: auto;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>Database Schema Diagram</h1>
-      
-      <h2>Interactive Diagram</h2>
-      <div class="diagram-container">
-        <div class="mermaid">
-erDiagram
-    question_banks {
-        INTEGER PK id NULL
-        TEXT questionbank_id NOT_NULL
-        TEXT title NOT_NULL
-        TEXT description NULL
-        TEXT export_date NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-        TEXT status NULL
-        INTEGER author_id NULL
-        INTEGER version NULL
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Database Schema Visualization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
     }
-    question_bank_pages {
-        INTEGER PK id NULL
-        TEXT questionbank_id NOT_NULL
-        INTEGER page_index NOT_NULL
-        TEXT exam_language NULL
-        TEXT exam_type NULL
-        TEXT component NULL
-        TEXT category NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    cards {
-        INTEGER PK id NULL
-        INTEGER page_id NOT_NULL
-        TEXT card_type NOT_NULL
-        INTEGER position NOT_NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    single_choice_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        INTEGER answer_id NULL
-        TEXT correct_answer NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER marks NULL
-        TEXT options_data NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    multiple_choice_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        INTEGER answer_id NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER marks NULL
-        TEXT options_data NULL
-        TEXT correct_answers NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    fill_in_blank_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        TEXT blanks_data NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    matching_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        TEXT options_data NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    long_text_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        TEXT placeholder NULL
-        INTEGER rows NULL
-        TEXT suggested_answer NULL
-        INTEGER marks NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    audio_response_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER max_seconds NULL
-        INTEGER marks NULL
-        INTEGER allow_rerecording NULL
-        INTEGER allow_pause NULL
-        INTEGER show_timer NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    text_materials {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT title NULL
-        TEXT content NULL
-        INTEGER show_title NULL
-        TEXT title_style NULL
-        INTEGER is_rich_text NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    multimedia_materials {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT title NULL
-        INTEGER show_title NULL
-        TEXT title_style NULL
-        TEXT media_type NULL
-        TEXT media_data NULL
-        TEXT settings_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    llm_session_materials {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT title NULL
-        INTEGER show_title NULL
-        TEXT title_style NULL
-        TEXT session_settings NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    llm_audio_response_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER max_seconds NULL
-        INTEGER marks NULL
-        INTEGER allow_rerecording NULL
-        INTEGER allow_pause NULL
-        INTEGER show_timer NULL
-        INTEGER number_of_questions NULL
-        TEXT llm_session_type NULL
-        TEXT linked_llm_session_id NULL
-        TEXT question_specific_settings NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    question_banks ||--o{ question_bank_pages : "foreign_key"
-    question_bank_pages ||--o{ cards : "foreign_key"
-    cards ||--o{ single_choice_questions : "foreign_key"
-    cards ||--o{ multiple_choice_questions : "foreign_key"
-    cards ||--o{ fill_in_blank_questions : "foreign_key"
-    cards ||--o{ matching_questions : "foreign_key"
-    cards ||--o{ long_text_questions : "foreign_key"
-    cards ||--o{ audio_response_questions : "foreign_key"
-    cards ||--o{ text_materials : "foreign_key"
-    cards ||--o{ multimedia_materials : "foreign_key"
-    cards ||--o{ llm_session_materials : "foreign_key"
-    cards ||--o{ llm_audio_response_questions : "foreign_key"
-
-        </div>
-      </div>
-      
-      <h2>Text Version</h2>
-      <pre>erDiagram
-    question_banks {
-        INTEGER PK id NULL
-        TEXT questionbank_id NOT_NULL
-        TEXT title NOT_NULL
-        TEXT description NULL
-        TEXT export_date NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-        TEXT status NULL
-        INTEGER author_id NULL
-        INTEGER version NULL
-    }
-    question_bank_pages {
-        INTEGER PK id NULL
-        TEXT questionbank_id NOT_NULL
-        INTEGER page_index NOT_NULL
-        TEXT exam_language NULL
-        TEXT exam_type NULL
-        TEXT component NULL
-        TEXT category NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    cards {
-        INTEGER PK id NULL
-        INTEGER page_id NOT_NULL
-        TEXT card_type NOT_NULL
-        INTEGER position NOT_NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    single_choice_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        INTEGER answer_id NULL
-        TEXT correct_answer NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER marks NULL
-        TEXT options_data NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    multiple_choice_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        INTEGER answer_id NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER marks NULL
-        TEXT options_data NULL
-        TEXT correct_answers NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    fill_in_blank_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        TEXT blanks_data NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    matching_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        TEXT options_data NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    long_text_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        TEXT placeholder NULL
-        INTEGER rows NULL
-        TEXT suggested_answer NULL
-        INTEGER marks NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    audio_response_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER max_seconds NULL
-        INTEGER marks NULL
-        INTEGER allow_rerecording NULL
-        INTEGER allow_pause NULL
-        INTEGER show_timer NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    text_materials {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT title NULL
-        TEXT content NULL
-        INTEGER show_title NULL
-        TEXT title_style NULL
-        INTEGER is_rich_text NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    multimedia_materials {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT title NULL
-        INTEGER show_title NULL
-        TEXT title_style NULL
-        TEXT media_type NULL
-        TEXT media_data NULL
-        TEXT settings_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    llm_session_materials {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT title NULL
-        INTEGER show_title NULL
-        TEXT title_style NULL
-        TEXT session_settings NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    llm_audio_response_questions {
-        INTEGER PK id NULL
-        TEXT content_id NOT_NULL
-        INTEGER card_id NOT_NULL
-        INTEGER order_id NOT_NULL
-        TEXT question NOT_NULL
-        TEXT instruction NULL
-        TEXT difficulty NULL
-        INTEGER max_seconds NULL
-        INTEGER marks NULL
-        INTEGER allow_rerecording NULL
-        INTEGER allow_pause NULL
-        INTEGER show_timer NULL
-        INTEGER number_of_questions NULL
-        TEXT llm_session_type NULL
-        TEXT linked_llm_session_id NULL
-        TEXT question_specific_settings NULL
-        TEXT media_data NULL
-        TEXT created_at NULL
-        TEXT updated_at NULL
-    }
-    question_banks ||--o{ question_bank_pages : "foreign_key"
-    question_bank_pages ||--o{ cards : "foreign_key"
-    cards ||--o{ single_choice_questions : "foreign_key"
-    cards ||--o{ multiple_choice_questions : "foreign_key"
-    cards ||--o{ fill_in_blank_questions : "foreign_key"
-    cards ||--o{ matching_questions : "foreign_key"
-    cards ||--o{ long_text_questions : "foreign_key"
-    cards ||--o{ audio_response_questions : "foreign_key"
-    cards ||--o{ text_materials : "foreign_key"
-    cards ||--o{ multimedia_materials : "foreign_key"
-    cards ||--o{ llm_session_materials : "foreign_key"
-    cards ||--o{ llm_audio_response_questions : "foreign_key"
-</pre>
-      
-      <script>
-        mermaid.initialize({
-          startOnLoad: true,
-          theme: 'default',
-          securityLevel: 'loose',
-          flowchart: {
-            useMaxWidth: false
-          },
-          er: {
-            layoutDirection: 'TB',
-            entityPadding: 15,
-            useMaxWidth: false
-          }
-        });
-      </script>
-    </body>
-    </html>
     
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 700px;
+      overflow: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .legend {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+    
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+      border-radius: 4px;
+    }
+    
+    .description {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .highlight {
+      background-color: #fff3cd;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    #hierarchical-btn {
+      background-color: #2196F3;
+    }
+    
+    #hierarchical-btn:hover {
+      background-color: #0b7dda;
+    }
+    
+    #force-btn {
+      background-color: #ff9800;
+    }
+    
+    #force-btn:hover {
+      background-color: #e68a00;
+    }
+
+    .tooltip {
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      max-width: 300px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+  </style>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Question Bank Database Schema</h1>
+    
+    <div class="controls">
+      <button id="hierarchical-btn">Hierarchical Layout</button>
+      <button id="force-btn">Force-Directed Layout</button>
+      <button id="zoom-fit-btn">Fit to View</button>
+      <button id="zoom-in-btn">Zoom In</button>
+      <button id="zoom-out-btn">Zoom Out</button>
+    </div>
+    
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #C8E6C9;"></div>
+        <span>Main Entities</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #BBDEFB;"></div>
+        <span>Question Types</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #FFECB3;"></div>
+        <span>Material Types</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #E1BEE7;"></div>
+        <span>LLM-Related</span>
+      </div>
+    </div>
+    
+    <div class="chart-container" id="chart"></div>
+    
+    <div class="description">
+      <h3>Database Structure:</h3>
+      <p>This diagram shows the hierarchical structure of the question bank database:</p>
+      <ul>
+        <li><strong>Question Banks</strong> are the top-level entities containing one or more pages.</li>
+        <li>Each <strong>Page</strong> contains multiple cards and has metadata like exam language and type.</li>
+        <li><strong>Cards</strong> serve as containers that can hold either question content or material content.</li>
+        <li>Content items are specialized by type:
+          <ul>
+            <li><strong>Question types</strong>: single choice, multiple choice, fill-in-blank, matching, long text, audio response</li>
+            <li><strong>Material types</strong>: text, multimedia, LLM session</li>
+          </ul>
+        </li>
+      </ul>
+      <p>
+        <span class="highlight">Relationships</span>: The database uses a hierarchical one-to-many relationship structure where each parent entity can have multiple child entities (represented by the arrows in the diagram).
+      </p>
+      <p>
+        <span class="highlight">Complex Data</span>: Complex data structures (options, media references, settings) are stored as JSON in text columns like <code>options_data</code>, <code>media_data</code>, and <code>settings_data</code>.
+      </p>
+    </div>
+  </div>
+  
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    // Define the graph data
+    const nodes = [
+      // Main entities
+      { id: "question_banks", label: "Question Banks", group: "main", description: "Top-level entity for a form", fields: ["id", "questionbank_id", "title", "description", "export_date"] },
+      { id: "question_bank_pages", label: "Pages", group: "main", description: "Page within a question bank", fields: ["id", "questionbank_id", "page_index", "exam_language", "exam_type"] },
+      { id: "cards", label: "Cards", group: "main", description: "Container for questions or materials", fields: ["id", "page_id", "card_type", "position"] },
+      
+      // Question types
+      { id: "single_choice_questions", label: "Single Choice", group: "question", description: "Single choice question type", fields: ["content_id", "card_id", "question", "options_data"] },
+      { id: "multiple_choice_questions", label: "Multiple Choice", group: "question", description: "Multiple choice question type", fields: ["content_id", "card_id", "question", "options_data", "correct_answers"] },
+      { id: "fill_in_blank_questions", label: "Fill in Blank", group: "question", description: "Fill in the blank question type", fields: ["content_id", "card_id", "question", "blanks_data"] },
+      { id: "matching_questions", label: "Matching", group: "question", description: "Matching question type", fields: ["content_id", "card_id", "question", "options_data"] },
+      { id: "long_text_questions", label: "Long Text", group: "question", description: "Essay/long text question type", fields: ["content_id", "card_id", "question", "placeholder", "rows"] },
+      { id: "audio_response_questions", label: "Audio Response", group: "question", description: "Audio recording response type", fields: ["content_id", "card_id", "question", "max_seconds"] },
+      
+      // Material types
+      { id: "text_materials", label: "Text Material", group: "material", description: "Text content (passages, instructions)", fields: ["content_id", "card_id", "title", "content", "is_rich_text"] },
+      { id: "multimedia_materials", label: "Multimedia", group: "material", description: "Image, audio, video content", fields: ["content_id", "card_id", "title", "media_type", "media_data", "settings_data"] },
+      
+      // LLM types
+      { id: "llm_session_materials", label: "LLM Session", group: "llm", description: "LLM conversation content", fields: ["content_id", "card_id", "title", "session_settings"] },
+      { id: "llm_audio_response_questions", label: "LLM Audio Response", group: "llm", description: "Audio response with LLM analysis", fields: ["content_id", "card_id", "question", "linked_llm_session_id"] }
+    ];
+
+    const links = [
+      // Main hierarchy
+      { source: "question_banks", target: "question_bank_pages", label: "1:N" },
+      { source: "question_bank_pages", target: "cards", label: "1:N" },
+      
+      // Card to Question types
+      { source: "cards", target: "single_choice_questions", label: "1:N" },
+      { source: "cards", target: "multiple_choice_questions", label: "1:N" },
+      { source: "cards", target: "fill_in_blank_questions", label: "1:N" },
+      { source: "cards", target: "matching_questions", label: "1:N" },
+      { source: "cards", target: "long_text_questions", label: "1:N" },
+      { source: "cards", target: "audio_response_questions", label: "1:N" },
+      
+      // Card to Material types
+      { source: "cards", target: "text_materials", label: "1:N" },
+      { source: "cards", target: "multimedia_materials", label: "1:N" },
+      
+      // Card to LLM types
+      { source: "cards", target: "llm_session_materials", label: "1:N" },
+      { source: "cards", target: "llm_audio_response_questions", label: "1:N" },
+      
+      // Special relationship
+      { source: "llm_session_materials", target: "llm_audio_response_questions", label: "link", dashed: true }
+    ];
+
+    // Set up the SVG container
+    const width = document.getElementById('chart').clientWidth;
+    const height = document.getElementById('chart').clientHeight;
+    
+    const svg = d3.select("#chart")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .call(d3.zoom().on("zoom", (event) => {
+        g.attr("transform", event.transform);
+      }));
+    
+    const g = svg.append("g");
+    
+    // Create a tooltip
+    const tooltip = d3.select("#tooltip");
+    
+    // Define the force simulation
+    const simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+      .force("charge", d3.forceManyBody().strength(-800))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("x", d3.forceX(width / 2).strength(0.1))
+      .force("y", d3.forceY(height / 2).strength(0.1));
+    
+    // Create the links
+    const link = g.append("g")
+      .selectAll("line")
+      .data(links)
+      .enter()
+      .append("path")
+      .attr("class", "link")
+      .attr("stroke", "#999")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", d => d.dashed ? "5,5" : "0")
+      .attr("fill", "none")
+      .attr("marker-end", "url(#arrowhead)");
+    
+    // Add arrowhead marker
+    svg.append("defs").append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 26) // Position the arrowhead away from the node
+      .attr("refY", 0)
+      .attr("markerWidth", 6)
+      .attr("markerHeight", 6)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", "#999");
+    
+    // Add link labels
+    const linkText = g.append("g")
+      .selectAll("text")
+      .data(links)
+      .enter()
+      .append("text")
+      .attr("class", "link-label")
+      .attr("font-size", "12px")
+      .attr("fill", "#666")
+      .attr("text-anchor", "middle")
+      .text(d => d.label);
+    
+    // Define node colors by group
+    const colors = {
+      main: "#C8E6C9",    // Green for main entities
+      question: "#BBDEFB", // Blue for question types
+      material: "#FFECB3", // Orange for materials
+      llm: "#E1BEE7"       // Purple for LLM-related
+    };
+    
+    // Create the nodes
+    const node = g.append("g")
+      .selectAll("circle")
+      .data(nodes)
+      .enter()
+      .append("g")
+      .attr("class", "node")
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+    
+    // Add node rectangles
+    node.append("rect")
+      .attr("width", d => Math.max(d.label.length * 8, 80))
+      .attr("height", 40)
+      .attr("rx", 5)
+      .attr("ry", 5)
+      .attr("fill", d => colors[d.group])
+      .attr("stroke", d => d3.color(colors[d.group]).darker(0.5))
+      .attr("stroke-width", 2)
+      .attr("x", d => -Math.max(d.label.length * 8, 80) / 2)
+      .attr("y", -20);
+    
+    // Add node labels
+    node.append("text")
+      .attr("text-anchor", "middle")
+      .attr("dy", ".3em")
+      .attr("font-size", "12px")
+      .attr("font-weight", "bold")
+      .attr("pointer-events", "none")
+      .text(d => d.label);
+    
+    // Add tooltip behavior
+    node
+      .on("mouseover", function(event, d) {
+        // Show tooltip with table info
+        let tooltipContent = `<strong>${d.label}</strong><br>`;
+        tooltipContent += `<em>${d.description}</em><br><br>`;
+        tooltipContent += `<strong>Key fields:</strong><br>`;
+        d.fields.forEach(field => {
+          tooltipContent += `- ${field}<br>`;
+        });
+        
+        tooltip
+          .html(tooltipContent)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 10) + "px")
+          .style("opacity", 1);
+      })
+      .on("mouseout", function() {
+        tooltip.style("opacity", 0);
+      });
+    
+    // Update the positions on each tick
+    simulation.on("tick", () => {
+      link.attr("d", d => {
+        // Create curved links
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy) * 1.5;
+        
+        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+      });
+      
+      linkText
+        .attr("x", d => (d.source.x + d.target.x) / 2)
+        .attr("y", d => (d.source.y + d.target.y) / 2 - 10);
+      
+      node.attr("transform", d => `translate(${d.x},${d.y})`);
+    });
+
+    // Hierarchical layout
+    function applyHierarchicalLayout() {
+      simulation.stop();
+      
+      // Define levels
+      const levels = {
+        "question_banks": 0,
+        "question_bank_pages": 1,
+        "cards": 2
+      };
+      
+      // Assign level 3 to all content types
+      nodes.forEach(node => {
+        if (levels[node.id] === undefined) {
+          levels[node.id] = 3;
+        }
+      });
+      
+      // Position nodes by level
+      const levelHeight = height / 5;
+      const nodesPerLevel = {};
+      
+      // Count nodes per level
+      Object.values(levels).forEach(level => {
+        nodesPerLevel[level] = 0;
+      });
+      
+      nodes.forEach(node => {
+        nodesPerLevel[levels[node.id]]++;
+      });
+      
+      // Position nodes
+      nodes.forEach(node => {
+        const level = levels[node.id];
+        const nodesInLevel = nodesPerLevel[level];
+        const nodeIndex = Object.keys(levels).filter(id => levels[id] === level && id <= node.id).length;
+        
+        node.x = (width / (nodesInLevel + 1)) * (nodeIndex + 1);
+        node.y = levelHeight * (level + 1);
+        
+        // Add some variation to prevent overlap
+        if (level === 3) {
+          if (node.group === "question") {
+            node.y -= 30;
+          } else if (node.group === "material") {
+            node.y += 30;
+          } else if (node.group === "llm") {
+            node.y += 90;
+          }
+        }
+      });
+      
+      // Update the view
+      link.attr("d", d => {
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy) * 1.5;
+        
+        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+      });
+      
+      linkText
+        .attr("x", d => (d.source.x + d.target.x) / 2)
+        .attr("y", d => (d.source.y + d.target.y) / 2 - 10);
+      
+      node.attr("transform", d => `translate(${d.x},${d.y})`);
+    }
+    
+    // Apply hierarchical layout initially
+    setTimeout(applyHierarchicalLayout, 100);
+    
+    // Handle button clicks
+    document.getElementById("hierarchical-btn").addEventListener("click", applyHierarchicalLayout);
+    
+    document.getElementById("force-btn").addEventListener("click", () => {
+      // Reset positions and restart simulation
+      nodes.forEach(node => {
+        node.x = width / 2 + (Math.random() - 0.5) * 100;
+        node.y = height / 2 + (Math.random() - 0.5) * 100;
+      });
+      
+      simulation.alpha(1).restart();
+    });
+    
+    document.getElementById("zoom-fit-btn").addEventListener("click", () => {
+      // Reset zoom to fit all content
+      svg.transition().duration(750).call(
+        d3.zoom().transform,
+        d3.zoomIdentity.translate(0, 0).scale(0.8)
+      );
+    });
+    
+    document.getElementById("zoom-in-btn").addEventListener("click", () => {
+      // Zoom in
+      svg.transition().duration(300).call(
+        d3.zoom().scaleBy, 1.3
+      );
+    });
+    
+    document.getElementById("zoom-out-btn").addEventListener("click", () => {
+      // Zoom out
+      svg.transition().duration(300).call(
+        d3.zoom().scaleBy, 0.7
+      );
+    });
+    
+    // Drag functions
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+    
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+  </script>
+</body>
+</html>
