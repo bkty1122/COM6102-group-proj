@@ -1,0 +1,39 @@
+{
+    "media": [
+      {
+        "id": "img-001",
+        "type": "image",
+        "name": "Nature Landscape",
+        "url": "https://picsum.photos/id/10/200",
+        "thumbnail": "https://picsum.photos/id/10/50"
+      },
+      {
+        "id": "img-002",
+        "type": "image",
+        "name": "City View",
+        "url": "https://picsum.photos/id/20/200",
+        "thumbnail": "https://picsum.photos/id/20/50"
+      },
+      {
+        "id": "img-003",
+        "type": "image",
+        "name": "Abstract Art",
+        "url": "https://picsum.photos/id/30/200",
+        "thumbnail": "https://picsum.photos/id/30/50"
+      },
+      {
+        "id": "audio-001",
+        "type": "audio",
+        "name": "Piano Music",
+        "url": "https://example.com/piano.mp3",
+        "thumbnail": "https://picsum.photos/id/40/50"
+      },
+      {
+        "id": "video-001",
+        "type": "video",
+        "name": "Tutorial Video",
+        "url": "https://example.com/tutorial.mp4",
+        "thumbnail": "https://picsum.photos/id/50/50"
+      }
+    ]
+  }
