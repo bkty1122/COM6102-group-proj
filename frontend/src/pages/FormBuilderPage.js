@@ -1,9 +1,8 @@
 // src/pages/FormBuilderPage.js
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 
 // MUI Components
 import { Box, Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress } from "@mui/material";
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 // DnD Kit
 import { DndContext } from "@dnd-kit/core";
@@ -24,16 +23,13 @@ import TopAppBarLoggedIn from '../components/shared/TopAppBarLoggedIn';
 import BlankPage from "../components/formbuilder/shared/BlankPage";
 import AvailableQuestions from "../components/formbuilder/shared/AvailableQuestions";
 import AvailableMaterials from "../components/formbuilder/shared/AvailableMaterials";
-import FormExport from "../components/formbuilder/FormExportTools";
-
-// Import test data directly for debugging
-import testData from '../form-export-2025-03-30(general).json';
+import FormExport from "../components/formbuilder/FormExport";
+import FormDbUpload from "../components/formbuilder/FormDbUpload";
 
 const FormBuilderPage = () => {
-  const fileInputRef = useRef(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const {
     pages,
@@ -51,8 +47,7 @@ const FormBuilderPage = () => {
     updateCardContent,
     reorderContent,
     reorderCards,
-    updatePageMetadata,
-    loadFormData
+    updatePageMetadata
   } = useFormBuilder();
 
   // Create drag handlers
@@ -66,126 +61,9 @@ const FormBuilderPage = () => {
   // Handler for category changes from FormCategorySelector
   const handleCategoryChange = (categoryData) => {
     // Use the currentPage index, not the page ID
-    updatePageMetadata(pages[currentPage].id, { examCategories: categoryData });
-  };
-  
-  // Handle file selection click
-  const handleFileSelectClick = () => {
-    fileInputRef.current.click();
-  };
-  
-  // Handle direct test data loading (for debugging)
-  const handleLoadTestData = () => {
-    setLoading(true);
-    setErrorMsg(null);
-    
-    try {
-      console.log("Loading test data:", testData);
-      
-      // Transform the data to match the expected structure in useFormBuilder
-      const formattedData = {
-        pages: testData.pages.map((page, index) => ({
-          id: index + 1,
-          examCategories: {
-            exam_language: page.exam_language || "en",
-            exam_type: page.exam_categories?.exam_type || "",
-            component: page.exam_categories?.component || "",
-            category: page.exam_categories?.category || ""
-          },
-          cards: page.cards.map(card => card.card_type),
-          cardContents: page.cards.reduce((acc, card) => {
-            // Create the content structure expected by the form builder
-            if (card.contents && Array.isArray(card.contents)) {
-              acc[card.card_type] = card.contents.map((content, idx) => ({
-                ...content,
-                order_id: idx
-              }));
-            } else {
-              acc[card.card_type] = [];
-            }
-            return acc;
-          }, {})
-        }))
-      };
-      
-      console.log("Formatted test data:", formattedData);
-      loadFormData(formattedData);
-      setIsDialogOpen(true);
-    } catch (err) {
-      console.error("Error loading test data:", err);
-      setErrorMsg(`Error loading test data: ${err.message}`);
-      setIsDialogOpen(true);
-    } finally {
-      setLoading(false);
+    if (currentPage >= 0 && pages[currentPage]) {
+      updatePageMetadata(pages[currentPage].id, { examCategories: categoryData });
     }
-  };
-  
-  // Handle file selection change
-  const handleFileChange = (event) => {
-    setLoading(true);
-    setErrorMsg(null);
-    
-    const file = event.target.files[0];
-    if (!file) {
-      setLoading(false);
-      return;
-    }
-    
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      try {
-        const jsonData = JSON.parse(e.target.result);
-        console.log("Loaded JSON data:", jsonData);
-        
-        // Transform the data to match the expected structure in useFormBuilder
-        const formattedData = {
-          pages: jsonData.pages.map((page, index) => ({
-            id: index + 1,
-            examCategories: {
-              exam_language: page.exam_language || "en",
-              exam_type: page.exam_categories?.exam_type || "",
-              component: page.exam_categories?.component || "",
-              category: page.exam_categories?.category || ""
-            },
-            cards: page.cards.map(card => card.card_type),
-            cardContents: page.cards.reduce((acc, card) => {
-              // Create the content structure expected by the form builder
-              if (card.contents && Array.isArray(card.contents)) {
-                acc[card.card_type] = card.contents.map((content, idx) => ({
-                  ...content,
-                  order_id: idx
-                }));
-              } else {
-                acc[card.card_type] = [];
-              }
-              return acc;
-            }, {})
-          }))
-        };
-        
-        console.log("Formatted data for form builder:", formattedData);
-        loadFormData(formattedData);
-        setIsDialogOpen(true);
-      } catch (err) {
-        console.error("Error parsing JSON file:", err);
-        setErrorMsg(`Error loading form data: ${err.message}`);
-        setIsDialogOpen(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    reader.onerror = () => {
-      setErrorMsg("Error reading file");
-      setLoading(false);
-      setIsDialogOpen(true);
-    };
-    
-    reader.readAsText(file);
-    
-    // Reset the file input
-    event.target.value = '';
   };
   
   // Close the dialog
@@ -199,7 +77,7 @@ const FormBuilderPage = () => {
       {/* Top App Bar with logout functionality */}
       <TopAppBarLoggedIn appTitle="Form Builder" />
 
-      {/* Add file upload controls */}
+      {/* Action buttons */}
       <Box sx={{ 
         display: 'flex', 
         justifyContent: 'flex-end', 
@@ -207,42 +85,14 @@ const FormBuilderPage = () => {
         backgroundColor: '#f9f9f9',
         borderBottom: '1px solid #ddd'
       }}>
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
-        
-        {/* Load JSON buttons */}
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<FileUploadIcon />}
-          onClick={handleFileSelectClick}
-          sx={{ mr: 2 }}
-          disabled={loading}
-        >
-          Load JSON File
-        </Button>
-        
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={handleLoadTestData}
-          sx={{ mr: 2 }}
-          disabled={loading}
-        >
-          Load Test Data
-        </Button>
+        {/* Save to DB button */}
+        <FormDbUpload pages={pages} />
         
         {/* Export button */}
         <FormExport pages={pages} />
       </Box>
 
-      {/* Main Form Builder - Keep the original structure */}
+      {/* Main Form Builder */}
       <DndContext 
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -279,7 +129,6 @@ const FormBuilderPage = () => {
               zIndex: 1
             }}
           >
-            
             <NavigationBar
               pages={pages}
               currentPage={currentPage}
@@ -352,10 +201,10 @@ const FormBuilderPage = () => {
         </Box>
       </DndContext>
       
-      {/* Result Dialog */}
+      {/* Result Dialog - Keep this for any future notifications */}
       <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>
-          {errorMsg ? "Error Loading Form" : "Form Loaded Successfully"}
+          {errorMsg ? "Error" : "Success"}
         </DialogTitle>
         <DialogContent>
           {loading ? (
@@ -366,7 +215,7 @@ const FormBuilderPage = () => {
             <Alert severity="error">{errorMsg}</Alert>
           ) : (
             <Alert severity="success">
-              Form has been successfully loaded with {pages.length} pages.
+              Operation completed successfully
             </Alert>
           )}
         </DialogContent>

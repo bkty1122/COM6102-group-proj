@@ -1,12 +1,14 @@
-// /workspaces/COM6102-group-proj/frontend/src/components/formbuilder/FormExport.js
+// COM6102-group-proj/frontend/src/components/formbuilder/FormExport.js
 import React from 'react';
 import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import { formExportApi } from '../../api';
 import useApiProgress from '../../api/useApiProgress';
 import { extractErrorMessage } from '../../api/errorUtils';
 
 const FormExport = ({ pages, title }) => {
+  const navigate = useNavigate(); // Initialize navigate hook
   const { loading, error, success, callApi, reset } = useApiProgress();
 
   // Modified handleExport function

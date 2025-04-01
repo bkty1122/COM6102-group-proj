@@ -1,6 +1,6 @@
 // src/services/dataService.js
 import apiClient from '../api/apiClient';
-import { formExportApi } from '../api'; 
+import formExportApi from '../api/formExportApi'; 
 
 /**
  * Fetch all question banks from the database
@@ -9,7 +9,9 @@ import { formExportApi } from '../api';
 export const getAllQuestionBanks = async () => {
   try {
     const response = await formExportApi.listForms();
-    if (response.success && response.data) {
+    
+    // Check if response has the expected structure
+    if (response && response.data) {
       // Transform the data to match the expected format in the dashboard
       return response.data.map(bank => ({
         id: bank.questionbank_id,
@@ -21,14 +23,18 @@ export const getAllQuestionBanks = async () => {
         created_at: bank.created_at,
         updated_by: bank.author_id || 'system',
         updated_at: bank.updated_at,
-        question_count: bank.question_count || 0, // This might need to be calculated
+        question_count: bank.question_count || 0,
         status: bank.status || 'draft'
       }));
     }
+    
+    // If response doesn't have the expected structure, fall back to empty array
+    console.warn('API responded but with unexpected data structure:', response);
     return [];
   } catch (error) {
     console.error('Error fetching question banks:', error);
-    return [];
+    // Fallback to mock data in case of error
+    return MOCK_MATERIALS;
   }
 };
 
@@ -40,10 +46,13 @@ export const getAllQuestionBanks = async () => {
 export const getQuestionBankById = async (id) => {
   try {
     const response = await formExportApi.getFormById(id);
-    if (response.success && response.data) {
-      // Transform to expected format if needed
+    
+    // Check if response has the expected structure
+    if (response && response.data) {
       return response.data;
     }
+    
+    console.warn(`API responded but with unexpected data structure for ID ${id}:`, response);
     return null;
   } catch (error) {
     console.error(`Error fetching question bank ${id}:`, error);

@@ -17,9 +17,38 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { formApi } from '../../api/formApi';
-import { validateForm, checkForDuplicateIds, createSlugFromTitle } from '../../utils/formValidation';
+import { validateForm, checkForDuplicateIds } from '../../utils/formValidation';
+import { transformFormBuilderToExportFormat } from '../../utils/formDataTransformer';
 
-const FormDbUpload = ({ pages, title = "Form Builder Export", description = "" }) => {
+// Safely count items in pages structure
+const safeCountItems = (pages) => {
+  if (!Array.isArray(pages)) {
+    return { pageCount: 0, cardCount: 0, contentCount: 0 };
+  }
+  
+  const pageCount = pages.length;
+  
+  // Count cards safely
+  const cardCount = pages.reduce((count, page) => {
+    if (!page || !Array.isArray(page.cards)) return count;
+    return count + page.cards.length;
+  }, 0);
+  
+  // Count contents safely
+  const contentCount = pages.reduce((count, page) => {
+    if (!page || !page.cardContents) return count;
+    
+    // Sum the lengths of all content arrays in cardContents
+    return count + Object.values(page.cardContents).reduce((cardContentCount, contents) => {
+      if (!Array.isArray(contents)) return cardContentCount;
+      return cardContentCount + contents.length;
+    }, 0);
+  }, 0);
+  
+  return { pageCount, cardCount, contentCount };
+};
+
+const FormDbUpload = ({ pages = [], title = "Form Builder Export", description = "" }) => {
   const [open, setOpen] = useState(false);
   const [formTitle, setFormTitle] = useState(title);
   const [formDescription, setFormDescription] = useState(description);
@@ -28,6 +57,9 @@ const FormDbUpload = ({ pages, title = "Form Builder Export", description = "" }
   const [result, setResult] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
   const [formId, setFormId] = useState(null);
+  
+  // Get counts safely
+  const { pageCount, cardCount, contentCount } = safeCountItems(pages);
   
   const handleOpen = () => {
     setOpen(true);
@@ -57,13 +89,21 @@ const FormDbUpload = ({ pages, title = "Form Builder Export", description = "" }
       setResult(null);
       setValidationErrors([]);
       
-      // Prepare form data
-      const formData = {
+      // Prepare form data for export
+      const formData = transformFormBuilderToExportFormat({
         title: formTitle,
         description: formDescription,
         exportDate: new Date().toISOString(),
-        pages
-      };
+        pages,
+        questionbank_id: formId // Include the ID if updating
+      });
+      
+      // Add debug logging
+      console.log('Submitting form data:', {
+        title: formData.title,
+        pageCount: formData.pages?.length,
+        hasId: !!formData.questionbank_id
+      });
       
       // Validate form data
       const validation = validateForm(formData);
@@ -87,17 +127,27 @@ const FormDbUpload = ({ pages, title = "Form Builder Export", description = "" }
       let response;
       if (formId) {
         response = await formApi.updateForm(formId, formData, isPublished);
-        setResult({
-          success: true,
-          message: `Form updated successfully with ID: ${response.data.form.id}`
-        });
       } else {
         response = await formApi.saveForm(formData, isPublished);
-        setFormId(response.data.form.id);
+      }
+      
+      // Add debug logging
+      console.log('API Response:', response);
+      
+      // Handle successful response
+      if (response && response.data && response.data.success) {
+        const newFormId = response.data.form?.id || formId;
+        
+        setFormId(newFormId);
         setResult({
           success: true,
-          message: `Form saved successfully with ID: ${response.data.form.id}`
+          message: formId 
+            ? `Form updated successfully with ID: ${newFormId}` 
+            : `Form saved successfully with ID: ${newFormId}`
         });
+      } else {
+        // Handle unexpected response format
+        throw new Error('Invalid response format from the server');
       }
     } catch (error) {
       console.error('Error uploading form:', error);
@@ -195,12 +245,9 @@ const FormDbUpload = ({ pages, title = "Form Builder Export", description = "" }
               Form data preview:
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              • {pages.length} page(s)
-              • {pages.reduce((count, page) => count + page.cards.length, 0)} card(s)
-              • {pages.reduce((count, page) => {
-                  return count + page.cards.reduce((cardCount, card) => 
-                    cardCount + card.contents.length, 0);
-                }, 0)} content item(s)
+              • {pageCount} page(s)  
+              • {cardCount} card(s)  
+              • {contentCount} content item(s)
             </Typography>
           </Box>
         </DialogContent>
