@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "data": {
+    "id": "c6d3ac69-738d-418c-bd63-0dc133d4bde9",
+    "files": {
+      "full": "/workspaces/COM6102-group-proj/frontend/form-storage-test/exports/question-bank-c6d3ac69-738d-418c-bd63-0dc133d4bde9.json",
+      "minified": "/workspaces/COM6102-group-proj/frontend/form-storage-test/exports/question-bank-c6d3ac69-738d-418c-bd63-0dc133d4bde9.min.json",
+      "summary": "/workspaces/COM6102-group-proj/frontend/form-storage-test/exports/question-bank-c6d3ac69-738d-418c-bd63-0dc133d4bde9-summary.json"
+    }
+  }
+}
