@@ -58,6 +58,38 @@ class FormProcessingService {
       });
     });
   }
+
+  async getFirstPageForBank(questionbankId) {
+    try {
+      const page = await this.get(
+        `SELECT * FROM question_bank_pages 
+         WHERE questionbank_id = ? 
+         ORDER BY page_index ASC 
+         LIMIT 1`,
+        [questionbankId]
+      );
+      
+      return page;
+    } catch (error) {
+      console.error('Error getting first page for bank:', error);
+      throw error;
+    }
+  }
+  
+  async getQuestionCountForBank(questionbankId) {
+    try {
+      const result = await this.get(
+        `SELECT COUNT(*) as count FROM question_bank_contents
+         WHERE questionbank_id = ? AND content_type LIKE '%question%'`,
+        [questionbankId]
+      );
+      
+      return result ? result.count : 0;
+    } catch (error) {
+      console.error('Error counting questions for bank:', error);
+      return 0;
+    }
+  }
   
   // Process the form data according to the hybrid model
   async processForm(formData) {

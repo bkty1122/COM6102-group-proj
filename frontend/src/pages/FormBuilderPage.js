@@ -1,8 +1,9 @@
 // src/pages/FormBuilderPage.js
-import React from "react";
+import React, { useRef, useState } from "react";
 
 // MUI Components
-import { Box, Divider } from "@mui/material";
+import { Box, Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress } from "@mui/material";
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 // DnD Kit
 import { DndContext } from "@dnd-kit/core";
@@ -25,7 +26,15 @@ import AvailableQuestions from "../components/formbuilder/shared/AvailableQuesti
 import AvailableMaterials from "../components/formbuilder/shared/AvailableMaterials";
 import FormExport from "../components/formbuilder/FormExportTools";
 
+// Import test data directly for debugging
+import testData from '../form-export-2025-03-30(general).json';
+
 const FormBuilderPage = () => {
+  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
   const {
     pages,
     currentPage,
@@ -42,7 +51,8 @@ const FormBuilderPage = () => {
     updateCardContent,
     reorderContent,
     reorderCards,
-    updatePageMetadata
+    updatePageMetadata,
+    loadFormData
   } = useFormBuilder();
 
   // Create drag handlers
@@ -58,11 +68,179 @@ const FormBuilderPage = () => {
     // Use the currentPage index, not the page ID
     updatePageMetadata(pages[currentPage].id, { examCategories: categoryData });
   };
+  
+  // Handle file selection click
+  const handleFileSelectClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  // Handle direct test data loading (for debugging)
+  const handleLoadTestData = () => {
+    setLoading(true);
+    setErrorMsg(null);
+    
+    try {
+      console.log("Loading test data:", testData);
+      
+      // Transform the data to match the expected structure in useFormBuilder
+      const formattedData = {
+        pages: testData.pages.map((page, index) => ({
+          id: index + 1,
+          examCategories: {
+            exam_language: page.exam_language || "en",
+            exam_type: page.exam_categories?.exam_type || "",
+            component: page.exam_categories?.component || "",
+            category: page.exam_categories?.category || ""
+          },
+          cards: page.cards.map(card => card.card_type),
+          cardContents: page.cards.reduce((acc, card) => {
+            // Create the content structure expected by the form builder
+            if (card.contents && Array.isArray(card.contents)) {
+              acc[card.card_type] = card.contents.map((content, idx) => ({
+                ...content,
+                order_id: idx
+              }));
+            } else {
+              acc[card.card_type] = [];
+            }
+            return acc;
+          }, {})
+        }))
+      };
+      
+      console.log("Formatted test data:", formattedData);
+      loadFormData(formattedData);
+      setIsDialogOpen(true);
+    } catch (err) {
+      console.error("Error loading test data:", err);
+      setErrorMsg(`Error loading test data: ${err.message}`);
+      setIsDialogOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle file selection change
+  const handleFileChange = (event) => {
+    setLoading(true);
+    setErrorMsg(null);
+    
+    const file = event.target.files[0];
+    if (!file) {
+      setLoading(false);
+      return;
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const jsonData = JSON.parse(e.target.result);
+        console.log("Loaded JSON data:", jsonData);
+        
+        // Transform the data to match the expected structure in useFormBuilder
+        const formattedData = {
+          pages: jsonData.pages.map((page, index) => ({
+            id: index + 1,
+            examCategories: {
+              exam_language: page.exam_language || "en",
+              exam_type: page.exam_categories?.exam_type || "",
+              component: page.exam_categories?.component || "",
+              category: page.exam_categories?.category || ""
+            },
+            cards: page.cards.map(card => card.card_type),
+            cardContents: page.cards.reduce((acc, card) => {
+              // Create the content structure expected by the form builder
+              if (card.contents && Array.isArray(card.contents)) {
+                acc[card.card_type] = card.contents.map((content, idx) => ({
+                  ...content,
+                  order_id: idx
+                }));
+              } else {
+                acc[card.card_type] = [];
+              }
+              return acc;
+            }, {})
+          }))
+        };
+        
+        console.log("Formatted data for form builder:", formattedData);
+        loadFormData(formattedData);
+        setIsDialogOpen(true);
+      } catch (err) {
+        console.error("Error parsing JSON file:", err);
+        setErrorMsg(`Error loading form data: ${err.message}`);
+        setIsDialogOpen(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    reader.onerror = () => {
+      setErrorMsg("Error reading file");
+      setLoading(false);
+      setIsDialogOpen(true);
+    };
+    
+    reader.readAsText(file);
+    
+    // Reset the file input
+    event.target.value = '';
+  };
+  
+  // Close the dialog
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setErrorMsg(null);
+  };
 
   return (
     <>
       {/* Top App Bar with logout functionality */}
       <TopAppBarLoggedIn appTitle="Form Builder" />
+
+      {/* Add file upload controls */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        padding: 2, 
+        backgroundColor: '#f9f9f9',
+        borderBottom: '1px solid #ddd'
+      }}>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        
+        {/* Load JSON buttons */}
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<FileUploadIcon />}
+          onClick={handleFileSelectClick}
+          sx={{ mr: 2 }}
+          disabled={loading}
+        >
+          Load JSON File
+        </Button>
+        
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleLoadTestData}
+          sx={{ mr: 2 }}
+          disabled={loading}
+        >
+          Load Test Data
+        </Button>
+        
+        {/* Export button */}
+        <FormExport pages={pages} />
+      </Box>
 
       {/* Main Form Builder - Keep the original structure */}
       <DndContext 
@@ -72,7 +250,7 @@ const FormBuilderPage = () => {
         <Box 
           sx={{ 
             display: "flex", 
-            height: "calc(100vh - 64px)", // Adjust for top bar only
+            height: "calc(100vh - 128px)", // Adjust for top bars
             position: "relative",
             zIndex: 1
           }}
@@ -115,7 +293,7 @@ const FormBuilderPage = () => {
             {/* Category selector */}
             {currentPage >= 0 && currentPage < pages.length && (
               <FormCategorySelector
-                pageId={currentPage}
+                pageId={pages[currentPage].id}
                 initialValues={currentPageData.examCategories || {}}
                 onChange={handleCategoryChange}
               />
@@ -172,10 +350,32 @@ const FormBuilderPage = () => {
             />
           )}
         </Box>
-        
-        {/* Export button */}
-        <FormExport pages={pages} />
       </DndContext>
+      
+      {/* Result Dialog */}
+      <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>
+          {errorMsg ? "Error Loading Form" : "Form Loaded Successfully"}
+        </DialogTitle>
+        <DialogContent>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+              <CircularProgress />
+            </Box>
+          ) : errorMsg ? (
+            <Alert severity="error">{errorMsg}</Alert>
+          ) : (
+            <Alert severity="success">
+              Form has been successfully loaded with {pages.length} pages.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
