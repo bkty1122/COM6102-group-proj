@@ -1,6 +1,3 @@
--- Enable foreign keys
-PRAGMA foreign_keys = ON;
-
 -- Main question bank table
 CREATE TABLE IF NOT EXISTS question_banks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,11 +9,10 @@ CREATE TABLE IF NOT EXISTS question_banks (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
     status TEXT DEFAULT 'draft',
     author_id INTEGER,
-    version INTEGER DEFAULT 1,
-    is_deleted INTEGER DEFAULT 0  -- Soft delete flag
+    version INTEGER DEFAULT 1
 );
 
--- Pages metadata with cascading delete
+-- Pages metadata
 CREATE TABLE IF NOT EXISTS question_bank_pages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     questionbank_id TEXT NOT NULL,
@@ -27,15 +23,11 @@ CREATE TABLE IF NOT EXISTS question_bank_pages (
     category TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (questionbank_id) REFERENCES question_banks(questionbank_id) ON DELETE CASCADE
+    FOREIGN KEY (questionbank_id) REFERENCES question_banks(questionbank_id),
+    UNIQUE (questionbank_id, page_index)
 );
 
--- Create a unique index that only applies to non-deleted pages
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_pages ON question_bank_pages(questionbank_id, page_index) 
-    WHERE is_deleted = 0;
-
--- Cards with cascading delete
+-- Cards (parent for both card types)
 CREATE TABLE IF NOT EXISTS cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     page_id INTEGER NOT NULL,
@@ -43,13 +35,9 @@ CREATE TABLE IF NOT EXISTS cards (
     position INTEGER NOT NULL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (page_id) REFERENCES question_bank_pages(id) ON DELETE CASCADE
+    FOREIGN KEY (page_id) REFERENCES question_bank_pages(id),
+    UNIQUE (page_id, position)
 );
-
--- Create a unique index that only applies to non-deleted cards
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_cards ON cards(page_id, position) 
-    WHERE is_deleted = 0;
 
 -- Single Choice Questions
 CREATE TABLE IF NOT EXISTS single_choice_questions (
@@ -67,13 +55,9 @@ CREATE TABLE IF NOT EXISTS single_choice_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_single_choice ON single_choice_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Multiple Choice Questions
 CREATE TABLE IF NOT EXISTS multiple_choice_questions (
@@ -91,13 +75,9 @@ CREATE TABLE IF NOT EXISTS multiple_choice_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_multiple_choice ON multiple_choice_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Fill in the Blank Questions
 CREATE TABLE IF NOT EXISTS fill_in_blank_questions (
@@ -112,13 +92,9 @@ CREATE TABLE IF NOT EXISTS fill_in_blank_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_fill_in_blank ON fill_in_blank_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Matching Questions
 CREATE TABLE IF NOT EXISTS matching_questions (
@@ -133,13 +109,9 @@ CREATE TABLE IF NOT EXISTS matching_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_matching ON matching_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Long Text Questions
 CREATE TABLE IF NOT EXISTS long_text_questions (
@@ -157,13 +129,9 @@ CREATE TABLE IF NOT EXISTS long_text_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_long_text ON long_text_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Audio Response Questions
 CREATE TABLE IF NOT EXISTS audio_response_questions (
@@ -182,13 +150,9 @@ CREATE TABLE IF NOT EXISTS audio_response_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_audio_response ON audio_response_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Text Material
 CREATE TABLE IF NOT EXISTS text_materials (
@@ -203,13 +167,9 @@ CREATE TABLE IF NOT EXISTS text_materials (
     is_rich_text INTEGER DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted materials
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_text_materials ON text_materials(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- Multimedia Material
 CREATE TABLE IF NOT EXISTS multimedia_materials (
@@ -225,13 +185,9 @@ CREATE TABLE IF NOT EXISTS multimedia_materials (
     settings_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted materials
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_multimedia_materials ON multimedia_materials(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- LLM Session Material
 CREATE TABLE IF NOT EXISTS llm_session_materials (
@@ -245,13 +201,9 @@ CREATE TABLE IF NOT EXISTS llm_session_materials (
     session_settings TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );
-
--- Create a unique index that only applies to non-deleted materials
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_llm_session_materials ON llm_session_materials(card_id, order_id) 
-    WHERE is_deleted = 0;
 
 -- LLM Audio Response Questions
 CREATE TABLE IF NOT EXISTS llm_audio_response_questions (
@@ -274,21 +226,6 @@ CREATE TABLE IF NOT EXISTS llm_audio_response_questions (
     media_data TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_deleted INTEGER DEFAULT 0,  -- Soft delete flag
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
-);
-
--- Create a unique index that only applies to non-deleted questions
-CREATE UNIQUE INDEX IF NOT EXISTS idx_active_llm_audio_response ON llm_audio_response_questions(card_id, order_id) 
-    WHERE is_deleted = 0;
-
--- Create a simple change history table (optional)
-CREATE TABLE IF NOT EXISTS change_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    entity_type TEXT NOT NULL,  -- The type of entity changed (question_bank, page, card, etc.)
-    entity_id INTEGER NOT NULL,  -- The ID of the entity
-    action TEXT NOT NULL,  -- create, update, delete, restore
-    user_id INTEGER,
-    timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-    details TEXT  -- Additional information about the change
+    FOREIGN KEY (card_id) REFERENCES cards(id),
+    UNIQUE (card_id, order_id)
 );

@@ -298,3 +298,99 @@
     at FormProcessingService.processContent (D:\Linguo-Smart\COM6102-group-proj\backend\models\form-processing-service.js:413:29)
     at FormProcessingService.processForm (D:\Linguo-Smart\COM6102-group-proj\backend\models\form-processing-service.js:348:28)
 2025-04-01T15:50:04.549Z ERROR: Error processing form: SQLITE_CONSTRAINT: UNIQUE constraint failed: text_materials.content_id
+2025-04-02T03:09:39.665Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:09:41.659Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:19:08.624Z ERROR: Error retrieving form f376d2c3-0010-41a2-9564-1338c9bcbc7c: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:08.625Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:19:08.705Z ERROR: Error retrieving form f376d2c3-0010-41a2-9564-1338c9bcbc7c: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:08.706Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:19:29.220Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:29.222Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:19:29.326Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:29.327Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:20:36.489Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:20:36.490Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:20:36.752Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:20:36.753Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:22:09.469Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:28:07.236Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:37:44.222Z ERROR: Error processing form: page is not defined
+2025-04-02T03:45:34.449Z ERROR: Error processing form: Cannot create property 'card_type' on string 'material'
+2025-04-02T03:46:27.280Z ERROR: Error processing form: Cannot create property 'card_type' on string 'material'
+2025-04-02T03:50:26.863Z ERROR: Error processing form: SQLITE_CONSTRAINT: UNIQUE constraint failed: cards.page_id, cards.position
+2025-04-02T03:55:30.493Z ERROR: Error processing form: Cannot create property 'position' on string 'material'
+2025-04-02T03:59:14.786Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:23:51.715Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:31:49.147Z ERROR: Error processing form: SQLITE_ERROR: no such column: card_id
+2025-04-02T06:33:32.722Z ERROR: Error processing form: SQLITE_ERROR: no such column: card_id
+2025-04-02T06:37:52.312Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:40:23.561Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:40:26.796Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:44:46.869Z ERROR: Error processing form: Failed to create or update page with index 0
+2025-04-02T06:45:10.295Z ERROR: Error processing form: Failed to create or update page with index 0
+2025-04-02T06:47:00.296Z ERROR: Error processing form: Failed to create page with index 0
+2025-04-02T06:48:20.937Z ERROR: Error processing form: Failed to create page with index 0
+2025-04-02T06:49:33.007Z ERROR: Error processing form: this.deleteAllCardsFromPage is not a function
+2025-04-02T06:49:36.311Z ERROR: Error processing form: this.deleteAllCardsFromPage is not a function
+2025-04-02T06:50:32.096Z ERROR: Error processing form: this.deleteCardContent is not a function
+2025-04-02T07:01:49.546Z ERROR: Error processing form: Failed to delete question bank de38916f-943c-4681-bd75-3d462390ce0f: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed

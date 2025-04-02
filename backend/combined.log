@@ -335,3 +335,180 @@
 2025-04-01T16:00:34.206Z INFO: Server running on port 5000
 2025-04-01T16:00:43.909Z INFO: Server running on port 5000
 2025-04-01T16:04:10.901Z INFO: Database connection established
+2025-04-02T02:24:25.048Z INFO: Server running on port 5000
+2025-04-02T02:32:02.979Z INFO: Server running on port 5000
+2025-04-02T02:37:59.017Z INFO: Server running on port 5000
+2025-04-02T02:38:06.331Z INFO: Server running on port 5000
+2025-04-02T02:41:48.160Z INFO: Server running on port 5000
+2025-04-02T02:42:59.165Z INFO: Server running on port 5000
+2025-04-02T02:43:12.720Z INFO: Server running on port 5000
+2025-04-02T02:43:15.929Z INFO: Server running on port 5000
+2025-04-02T02:43:35.333Z INFO: Server running on port 5000
+2025-04-02T02:43:37.824Z INFO: Server running on port 5000
+2025-04-02T03:04:13.567Z INFO: Database connection established
+2025-04-02T03:09:39.665Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:09:41.659Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:16:58.556Z INFO: Server running on port 5000
+2025-04-02T03:17:01.784Z INFO: Server running on port 5000
+2025-04-02T03:17:11.693Z INFO: Server running on port 5000
+2025-04-02T03:17:14.484Z INFO: Server running on port 5000
+2025-04-02T03:17:22.761Z INFO: Server running on port 5000
+2025-04-02T03:17:26.726Z INFO: Server running on port 5000
+2025-04-02T03:17:43.284Z INFO: Server running on port 5000
+2025-04-02T03:17:46.634Z INFO: Server running on port 5000
+2025-04-02T03:17:57.880Z INFO: Server running on port 5000
+2025-04-02T03:18:01.593Z INFO: Server running on port 5000
+2025-04-02T03:18:12.116Z INFO: Server running on port 5000
+2025-04-02T03:18:15.201Z INFO: Server running on port 5000
+2025-04-02T03:18:18.921Z INFO: Server running on port 5000
+2025-04-02T03:18:40.087Z INFO: Server running on port 5000
+2025-04-02T03:19:01.976Z INFO: Database connection established
+2025-04-02T03:19:08.624Z ERROR: Error retrieving form f376d2c3-0010-41a2-9564-1338c9bcbc7c: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:08.625Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:19:08.705Z ERROR: Error retrieving form f376d2c3-0010-41a2-9564-1338c9bcbc7c: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:08.706Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:19:29.220Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:29.222Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:19:29.326Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:19:29.327Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:20:04.069Z INFO: Server running on port 5000
+2025-04-02T03:20:14.070Z INFO: Server running on port 5000
+2025-04-02T03:20:23.561Z INFO: Server running on port 5000
+2025-04-02T03:20:36.489Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:20:36.490Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:20:36.752Z ERROR: Error retrieving form e90ed3ec-9cb4-4a5f-b087-4893744ff48b: Cannot read properties of undefined (reading 'getQuestionBankById')
+2025-04-02T03:20:36.753Z ERROR: TypeError: Cannot read properties of undefined (reading 'getQuestionBankById')
+    at FormProcessingService.getQuestionBankById (/workspaces/COM6102-group-proj/backend/models/form-processing-service.js:226:43)
+    at exports.getFormById (/workspaces/COM6102-group-proj/backend/controllers/exportController.js:88:42)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:284:15
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:365:14)
+    at param (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:376:14)
+    at Function.process_params (/workspaces/COM6102-group-proj/backend/node_modules/express/lib/router/index.js:421:3)
+2025-04-02T03:21:44.369Z INFO: Server running on port 5000
+2025-04-02T03:22:09.469Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:22:48.855Z INFO: Database connection established
+2025-04-02T03:27:01.940Z INFO: Server running on port 5000
+2025-04-02T03:27:17.087Z INFO: Database connection established
+2025-04-02T03:28:07.236Z ERROR: Error processing form: SQLITE_CONSTRAINT: NOT NULL constraint failed: cards.card_type
+2025-04-02T03:37:01.578Z INFO: Server running on port 5000
+2025-04-02T03:37:02.624Z INFO: Server running on port 5000
+2025-04-02T03:37:11.310Z INFO: Server running on port 5000
+2025-04-02T03:37:14.163Z INFO: Server running on port 5000
+2025-04-02T03:37:44.222Z ERROR: Error processing form: page is not defined
+2025-04-02T03:45:16.516Z INFO: Server running on port 5000
+2025-04-02T03:45:34.449Z ERROR: Error processing form: Cannot create property 'card_type' on string 'material'
+2025-04-02T03:46:14.736Z INFO: Server running on port 5000
+2025-04-02T03:46:27.280Z ERROR: Error processing form: Cannot create property 'card_type' on string 'material'
+2025-04-02T03:47:45.308Z INFO: Server running on port 5000
+2025-04-02T03:47:51.785Z INFO: Server running on port 5000
+2025-04-02T03:48:48.067Z INFO: Server running on port 5000
+2025-04-02T03:49:09.274Z INFO: Server running on port 5000
+2025-04-02T03:49:27.238Z INFO: Server running on port 5000
+2025-04-02T03:50:11.315Z INFO: Server running on port 5000
+2025-04-02T03:50:26.863Z ERROR: Error processing form: SQLITE_CONSTRAINT: UNIQUE constraint failed: cards.page_id, cards.position
+2025-04-02T03:54:29.922Z INFO: Server running on port 5000
+2025-04-02T03:54:54.937Z INFO: Server running on port 5000
+2025-04-02T03:54:57.183Z INFO: Server running on port 5000
+2025-04-02T03:55:21.458Z INFO: Server running on port 5000
+2025-04-02T03:55:30.493Z ERROR: Error processing form: Cannot create property 'position' on string 'material'
+2025-04-02T03:59:08.732Z INFO: Server running on port 5000
+2025-04-02T03:59:09.255Z INFO: Server running on port 5000
+2025-04-02T03:59:14.786Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T04:27:01.149Z INFO: Server running on port 5000
+2025-04-02T06:16:46.499Z INFO: Server running on port 5000
+2025-04-02T06:23:20.242Z INFO: Database connection established
+2025-04-02T06:23:51.715Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:28:52.518Z INFO: Server running on port 5000
+2025-04-02T06:29:00.638Z INFO: Database connection established
+2025-04-02T06:30:19.797Z INFO: Server running on port 5000
+2025-04-02T06:30:30.535Z INFO: Database connection established
+2025-04-02T06:31:49.147Z ERROR: Error processing form: SQLITE_ERROR: no such column: card_id
+2025-04-02T06:33:32.722Z ERROR: Error processing form: SQLITE_ERROR: no such column: card_id
+2025-04-02T06:35:58.988Z INFO: Server running on port 5000
+2025-04-02T06:36:07.703Z INFO: Database connection established
+2025-04-02T06:37:52.312Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:40:14.711Z INFO: Server running on port 5000
+2025-04-02T06:40:23.561Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:40:26.796Z ERROR: Error processing form: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T06:44:24.717Z INFO: Server running on port 5000
+2025-04-02T06:44:26.247Z INFO: Server running on port 5000
+2025-04-02T06:44:46.869Z ERROR: Error processing form: Failed to create or update page with index 0
+2025-04-02T06:45:10.295Z ERROR: Error processing form: Failed to create or update page with index 0
+2025-04-02T06:46:54.103Z INFO: Server running on port 5000
+2025-04-02T06:47:00.296Z ERROR: Error processing form: Failed to create page with index 0
+2025-04-02T06:48:06.482Z INFO: Server running on port 5000
+2025-04-02T06:48:09.881Z INFO: Server running on port 5000
+2025-04-02T06:48:20.937Z ERROR: Error processing form: Failed to create page with index 0
+2025-04-02T06:49:01.532Z INFO: Server running on port 5000
+2025-04-02T06:49:10.742Z INFO: Server running on port 5000
+2025-04-02T06:49:17.407Z INFO: Server running on port 5000
+2025-04-02T06:49:24.926Z INFO: Server running on port 5000
+2025-04-02T06:49:33.007Z ERROR: Error processing form: this.deleteAllCardsFromPage is not a function
+2025-04-02T06:49:36.311Z ERROR: Error processing form: this.deleteAllCardsFromPage is not a function
+2025-04-02T06:50:27.528Z INFO: Server running on port 5000
+2025-04-02T06:50:32.096Z ERROR: Error processing form: this.deleteCardContent is not a function
+2025-04-02T06:50:44.520Z INFO: Server running on port 5000
+2025-04-02T06:50:50.897Z INFO: Server running on port 5000
+2025-04-02T06:51:42.380Z INFO: Server running on port 5000
+2025-04-02T06:52:03.424Z INFO: Database connection established
+2025-04-02T07:00:17.991Z INFO: Server running on port 5000
+2025-04-02T07:00:42.113Z INFO: Database connection established
+2025-04-02T07:01:49.546Z ERROR: Error processing form: Failed to delete question bank de38916f-943c-4681-bd75-3d462390ce0f: SQLITE_CONSTRAINT: FOREIGN KEY constraint failed
+2025-04-02T07:02:43.947Z INFO: Server running on port 5000
+2025-04-02T07:02:56.154Z INFO: Database connection established
+2025-04-02T07:07:27.628Z INFO: Server running on port 5000
+2025-04-02T07:13:35.074Z INFO: Server running on port 5000
