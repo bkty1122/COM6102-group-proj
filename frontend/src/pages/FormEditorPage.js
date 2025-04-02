@@ -1,5 +1,5 @@
-// src/pages/FormEditorPage.js
-import React, { useState, useEffect } from 'react';
+// Modified FormEditorPage.js to use FormDbUpload
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Box, 
@@ -12,7 +12,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Typography
+  Typography,
+  Snackbar
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ExportIcon from '@mui/icons-material/GetApp';
@@ -21,11 +22,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 // Shared Components
 import TopAppBarLoggedIn from '../components/shared/TopAppBarLoggedIn';
 
-// Form Editor Components
+// Form Editor and Form Builder Components
 import FormEditor from '../components/formeditor/FormEditor';
+import FormDbUpload from '../components/formbuilder/FormDbUpload'; // Import FormDbUpload
 
 // API for fetching question bank existence
 import formExportApi from '../api/formExportApi';
+import { exportFormAsJson } from '../components/formbuilder/utils/exportUtils'; // Import the exportFormAsJson utility
 
 const FormEditorPage = () => {
   const { id } = useParams();
@@ -34,12 +37,21 @@ const FormEditorPage = () => {
   const [error, setError] = useState(null);
   const [questionBankExists, setQuestionBankExists] = useState(false);
   const [questionBankTitle, setQuestionBankTitle] = useState('');
+  const [questionBankDescription, setQuestionBankDescription] = useState('');
   const [formData, setFormData] = useState(null);
+  const [originalFormData, setOriginalFormData] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportError, setExportError] = useState(null);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  
+  // Reference to the FormDbUpload button to programmatically click it
+  const formDbUploadRef = useRef(null);
   
   // Check if question bank exists
   useEffect(() => {
@@ -55,7 +67,10 @@ const FormEditorPage = () => {
         if (response && response.success && response.data) {
           setQuestionBankExists(true);
           setQuestionBankTitle(response.data.title || id);
+          setQuestionBankDescription(response.data.description || '');
           setFormData(response.data);
+          // Create deep copy for comparison
+          setOriginalFormData(JSON.parse(JSON.stringify(response.data)));
         } else {
           throw new Error('Invalid response from API');
         }
@@ -72,13 +87,45 @@ const FormEditorPage = () => {
   
   // Navigate back to dashboard
   const handleBackClick = () => {
+    if (unsavedChanges) {
+      if (!window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+        return;
+      }
+    }
     navigate('/dashboard');
   };
   
-  // Handle export button click
+  // Track form data changes
+  const handleFormDataChange = (updatedFormData) => {
+    setFormData(updatedFormData);
+    
+    // Check if there are changes compared to original data
+    if (originalFormData) {
+      const hasChanges = JSON.stringify(updatedFormData) !== JSON.stringify(originalFormData);
+      setUnsavedChanges(hasChanges);
+    }
+  };
+  
+  // Handle save button click - now just triggers the FormDbUpload dialog
+  const handleSaveClick = () => {
+    if (!formData) {
+      showSnackbar('No form data to save', 'error');
+      return;
+    }
+    
+    // Programmatically click the FormDbUpload button
+    if (formDbUploadRef.current && formDbUploadRef.current.click) {
+      formDbUploadRef.current.click();
+    } else {
+      showSnackbar('Could not open save dialog', 'error');
+    }
+  };
+  
+  // Handle export button click for JSON download using the working exportFormAsJson utility
   const handleExportClick = async () => {
     if (!formData) {
       setExportError('No form data to export');
+      showSnackbar('No form data to export', 'error');
       return;
     }
     
@@ -86,25 +133,18 @@ const FormEditorPage = () => {
     setExportError(null);
     
     try {
-      const response = await formExportApi.exportForm(formData);
-      if (response && response.success) {
-        // Trigger download of exported JSON
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formData, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `${questionBankTitle || 'form'}_export.json`);
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-        
-        // Also save to database
-        await formExportApi.saveForm(formData);
+      // Use the exportFormAsJson utility that's known to work
+      const success = exportFormAsJson(formData.pages);
+      
+      if (success) {
+        showSnackbar('Form exported successfully', 'success');
       } else {
-        setExportError('Failed to export form: ' + (response?.error || 'Unknown error'));
+        throw new Error('Failed to export form');
       }
     } catch (err) {
       console.error('Error exporting form:', err);
       setExportError('Error exporting form: ' + (err.message || 'Unknown error'));
+      showSnackbar('Error exporting form', 'error');
     } finally {
       setExportLoading(false);
     }
@@ -148,13 +188,70 @@ const FormEditorPage = () => {
         });
       } else {
         setDeleteError('Failed to delete question bank: ' + (response?.error || 'Unknown error'));
+        showSnackbar('Failed to delete question bank', 'error');
       }
     } catch (err) {
       console.error('Error deleting question bank:', err);
       setDeleteError('Error deleting question bank: ' + (err.message || 'Unknown error'));
+      showSnackbar('Error deleting question bank', 'error');
     } finally {
       setDeleteLoading(false);
     }
+  };
+  
+  // Show snackbar notification
+  const showSnackbar = (message, severity = 'info') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  // Handle snackbar close
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+  
+  // Warn about unsaved changes before leaving
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (unsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [unsavedChanges]);
+
+  // Calculate summary stats - keeping this for reference
+  const getSummaryStats = () => {
+    if (!formData || !Array.isArray(formData.pages)) {
+      return { pageCount: 0, cardCount: 0, contentCount: 0 };
+    }
+    
+    const pageCount = formData.pages.length;
+    
+    let cardCount = 0;
+    let contentCount = 0;
+    
+    formData.pages.forEach(page => {
+      if (Array.isArray(page.cards)) {
+        cardCount += page.cards.length;
+        
+        page.cards.forEach(card => {
+          if (Array.isArray(card.contents)) {
+            contentCount += card.contents.length;
+          }
+        });
+      }
+    });
+    
+    return { pageCount, cardCount, contentCount };
   };
 
   return (
@@ -180,16 +277,40 @@ const FormEditorPage = () => {
         {/* Action buttons */}
         {questionBankExists && (
           <Box sx={{ display: 'flex', gap: 2 }}>
+            {/* Hidden FormDbUpload to be triggered programmatically */}
+            <div style={{ display: 'none' }}>
+              <FormDbUpload 
+                ref={formDbUploadRef}
+                pages={formData?.pages || []} 
+                title={questionBankTitle}
+                description={questionBankDescription}
+              />
+            </div>
+            
+            {/* Save button - now triggers FormDbUpload */}
+            <Tooltip title={unsavedChanges ? "Save changes" : "No changes to save"}>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSaveClick}
+                  disabled={!unsavedChanges}
+                >
+                  {unsavedChanges ? 'Save Changes*' : 'Save'}
+                </Button>
+              </span>
+            </Tooltip>
+            
             {/* Export button */}
             <Tooltip title="Export form to JSON">
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 startIcon={<ExportIcon />}
                 onClick={handleExportClick}
                 disabled={exportLoading || !formData}
               >
-                {exportLoading ? 'Downloading...' : 'Download Form'}
+                {exportLoading ? 'Downloading...' : 'Download JSON'}
               </Button>
             </Tooltip>
             
@@ -240,9 +361,20 @@ const FormEditorPage = () => {
       {/* Form Editor */}
       {!loading && !error && questionBankExists && (
         <FormEditor 
-          questionBankId={id} 
-          onFormDataChange={(updatedFormData) => setFormData(updatedFormData)}
+          questionBankId={id}
+          onFormDataChange={handleFormDataChange}
         />
+      )}
+      
+      {/* Visible FormDbUpload button for saving */}
+      {questionBankExists && (
+        <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }}>
+          <FormDbUpload 
+            pages={formData?.pages || []} 
+            title={questionBankTitle}
+            description={questionBankDescription}
+          />
+        </Box>
       )}
       
       {/* Delete Confirmation Dialog */}
@@ -288,6 +420,18 @@ const FormEditorPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

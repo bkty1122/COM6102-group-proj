@@ -1,5 +1,5 @@
 // src/components/formbuilder/FormDbUpload.js
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { 
   Button, 
   Dialog,
@@ -48,8 +48,13 @@ const safeCountItems = (pages) => {
   return { pageCount, cardCount, contentCount };
 };
 
-const FormDbUpload = ({ pages = [], title = "Form Builder Export", description = "" }) => {
+const FormDbUpload = forwardRef(({ pages = [], title = "Form Builder Export", description = "" }, ref) => {
   const [open, setOpen] = useState(false);
+    // Expose methods to parent component through ref
+    useImperativeHandle(ref, () => ({
+      click: () => handleOpen()
+    }));
+
   const [formTitle, setFormTitle] = useState(title);
   const [formDescription, setFormDescription] = useState(description);
   const [isPublished, setIsPublished] = useState(false);
@@ -269,6 +274,6 @@ const FormDbUpload = ({ pages = [], title = "Form Builder Export", description =
       </Dialog>
     </>
   );
-};
+});
 
 export default FormDbUpload;

@@ -1,37 +1,91 @@
-// COM6102-group-proj/frontend/src/components/formbuilder/FormExport.js
+// src/components/formbuilder/FormExport.js
 import React from 'react';
 import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useNavigate } from 'react-router-dom'; // Add this import
-import { formExportApi } from '../../api';
 import useApiProgress from '../../api/useApiProgress';
 import { extractErrorMessage } from '../../api/errorUtils';
+import { transformFormBuilderToExportFormat } from '../../utils/formDataTransformer';
 
-const FormExport = ({ pages, title }) => {
-  const navigate = useNavigate(); // Initialize navigate hook
+const FormExport = ({ pages, title = "Form Builder Export", description = "" }) => {
   const { loading, error, success, callApi, reset } = useApiProgress();
 
-  // Modified handleExport function
-  const handleExport = async () => {
-    // Prepare the form data
-    const formData = {
-      title: title || 'Form Builder Export',
-      pages
-    };
-    
-    callApi(
-      () => formExportApi.exportForm(formData),
-      {
-        successMessage: 'Form exported successfully!',
-        errorMessage: 'Failed to export form',
-        onSuccess: (result) => {
-          if (result.success) {
-            // If export was successful, navigate to the exports page
-            setTimeout(() => navigate('/form-exports'), 1500);
+  // Download form as JSON file directly
+  const handleExport = () => {
+    try {
+      // First, ensure pages are in the right format
+      const preparedPages = pages.map(page => {
+        // Create structured page data for transformation
+        const structuredPage = {
+          ...page,
+          examCategories: page.examCategories || {
+            exam_language: 'en'
+          },
+          cardContents: {}
+        };
+
+        // Set up cards array and cardContents if needed
+        if (page.cards) {
+          // Handle material and question cards
+          if (Array.isArray(page.cards.material)) {
+            page.cards.material.forEach(cardId => {
+              if (!structuredPage.cardContents[cardId] && page.cardContents && page.cardContents[cardId]) {
+                structuredPage.cardContents[cardId] = page.cardContents[cardId];
+              }
+            });
+          }
+
+          if (Array.isArray(page.cards.question)) {
+            page.cards.question.forEach(cardId => {
+              if (!structuredPage.cardContents[cardId] && page.cardContents && page.cardContents[cardId]) {
+                structuredPage.cardContents[cardId] = page.cardContents[cardId];
+              }
+            });
           }
         }
-      }
-    );
+        
+        return structuredPage;
+      });
+
+      // Transform data for export
+      const formData = transformFormBuilderToExportFormat({
+        title: title,
+        description: description,
+        exportDate: new Date().toISOString(),
+        pages: preparedPages
+      });
+      
+      // Log data to confirm transformation worked
+      console.log('Exporting form data with contents:', formData);
+      
+      // Create a download link for the JSON
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(formData, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `${title || 'form'}_export.json`);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      
+      // Show success message
+      reset(); // Reset previous state
+      callApi(
+        () => Promise.resolve({ success: true, message: 'Form downloaded successfully' }),
+        {
+          successMessage: 'Form downloaded successfully!',
+          errorMessage: 'Failed to export form',
+          skipApiCall: true // We already handled the download
+        }
+      );
+    } catch (err) {
+      console.error('Error exporting form:', err);
+      callApi(
+        () => Promise.reject(new Error('Failed to export form: ' + err.message)),
+        {
+          errorMessage: 'Failed to export form',
+          skipApiCall: true // We're handling the error here
+        }
+      );
+    }
   };
 
   return (
@@ -44,7 +98,7 @@ const FormExport = ({ pages, title }) => {
         disabled={loading}
         sx={{ ml: 2 }}
       >
-        {loading ? 'Exporting...' : 'Export JSON'}
+        {loading ? 'Downloading...' : 'Download JSON'}
       </Button>
       
       <Snackbar
