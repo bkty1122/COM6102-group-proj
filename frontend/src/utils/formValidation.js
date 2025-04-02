@@ -115,6 +115,13 @@ export const validateForm = (formData) => {
       case 'multimedia-material':
         validateMultimediaMaterial(content, errors, path);
         break;
+
+      case 'llm-session-material':
+        break;
+      case 'audio':
+        break;
+      case 'llm-audio-response':
+        break;
         
       default:
         errors.push({ 
