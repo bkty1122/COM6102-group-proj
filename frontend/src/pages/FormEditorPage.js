@@ -1,5 +1,5 @@
-// Modified FormEditorPage.js to use FormDbUpload
-import React, { useState, useEffect, useRef } from 'react';
+// src/pages/FormEditorPage.js
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Box, 
@@ -18,17 +18,20 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ExportIcon from '@mui/icons-material/GetApp';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 // Shared Components
 import TopAppBarLoggedIn from '../components/shared/TopAppBarLoggedIn';
 
-// Form Editor and Form Builder Components
+// Form Editor Components
 import FormEditor from '../components/formeditor/FormEditor';
-import FormDbUpload from '../components/formbuilder/FormDbUpload'; // Import FormDbUpload
+
+// We'll use FormDbUpload component directly
+import FormDbUpload from '../components/formbuilder/FormDbUpload';
 
 // API for fetching question bank existence
 import formExportApi from '../api/formExportApi';
-import { exportFormAsJson } from '../components/formbuilder/utils/exportUtils'; // Import the exportFormAsJson utility
+import { exportFormAsJson } from '../components/formbuilder/utils/exportUtils';
 
 const FormEditorPage = () => {
   const { id } = useParams();
@@ -46,12 +49,10 @@ const FormEditorPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-  
-  // Reference to the FormDbUpload button to programmatically click it
-  const formDbUploadRef = useRef(null);
   
   // Check if question bank exists
   useEffect(() => {
@@ -68,7 +69,10 @@ const FormEditorPage = () => {
           setQuestionBankExists(true);
           setQuestionBankTitle(response.data.title || id);
           setQuestionBankDescription(response.data.description || '');
+          
+          // Store the retrieved data
           setFormData(response.data);
+          
           // Create deep copy for comparison
           setOriginalFormData(JSON.parse(JSON.stringify(response.data)));
         } else {
@@ -106,26 +110,34 @@ const FormEditorPage = () => {
     }
   };
   
-  // Handle save button click - now just triggers the FormDbUpload dialog
+  // Open the FormDbUpload dialog
   const handleSaveClick = () => {
     if (!formData) {
       showSnackbar('No form data to save', 'error');
       return;
     }
     
-    // Programmatically click the FormDbUpload button
-    if (formDbUploadRef.current && formDbUploadRef.current.click) {
-      formDbUploadRef.current.click();
+    setShowSaveDialog(true);
+  };
+  
+  // Handle save complete (success or failure)
+  const handleSaveComplete = (success, message) => {
+    setShowSaveDialog(false);
+    
+    if (success) {
+      // Update original data to match current state to reset unsaved changes flag
+      setOriginalFormData(JSON.parse(JSON.stringify(formData)));
+      setUnsavedChanges(false);
+      showSnackbar(message || 'Form saved successfully', 'success');
     } else {
-      showSnackbar('Could not open save dialog', 'error');
+      showSnackbar(message || 'Failed to save form', 'error');
     }
   };
   
-  // Handle export button click for JSON download using the working exportFormAsJson utility
+  // Handle export button click for JSON download
   const handleExportClick = async () => {
     if (!formData) {
       setExportError('No form data to export');
-      showSnackbar('No form data to export', 'error');
       return;
     }
     
@@ -133,7 +145,7 @@ const FormEditorPage = () => {
     setExportError(null);
     
     try {
-      // Use the exportFormAsJson utility that's known to work
+      // Use the exportFormAsJson utility
       const success = exportFormAsJson(formData.pages);
       
       if (success) {
@@ -228,7 +240,7 @@ const FormEditorPage = () => {
     };
   }, [unsavedChanges]);
 
-  // Calculate summary stats - keeping this for reference
+  // Calculate summary stats for display
   const getSummaryStats = () => {
     if (!formData || !Array.isArray(formData.pages)) {
       return { pageCount: 0, cardCount: 0, contentCount: 0 };
@@ -253,6 +265,8 @@ const FormEditorPage = () => {
     
     return { pageCount, cardCount, contentCount };
   };
+  
+  const { pageCount, cardCount, contentCount } = getSummaryStats();
 
   return (
     <>
@@ -277,22 +291,13 @@ const FormEditorPage = () => {
         {/* Action buttons */}
         {questionBankExists && (
           <Box sx={{ display: 'flex', gap: 2 }}>
-            {/* Hidden FormDbUpload to be triggered programmatically */}
-            <div style={{ display: 'none' }}>
-              <FormDbUpload 
-                ref={formDbUploadRef}
-                pages={formData?.pages || []} 
-                title={questionBankTitle}
-                description={questionBankDescription}
-              />
-            </div>
-            
-            {/* Save button - now triggers FormDbUpload */}
+            {/* Save button */}
             <Tooltip title={unsavedChanges ? "Save changes" : "No changes to save"}>
               <span>
                 <Button
                   variant="contained"
                   color="primary"
+                  startIcon={<CloudUploadIcon />}
                   onClick={handleSaveClick}
                   disabled={!unsavedChanges}
                 >
@@ -362,19 +367,51 @@ const FormEditorPage = () => {
       {!loading && !error && questionBankExists && (
         <FormEditor 
           questionBankId={id}
+          initialData={formData} // Pass the initial data
           onFormDataChange={handleFormDataChange}
         />
       )}
       
-      {/* Visible FormDbUpload button for saving */}
-      {questionBankExists && (
-        <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }}>
-          <FormDbUpload 
-            pages={formData?.pages || []} 
-            title={questionBankTitle}
-            description={questionBankDescription}
-          />
-        </Box>
+      {/* FormDbUpload dialog */}
+      {showSaveDialog && formData && (
+        <Dialog open={showSaveDialog} onClose={() => setShowSaveDialog(false)} maxWidth="md" fullWidth>
+          <DialogTitle>
+            Save Form Changes
+          </DialogTitle>
+          
+          <DialogContent>
+            <DialogContentText>
+              Update form details for database storage. This will save your form using a delete-and-recreate approach.
+            </DialogContentText>
+            
+            <Box sx={{ my: 2 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Form data summary:
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                • {pageCount} page(s) • {cardCount} card(s) • {contentCount} content item(s)
+              </Typography>
+            </Box>
+            
+            {/* Embed FormDbUpload component without its button */}
+            <Box sx={{ mt: 2 }}>
+              <FormDbUpload 
+                pages={formData.pages} 
+                title={questionBankTitle}
+                description={questionBankDescription}
+                formId={id}
+                onSaveComplete={handleSaveComplete}
+                embedded={true} // Signal that this is embedded in another dialog
+              />
+            </Box>
+          </DialogContent>
+          
+          <DialogActions>
+            <Button onClick={() => setShowSaveDialog(false)} color="primary">
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
       
       {/* Delete Confirmation Dialog */}
