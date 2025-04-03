@@ -6,6 +6,7 @@ import MultipleChoiceQuestion from "./content/question/MultipleChoiceQuestion";
 import MatchingQuestion from "./content/question/MatchingQuestion";
 import LongTextQuestion from "./content/question/LongTextQuestion";
 import AudioQuestion from "./content/question/AudioQuestion";
+import LLMAudioResponseCard from "./content/question/LLMAudioResponse";
 
 // Question type mapping configuration
 export const QUESTION_TYPE_MAP = {
@@ -70,6 +71,22 @@ export const QUESTION_TYPE_MAP = {
       defaultAllowPause: true,
       defaultShowTimer: true
     }
+  },
+  "llm-audio-response": {
+    component: LLMAudioResponseCard,
+    defaultProps: {
+      defaultQuestion: "Record your responses to the LLM-generated questions.",
+      defaultMaxSeconds: 60,
+      defaultDifficulty: 'medium',
+      defaultMarks: 6, // Default total marks for all questions
+      defaultInstruction: "When prompted, click the record button and speak your answer clearly.",
+      defaultAllowRerecording: true,
+      defaultAllowPause: true,
+      defaultShowTimer: true,
+      defaultNumberOfQuestions: 3,
+      defaultLlmSessionType: "question-response", // "conversation" or "question-response"
+      defaultLinkedLlmSessionId: null
+    }
   }
 };
 
@@ -107,14 +124,14 @@ export const QuestionComponentRenderer = ({
   const specificProps = {};
   
   // Set answer_id based on question type
-  if (['single-choice', 'multiple-choice', 'long-text', 'audio'].includes(normalizedContent.type)) {
+  if (['single-choice', 'multiple-choice', 'long-text', 'audio', 'llm-audio-response'].includes(normalizedContent.type)) {
     specificProps.answer_id = normalizedContent.answer_id;
   } else if (['fill-in-the-blank', 'matching'].includes(normalizedContent.type)) {
     specificProps.startingAnswerId = normalizedContent.answer_id;
   }
   
   // Add media props for types that support them
-  if (['single-choice', 'multiple-choice', 'fill-in-the-blank', 'matching', 'long-text', 'audio'].includes(normalizedContent.type)) {
+  if (['single-choice', 'multiple-choice', 'fill-in-the-blank', 'matching', 'long-text', 'audio', 'llm-audio-response'].includes(normalizedContent.type)) {
     specificProps.defaultQuestionMedia = questionMedia;
     specificProps.defaultOptionMedia = optionMedia;
   }// Option media is only relevant for choice-based questions
@@ -155,6 +172,23 @@ export const QuestionComponentRenderer = ({
     overrideProps.defaultAllowRerecording = normalizedContent.allowRerecording !== false;
     overrideProps.defaultAllowPause = normalizedContent.allowPause !== false;
     overrideProps.defaultShowTimer = normalizedContent.showTimer !== false;
+  }
+  else if (normalizedContent.type === 'llm-audio-response') {
+    overrideProps.defaultMaxSeconds = normalizedContent.maxSeconds || defaultProps.defaultMaxSeconds;
+    overrideProps.defaultMarks = normalizedContent.marks || defaultProps.defaultMarks;
+    overrideProps.defaultAllowRerecording = normalizedContent.allowRerecording !== false;
+    overrideProps.defaultAllowPause = normalizedContent.allowPause !== false;
+    overrideProps.defaultShowTimer = normalizedContent.showTimer !== false;
+    
+    // LLM-specific properties
+    overrideProps.defaultNumberOfQuestions = normalizedContent.numberOfQuestions || defaultProps.defaultNumberOfQuestions;
+    overrideProps.defaultLlmSessionType = normalizedContent.llmSessionType || defaultProps.defaultLlmSessionType;
+    overrideProps.defaultLinkedLlmSessionId = normalizedContent.linkedLlmSessionId || defaultProps.defaultLinkedLlmSessionId;
+    
+    // If question-specific settings exist, use them
+    if (normalizedContent.questionSpecificSettings) {
+      overrideProps.defaultQuestionSpecificSettings = normalizedContent.questionSpecificSettings;
+    }
   }
   
   // Combine all props

@@ -6,7 +6,8 @@ import { RequireAuth } from "./utils/AuthGuard";
 // Pages
 import LoginPage from "./pages/LoginPage";
 import FormBuilderPage from "./pages/FormBuilderPage";
-import DashboardPage from "./pages/DashboardPage"; // Import the DashboardPage
+import DashboardPage from "./pages/DashboardPage";
+import FormEditorPage from "./pages/FormEditorPage";
 
 function App() {
   return (
@@ -30,6 +31,16 @@ function App() {
           element={
             <RequireAuth>
               <FormBuilderPage />
+            </RequireAuth>
+          } 
+        />
+        
+        {/* Form Editor route with ID parameter */}
+        <Route 
+          path="/form-editor/:id" 
+          element={
+            <RequireAuth>
+              <FormEditorPage />
             </RequireAuth>
           } 
         />

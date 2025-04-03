@@ -37,6 +37,13 @@ const EditMaterialDialog = ({
     uniqueComponents 
   } = filterOptions;
   
+  // Handle the edit in form editor button click
+  const handleEditInFormEditor = () => {
+    onClose(); // Close the dialog
+    // Navigate to form editor with the material ID
+    navigate(`/form-editor/${material.id}`);
+  };
+  
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Edit Material</DialogTitle>
@@ -152,7 +159,7 @@ const EditMaterialDialog = ({
             borderRadius: 1
           }}>
             <Typography variant="body2" color="warning.dark">
-              <strong>Note:</strong> Database connection not implemented. In production, this form would save changes to the database. This is a UI mockup only.
+              <strong>Note:</strong> Changes made here will update the material metadata. For content editing, use the Form Editor.
             </Typography>
           </Box>
         </Box>
@@ -160,11 +167,11 @@ const EditMaterialDialog = ({
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button 
-          onClick={() => navigate(`/form-builder`)} 
+          onClick={handleEditInFormEditor} 
           variant="outlined"
           startIcon={<EditIcon />}
         >
-          Edit in Form Builder
+          Edit in Form Editor
         </Button>
         <Button onClick={onSave} variant="contained">Save Changes</Button>
       </DialogActions>

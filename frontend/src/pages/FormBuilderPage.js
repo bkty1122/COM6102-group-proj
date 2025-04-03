@@ -1,8 +1,8 @@
 // src/pages/FormBuilderPage.js
-import React from "react";
+import React, { useState } from "react";
 
 // MUI Components
-import { Box, Divider } from "@mui/material";
+import { Box, Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress } from "@mui/material";
 
 // DnD Kit
 import { DndContext } from "@dnd-kit/core";
@@ -24,8 +24,13 @@ import BlankPage from "../components/formbuilder/shared/BlankPage";
 import AvailableQuestions from "../components/formbuilder/shared/AvailableQuestions";
 import AvailableMaterials from "../components/formbuilder/shared/AvailableMaterials";
 import FormExport from "../components/formbuilder/FormExport";
+import FormDbUpload from "../components/formbuilder/FormDbUpload";
 
 const FormBuilderPage = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  
   const {
     pages,
     currentPage,
@@ -55,15 +60,39 @@ const FormBuilderPage = () => {
 
   // Handler for category changes from FormCategorySelector
   const handleCategoryChange = (categoryData) => {
-    updatePageMetadata(pages[currentPage].id, { examCategories: categoryData });
+    // Use the currentPage index, not the page ID
+    if (currentPage >= 0 && pages[currentPage]) {
+      updatePageMetadata(pages[currentPage].id, { examCategories: categoryData });
+    }
+  };
+  
+  // Close the dialog
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setErrorMsg(null);
   };
 
   return (
     <>
-      {/* Floating top app bar */}
+      {/* Top App Bar with logout functionality */}
       <TopAppBarLoggedIn appTitle="Form Builder" />
-      
-      {/* Main content */}
+
+      {/* Action buttons */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        padding: 2, 
+        backgroundColor: '#f9f9f9',
+        borderBottom: '1px solid #ddd'
+      }}>
+        {/* Save to DB button */}
+        <FormDbUpload pages={pages} />
+        
+        {/* Export button */}
+        <FormExport pages={pages} />
+      </Box>
+
+      {/* Main Form Builder */}
       <DndContext 
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -71,7 +100,7 @@ const FormBuilderPage = () => {
         <Box 
           sx={{ 
             display: "flex", 
-            height: "calc(100vh - 48px - 12px)", // Subtract toolbar height and extra spacing
+            height: "calc(100vh - 128px)", // Adjust for top bars
             position: "relative",
             zIndex: 1
           }}
@@ -85,7 +114,7 @@ const FormBuilderPage = () => {
               borderRight: "1px solid #ddd",
               overflowY: "auto",
               flexShrink: 0,
-              zIndex: 2
+              zIndex: 2 // Slightly higher than main content
             }}
           >
             <AvailableMaterials />
@@ -97,9 +126,7 @@ const FormBuilderPage = () => {
               flexGrow: 1, 
               overflow: "auto", 
               p: 2,
-              zIndex: 1,
-              display: 'flex',
-              flexDirection: 'column'
+              zIndex: 1
             }}
           >
             <NavigationBar
@@ -128,23 +155,16 @@ const FormBuilderPage = () => {
             <Divider sx={{ my: 2 }} />
 
             {/* Main form building area */}
-            <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-              <BlankPage 
-                cards={currentPageData.cards} 
-                addCard={addCard} 
-                removeCard={removeCard}
-                cardContents={currentPageData.cardContents}
-                reorderCards={reorderCards}
-                onRemoveContent={removeCardContent}
-                onReorderContent={reorderContent}
-                onUpdateContent={updateCardContent}
-              />
-            </Box>
-            
-            {/* Export button */}
-            <Box sx={{ mt: 2 }}>
-              <FormExport pages={pages} />
-            </Box>
+            <BlankPage 
+              cards={currentPageData.cards} 
+              addCard={addCard} 
+              removeCard={removeCard}
+              cardContents={currentPageData.cardContents}
+              reorderCards={reorderCards}
+              onRemoveContent={removeCardContent}
+              onReorderContent={reorderContent}
+              onUpdateContent={updateCardContent}
+            />
           </Box>
           
           {/* Available Questions panel on the right */}
@@ -156,7 +176,7 @@ const FormBuilderPage = () => {
               borderLeft: "1px solid #ddd",
               overflowY: "auto",
               flexShrink: 0,
-              zIndex: 2
+              zIndex: 2 // Slightly higher than main content
             }}
           >
             <AvailableQuestions />
@@ -172,7 +192,7 @@ const FormBuilderPage = () => {
                 right: 0,
                 bottom: 0,
                 pointerEvents: "none",
-                zIndex: 5,
+                zIndex: 5, // Higher than content but lower than dragged items
                 backgroundColor: "rgba(0,0,0,0.03)",
                 transition: "opacity 0.2s",
               }}
@@ -180,6 +200,31 @@ const FormBuilderPage = () => {
           )}
         </Box>
       </DndContext>
+      
+      {/* Result Dialog - Keep this for any future notifications */}
+      <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>
+          {errorMsg ? "Error" : "Success"}
+        </DialogTitle>
+        <DialogContent>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+              <CircularProgress />
+            </Box>
+          ) : errorMsg ? (
+            <Alert severity="error">{errorMsg}</Alert>
+          ) : (
+            <Alert severity="success">
+              Operation completed successfully
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
