@@ -3,7 +3,7 @@
 const config = {
   // API URLs
   api: {
-    baseUrl: 'https://literate-space-enigma-qgpq7xrqx94f45g7-5000.app.github.dev/api', // GitHub Codespaces URL, change base on the server config
+    baseUrl: 'http://localhost:5000/api', // GitHub Codespaces URL, change base on the server config
   },
   
   // Authentication
