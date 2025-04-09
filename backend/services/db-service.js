@@ -1,156 +1,140 @@
-// services/db-service.js
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
 class DatabaseService {
-  constructor(dbPath) {
-    this.dbPath = dbPath;
-    this.db = null;
+  constructor(dbConfig) {
+    this.dbConfig = dbConfig;
+    this.pool = null;
+    this.init();
   }
 
-  connect() {
-    return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.dbPath, (err) => {
-        if (err) {
-          console.error('Could not connect to database:', err);
-          reject(err);
-        } else {
-          console.log(`Connected to database at ${this.dbPath}`);
-          
-          // Enable foreign keys for data integrity
-          this.db.run('PRAGMA foreign_keys = ON');
-          
-          // Configure for optimal performance
-          this.db.run('PRAGMA journal_mode = WAL');  // Write-Ahead Logging for better concurrency
-          this.db.run('PRAGMA synchronous = NORMAL'); // Moderate durability/performance balance
-          this.db.run('PRAGMA cache_size = 10000');  // Increase cache size for better performance
-          
-          resolve(this.db);
-        }
-      });
-    });
-  }
-
-  // Helper for running SQL queries as promises
-  run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, function(err) {
-        if (err) {
-          console.error('Error running SQL:', err);
-          reject(err);
-        } else {
-          resolve({ id: this.lastID, changes: this.changes });
-        }
-      });
-    });
-  }
-  
-  // Helper for getting a single row
-  get(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, result) => {
-        if (err) {
-          console.error('Error running SQL:', err);
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
-  
-  // Helper for getting multiple rows
-  all(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows) => {
-        if (err) {
-          console.error('Error running SQL:', err);
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
-    });
-  }
-  
-  // Execute multiple SQL statements
-  exec(sql) {
-    return new Promise((resolve, reject) => {
-      this.db.exec(sql, (err) => {
-        if (err) {
-          console.error('Error executing SQL:', err);
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
-
-  // Prepare statement for repeated use
-  prepareStatement(sql) {
-    return new Promise((resolve, reject) => {
-      const stmt = this.db.prepare(sql, (err) => {
-        if (err) {
-          console.error('Error preparing statement:', err);
-          reject(err);
-        } else {
-          resolve(stmt);
-        }
-      });
-    });
-  }
-
-  // Run batch operations
-  async batchRun(sql, paramsList) {
+  init() {
     try {
-      const stmt = await this.prepareStatement(sql);
+      this.pool = new Pool(this.dbConfig);
       
-      for (const params of paramsList) {
-        await new Promise((resolve, reject) => {
-          stmt.run(params, function(err) {
-            if (err) {
-              reject(err);
-            } else {
-              resolve({ id: this.lastID, changes: this.changes });
-            }
-          });
-        });
-      }
-      
-      await new Promise((resolve, reject) => {
-        stmt.finalize(err => {
-          if (err) reject(err);
-          else resolve();
-        });
+      // Set up error handler for the pool
+      this.pool.on('error', (err) => {
+        console.error('Unexpected error on idle PostgreSQL client', err);
       });
       
-      return true;
+      console.log(`Connected to PostgreSQL database at ${this.dbConfig.host}/${this.dbConfig.database}`);
     } catch (error) {
-      console.error('Error in batch operation:', error);
+      console.error('Could not create database connection pool:', error);
       throw error;
     }
   }
 
-  // Enhanced close method
-  async close() {
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        resolve(); // Already closed or never opened
-        return;
+  // Helper for running SQL queries as promises
+  async query(sql, params = []) {
+    try {
+      const result = await this.pool.query(sql, params);
+      return result;
+    } catch (error) {
+      console.error('Error running SQL:', error);
+      throw error;
+    }
+  }
+  
+  // Helper for running SQL that modifies data (INSERT, UPDATE, DELETE)
+  async run(sql, params = []) {
+    try {
+      const result = await this.pool.query(sql, params);
+      return {
+        id: result.rows[0]?.id, // If RETURNING id is used
+        changes: result.rowCount // Number of rows affected
+      };
+    } catch (error) {
+      console.error('Error running SQL:', error);
+      throw error;
+    }
+  }
+  
+  // Helper for getting a single row
+  async get(sql, params = []) {
+    try {
+      const result = await this.pool.query(sql, params);
+      return result.rows.length > 0 ? result.rows[0] : null;
+    } catch (error) {
+      console.error('Error running SQL:', error);
+      throw error;
+    }
+  }
+  
+  // Helper for getting multiple rows
+  async all(sql, params = []) {
+    try {
+      const result = await this.pool.query(sql, params);
+      return result.rows;
+    } catch (error) {
+      console.error('Error running SQL:', error);
+      throw error;
+    }
+  }
+  
+  // Execute multiple SQL statements
+  async exec(sql) {
+    const client = await this.pool.connect();
+    try {
+      await client.query(sql);
+      return true;
+    } catch (error) {
+      console.error('Error executing SQL:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  // Run batch operations - in PostgreSQL we can use a transaction
+  async batchRun(sql, paramsList) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      for (const params of paramsList) {
+        await client.query(sql, params);
       }
       
-      this.db.close(err => {
-        if (err) {
-          console.error('Error closing database:', err);
-          reject(err);
-        } else {
-          console.log('Database connection closed');
-          this.db = null; // Clear the reference
-          resolve();
-        }
-      });
-    });
+      await client.query('COMMIT');
+      return true;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error in batch operation:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  // Get a client for transaction operations
+  async getClient() {
+    return await this.pool.connect();
+  }
+
+  // Transaction helpers
+  async beginTransaction(client) {
+    await client.query('BEGIN');
+  }
+
+  async commitTransaction(client) {
+    await client.query('COMMIT');
+  }
+
+  async rollbackTransaction(client) {
+    await client.query('ROLLBACK');
+  }
+
+  // Enhanced close method
+  async close() {
+    try {
+      if (this.pool) {
+        await this.pool.end();
+        console.log('Database connection pool closed');
+        this.pool = null;
+      }
+    } catch (error) {
+      console.error('Error closing database pool:', error);
+      throw error;
+    }
   }
 }
 

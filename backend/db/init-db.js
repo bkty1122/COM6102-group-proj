@@ -1,33 +1,42 @@
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-// Create a new database or open existing one
-const db = new sqlite3.Database('./form_storage.db', (err) => {
-  if (err) {
-    console.error('Could not connect to database', err);
-  } else {
-    console.log('Connected to SQLite database');
-  }
-});
+// Create database configuration from environment or config file
+const config = require('../config'); // Adjust path as needed
 
-// Read schema SQL
-const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+// Create a connection pool
+const pool = new Pool(config.dbConfig);
 
-// Execute schema SQL to create tables
-db.exec(schema, (err) => {
-  if (err) {
-    console.error('Error creating database schema:', err);
-  } else {
-    console.log('Database schema created successfully');
-  }
+async function initDatabase() {
+  let client;
   
-  // Close the database connection
-  db.close((err) => {
-    if (err) {
-      console.error('Error closing database:', err);
-    } else {
-      console.log('Database connection closed');
+  try {
+    // Connect to the database
+    client = await pool.connect();
+    console.log('Connected to PostgreSQL database');
+    
+    // Read schema SQL
+    const schema = fs.readFileSync(path.join(__dirname, 'postgres_schema.sql'), 'utf8');
+    
+    // Execute schema SQL to create tables
+    await client.query(schema);
+    console.log('Database schema created successfully');
+    
+  } catch (err) {
+    console.error('Error creating database schema:', err);
+    process.exit(1);
+  } finally {
+    // Release the client back to the pool
+    if (client) {
+      client.release();
     }
-  });
-});
+    
+    // Close the pool
+    await pool.end();
+    console.log('Database connection closed');
+  }
+}
+
+// Run the initialization
+initDatabase();
