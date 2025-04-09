@@ -162,7 +162,6 @@ const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
             value={folder}
             label="Folder"
             onChange={handleFolderChange}
-            displayEmpty
           >
             <MenuItem value="">All Folders</MenuItem>
             {folders.map((f) => (
