@@ -10,7 +10,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderIcon from '@mui/icons-material/Folder';
-import mediaApi from '../../../api/mediaApi';
+import mediaApi from '../../../../api/mediaApi';
 
 const MediaUploader = ({ 
   onSelectMedia, 

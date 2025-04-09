@@ -9,7 +9,7 @@ import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import SearchIcon from '@mui/icons-material/Search';
 import FolderIcon from '@mui/icons-material/Folder';
-import mediaApi from '../../../api/mediaApi';
+import mediaApi from '../../../../api/mediaApi';
 
 const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
   const [loading, setLoading] = useState(true);
@@ -162,7 +162,6 @@ const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
             value={folder}
             label="Folder"
             onChange={handleFolderChange}
-            displayEmpty
           >
             <MenuItem value="">All Folders</MenuItem>
             {folders.map((f) => (
