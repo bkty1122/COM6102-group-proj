@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const errorHandler = require('./middleware/errorHandler');
 const questionBankRoutes = require('./routes/questionBankRoutes');
 const exportRoutes = require('./routes/exportRoutes');
+const mediaRoutes = require('./routes/mediaRoutes'); // Media routes
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/question-banks', questionBankRoutes);
 app.use('/api/exports', exportRoutes);
+app.use('/api/media', mediaRoutes); // Media routes
 
 // Default route
 app.get('/', (req, res) => {
