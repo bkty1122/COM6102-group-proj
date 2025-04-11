@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Grid, Card, CardMedia, CardContent, CardActionArea,
   CircularProgress, Alert, Pagination, TextField, InputAdornment, IconButton,
-  Select, MenuItem, FormControl, InputLabel, Chip
+  Select, MenuItem, FormControl, InputLabel, Chip, Dialog, DialogTitle,
+  DialogContent, DialogContentText, DialogActions, Button, Menu, Tooltip
 } from "@mui/material";
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import VideocamIcon from '@mui/icons-material/Videocam';
@@ -11,9 +12,13 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
 import SearchIcon from '@mui/icons-material/Search';
 import FolderIcon from '@mui/icons-material/Folder';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DownloadIcon from '@mui/icons-material/Download';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import mediaApi from '../../../../api/mediaApi';
 
-const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
+const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaItems, setMediaItems] = useState([]);
@@ -28,6 +33,15 @@ const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
   const [search, setSearch] = useState('');
   const [mediaType, setMediaType] = useState('all');
   const [folder, setFolder] = useState('root');
+  
+  // Menu state for each media item
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [menuMedia, setMenuMedia] = useState(null);
+  
+  // Delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [mediaToDelete, setMediaToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Get the correct file type for filtering based on file extension
   const getFileType = (media) => {
@@ -164,6 +178,109 @@ const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
   const handleFolderChange = (e) => {
     setFolder(e.target.value);
     setPagination({ ...pagination, page: 1, continuationToken: null }); // Reset pagination
+  };
+  
+  // Handle menu open
+  const handleMenuOpen = (event, media) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+    setMenuMedia(media);
+  };
+  
+  // Handle menu close
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setMenuMedia(null);
+  };
+  
+  // Handle delete confirm dialog open
+  const handleDeleteDialogOpen = (media) => {
+    handleMenuClose();
+    setMediaToDelete(media);
+    setDeleteDialogOpen(true);
+  };
+  
+  // Handle delete confirm dialog close
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setMediaToDelete(null);
+  };
+  
+  // Handle delete media
+  const handleDeleteMedia = async () => {
+    if (!mediaToDelete) return;
+    
+    try {
+      setDeleteLoading(true);
+      
+      const mediaId = mediaToDelete.id || mediaToDelete.key;
+      const response = await mediaApi.deleteMedia(mediaId);
+      
+      if (response.success) {
+        // Remove deleted media from the list
+        setMediaItems(prevItems => prevItems.filter(item => 
+          (item.id || item.key) !== (mediaToDelete.id || mediaToDelete.key)
+        ));
+        
+        // Show success message
+        if (showAlert) {
+          showAlert('Media deleted successfully', 'success');
+        } else {
+          console.log('Media deleted successfully');
+        }
+        
+        // Deselect if the deleted item was selected
+        if (selectedMedia && (selectedMedia.id === mediaToDelete.id || selectedMedia.key === mediaToDelete.key)) {
+          onSelectMedia(null);
+        }
+      } else {
+        throw new Error(response.message || 'Failed to delete media');
+      }
+    } catch (err) {
+      console.error('Error deleting media:', err);
+      if (showAlert) {
+        showAlert(`Error deleting media: ${err.message || 'Unknown error'}`, 'error');
+      }
+    } finally {
+      setDeleteLoading(false);
+      handleDeleteDialogClose();
+    }
+  };
+  
+  // Handle copy URL to clipboard
+  const handleCopyUrl = (media) => {
+    if (!media || !media.url) return;
+    
+    navigator.clipboard.writeText(media.url)
+      .then(() => {
+        if (showAlert) {
+          showAlert('URL copied to clipboard', 'success');
+        }
+      })
+      .catch(err => {
+        console.error('Error copying URL:', err);
+        if (showAlert) {
+          showAlert('Failed to copy URL', 'error');
+        }
+      });
+    
+    handleMenuClose();
+  };
+  
+  // Handle download
+  const handleDownload = (media) => {
+    if (!media || !media.url) return;
+    
+    // Create a temporary anchor element
+    const a = document.createElement('a');
+    a.href = media.url;
+    a.download = media.name || 'download';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    handleMenuClose();
   };
   
   // Render media thumbnail based on type
@@ -383,9 +500,10 @@ const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
             <Grid item xs={12} sm={6} md={4} lg={3} key={media.id || media.key}>
               <Card 
                 sx={{ 
-                  border: selectedMedia?.id === media.id ? '2px solid #1976d2' : '1px solid #eee',
+                  border: selectedMedia?.id === media.id || selectedMedia?.key === media.key ? '2px solid #1976d2' : '1px solid #eee',
                   transition: 'all 0.2s',
-                  height: '100%'
+                  height: '100%',
+                  position: 'relative'
                 }}
               >
                 <CardActionArea 
@@ -430,18 +548,92 @@ const MediaGrid = ({ selectedMedia, onSelectMedia }) => {
                       />
                     )}
                   </Box>
-                  <CardContent sx={{ flexGrow: 1 }}>
+                  <CardContent sx={{ flexGrow: 1, pb: 1 }}>
                     <Typography variant="body2" noWrap>{media.name}</Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
                       {(media.size / 1024).toFixed(1)} KB
                     </Typography>
                   </CardContent>
                 </CardActionArea>
+                
+                {/* Menu button */}
+                <IconButton 
+                  size="small"
+                  sx={{ 
+                    position: 'absolute', 
+                    top: 4, 
+                    right: 4,
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255,255,255,0.9)'
+                    }
+                  }}
+                  onClick={(e) => handleMenuOpen(e, media)}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
               </Card>
             </Grid>
           ))}
         </Grid>
       )}
+      
+      {/* Media actions menu */}
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={() => handleCopyUrl(menuMedia)}>
+          <ContentCopyIcon fontSize="small" sx={{ mr: 1 }} />
+          Copy URL
+        </MenuItem>
+        <MenuItem onClick={() => handleDownload(menuMedia)}>
+          <DownloadIcon fontSize="small" sx={{ mr: 1 }} />
+          Download
+        </MenuItem>
+        <MenuItem 
+          onClick={() => handleDeleteDialogOpen(menuMedia)}
+          sx={{ color: 'error.main' }}
+        >
+          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+          Delete
+        </MenuItem>
+      </Menu>
+      
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteDialogClose}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete "{mediaToDelete?.name}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleDeleteDialogClose} 
+            disabled={deleteLoading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteMedia} 
+            color="error" 
+            autoFocus
+            disabled={deleteLoading}
+            startIcon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {/* Pagination */}
       {!loading && pagination.totalPages > 1 && (
