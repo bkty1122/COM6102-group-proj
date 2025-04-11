@@ -42,6 +42,9 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [mediaToDelete, setMediaToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  
+  // Download state
+  const [downloadingMedia, setDownloadingMedia] = useState(null);
 
   // Get the correct file type for filtering based on file extension
   const getFileType = (media) => {
@@ -272,15 +275,82 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
   const handleDownload = (media) => {
     if (!media || !media.url) return;
     
-    // Create a temporary anchor element
-    const a = document.createElement('a');
-    a.href = media.url;
-    a.download = media.name || 'download';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    
+    // Close the menu first
     handleMenuClose();
+    
+    // Set downloading state
+    setDownloadingMedia(media);
+    
+    try {
+      // Get the file name from the media object
+      const fileName = media.name || media.key.split('/').pop() || 'download';
+      
+      // For images and other browser-supported formats, use direct download
+      if (getFileType(media) === 'image' || !media.url.includes('?')) {
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = media.url;
+        link.download = fileName;
+        link.target = '_blank';
+        
+        // Append to document, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message after a short delay to ensure browser started the download
+        setTimeout(() => {
+          if (showAlert) {
+            showAlert(`Downloading ${fileName}`, 'success');
+          }
+          setDownloadingMedia(null);
+        }, 500);
+      } else {
+        // For other files, use the API helper with proper content-disposition
+        const downloadUrl = mediaApi.getMediaFileUrl(media.id || media.key, true);
+        
+        // Use fetch API for better control
+        fetch(downloadUrl)
+          .then(response => {
+            if (!response.ok) throw new Error('Download failed: ' + response.statusText);
+            return response.blob();
+          })
+          .then(blob => {
+            // Create an object URL for the blob
+            const url = window.URL.createObjectURL(blob);
+            
+            // Create a link to download it
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+            
+            if (showAlert) {
+              showAlert(`Downloading ${fileName}`, 'success');
+            }
+          })
+          .catch(error => {
+            console.error('Download error:', error);
+            if (showAlert) {
+              showAlert('Download failed: ' + (error.message || 'Unknown error'), 'error');
+            }
+          })
+          .finally(() => {
+            setDownloadingMedia(null);
+          });
+      }
+    } catch (error) {
+      console.error('Error initiating download:', error);
+      if (showAlert) {
+        showAlert('Error initiating download: ' + (error.message || 'Unknown error'), 'error');
+      }
+      setDownloadingMedia(null);
+    }
   };
   
   // Render media thumbnail based on type
@@ -503,9 +573,34 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
                   border: selectedMedia?.id === media.id || selectedMedia?.key === media.key ? '2px solid #1976d2' : '1px solid #eee',
                   transition: 'all 0.2s',
                   height: '100%',
-                  position: 'relative'
+                  position: 'relative',
+                  opacity: downloadingMedia && (downloadingMedia.id === media.id || downloadingMedia.key === media.key) ? 0.7 : 1
                 }}
               >
+                {downloadingMedia && (downloadingMedia.id === media.id || downloadingMedia.key === media.key) && (
+                  <Box 
+                    sx={{ 
+                      position: 'absolute', 
+                      top: 0, 
+                      left: 0, 
+                      right: 0, 
+                      bottom: 0, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(255,255,255,0.8)',
+                      zIndex: 2
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'center' }}>
+                      <CircularProgress size={40} sx={{ mb: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Downloading...
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+                
                 <CardActionArea 
                   onClick={() => onSelectMedia(media)}
                   sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
@@ -566,9 +661,11 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
                     backgroundColor: 'rgba(255,255,255,0.7)',
                     '&:hover': {
                       backgroundColor: 'rgba(255,255,255,0.9)'
-                    }
+                    },
+                    zIndex: 3
                   }}
                   onClick={(e) => handleMenuOpen(e, media)}
+                  disabled={downloadingMedia !== null}
                 >
                   <MoreVertIcon fontSize="small" />
                 </IconButton>
