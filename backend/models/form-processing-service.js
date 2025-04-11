@@ -1,8 +1,7 @@
-// models/form-processing-service.js
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const config = require('../config');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const fs = require('fs');
 
 // Import our service components
@@ -13,30 +12,25 @@ const ContentRetriever = require('../services/content-retriever');
 const QuestionBankService = require('../services/question-bank-service');
 
 class FormProcessingService {
-  constructor(dbPath = null) {
-    // Use config's dbPath if not explicitly provided
-    const dbFilePath = dbPath || path.resolve(config.dbPath);
+  constructor(dbConfig = null) {
+    // Use config's dbConfig if not explicitly provided
+    const dbConfiguration = dbConfig || config.dbConfig;
     
     // Initialize database service
-    this.dbService = new DatabaseService(dbFilePath);
+    this.dbService = new DatabaseService(dbConfiguration);
     
-    // Connect to the database synchronously using the SQLite API directly
-    this.db = new sqlite3.Database(dbFilePath, (err) => {
-      if (err) {
-        console.error('Could not connect to database:', err);
-      } else {
-        console.log(`Connected to database at ${dbFilePath}`);
-        
-        // Enable foreign keys for data integrity
-        this.db.run('PRAGMA foreign_keys = ON');
-        this.db.run('PRAGMA journal_mode = WAL');
-        this.db.run('PRAGMA synchronous = NORMAL');
-        this.db.run('PRAGMA cache_size = 10000');
-      }
+    // Connect to the database using PostgreSQL
+    this.pool = new Pool(dbConfiguration);
+    
+    // Set up error handling for the pool
+    this.pool.on('error', (err) => {
+      console.error('Unexpected error on idle PostgreSQL client', err);
     });
     
-    // Set up the db service with the connected db
-    this.dbService.db = this.db;
+    console.log(`Connected to PostgreSQL database at ${dbConfiguration.host}/${dbConfiguration.database}`);
+    
+    // Set up the db service with the connected pool
+    this.dbService.pool = this.pool;
     
     // Initialize debug service
     this.debugService = new DebugService(
@@ -71,27 +65,32 @@ class FormProcessingService {
     // Debug export original data if debug is enabled
     await this.debugService.debugExport(formData, 'input-form', questionbankId);
     
-    // Start a transaction
-    await this.dbService.run('BEGIN TRANSACTION');
+    // Get a client from the pool for transaction
+    const client = await this.pool.connect();
     
     try {
+      // Start a transaction
+      await client.query('BEGIN');
+      
       // Check if this form already exists
-      const existingForm = await this.dbService.get(
-        'SELECT questionbank_id FROM question_banks WHERE questionbank_id = ?',
+      const existingResult = await client.query(
+        'SELECT questionbank_id FROM question_banks WHERE questionbank_id = $1',
         [questionbankId]
       );
+      
+      const existingForm = existingResult.rows.length > 0 ? existingResult.rows[0] : null;
       
       // If the form exists, completely remove it first
       if (existingForm) {
         console.log(`Deleting existing form with ID: ${questionbankId} before recreation`);
-        await this.deleteQuestionBank(questionbankId);
+        await this.deleteQuestionBank(questionbankId, client);
       }
       
       // Create the form from scratch
-      await this.createQuestionBank(formData, questionbankId);
+      await this.createQuestionBank(formData, questionbankId, client);
       
       // Commit the transaction
-      await this.dbService.run('COMMIT');
+      await client.query('COMMIT');
       
       // Debug export success result if debug is enabled
       await this.debugService.debugExport(
@@ -104,7 +103,7 @@ class FormProcessingService {
       
     } catch (error) {
       // Rollback on error
-      await this.dbService.run('ROLLBACK');
+      await client.query('ROLLBACK');
       console.error("Transaction failed:", error);
       
       // Debug export error if debug is enabled
@@ -115,6 +114,9 @@ class FormProcessingService {
       );
       
       throw error;
+    } finally {
+      // Release the client back to the pool
+      client.release();
     }
   }
   
@@ -174,15 +176,16 @@ class FormProcessingService {
   /**
    * Delete a question bank and all related data
    * @param {string} questionbankId - Question bank ID
+   * @param {Object} client - PostgreSQL client for transaction
    */
-  async deleteQuestionBank(questionbankId) {
+  async deleteQuestionBank(questionbankId, client) {
     console.log(`Deleting question bank ${questionbankId} and all related data`);
     
     try {
       // With CASCADE constraints, we can simply delete the question bank
       // and all related pages, cards, and content will be deleted automatically
-      await this.dbService.run(
-        'DELETE FROM question_banks WHERE questionbank_id = ?',
+      await client.query(
+        'DELETE FROM question_banks WHERE questionbank_id = $1',
         [questionbankId]
       );
       
@@ -197,16 +200,17 @@ class FormProcessingService {
    * Create a new question bank from scratch
    * @param {Object} formData - Form data
    * @param {string} questionbankId - Question bank ID
+   * @param {Object} client - PostgreSQL client for transaction
    */
-  async createQuestionBank(formData, questionbankId) {
+  async createQuestionBank(formData, questionbankId, client) {
     console.log(`Creating question bank with ID: ${questionbankId}`);
     
     try {
       // 1. Create the main form record
-      await this.dbService.run(
+      await client.query(
         `INSERT INTO question_banks 
          (questionbank_id, title, export_date, description, status) 
-         VALUES (?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5)`,
         [
           questionbankId,
           formData.title || 'Untitled Question Bank',
@@ -227,10 +231,10 @@ class FormProcessingService {
           console.log(`Creating page with index ${finalPageIndex}`);
           
           // Insert the page
-          const pageResult = await this.dbService.run(
+          const pageResult = await client.query(
             `INSERT INTO question_bank_pages 
              (questionbank_id, page_index, exam_language, exam_type, component, category) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
             [
               questionbankId,
               finalPageIndex,
@@ -241,17 +245,7 @@ class FormProcessingService {
             ]
           );
           
-          // Get the ID of the newly created page
-          const newPage = await this.dbService.get(
-            'SELECT id FROM question_bank_pages WHERE questionbank_id = ? AND page_index = ?',
-            [questionbankId, finalPageIndex]
-          );
-          
-          if (!newPage) {
-            throw new Error(`Failed to retrieve ID for newly created page with index ${finalPageIndex}`);
-          }
-          
-          const pageId = newPage.id;
+          const pageId = pageResult.rows[0].id;
           console.log(`Created page with ID ${pageId} and index ${finalPageIndex}`);
           
           // Process cards for this page
@@ -279,22 +273,12 @@ class FormProcessingService {
               console.log(`Creating card of type ${card.card_type} at position ${card.position}`);
               
               // Insert the card
-              const cardResult = await this.dbService.run(
-                'INSERT INTO cards (page_id, card_type, position) VALUES (?, ?, ?)',
+              const cardResult = await client.query(
+                'INSERT INTO cards (page_id, card_type, position) VALUES ($1, $2, $3) RETURNING id',
                 [pageId, card.card_type, card.position]
               );
               
-              // Get the ID of the newly created card
-              const newCard = await this.dbService.get(
-                'SELECT id FROM cards WHERE page_id = ? AND position = ? ORDER BY id DESC LIMIT 1',
-                [pageId, card.position]
-              );
-              
-              if (!newCard) {
-                throw new Error(`Failed to retrieve ID for newly created card at position ${card.position}`);
-              }
-              
-              const cardId = newCard.id;
+              const cardId = cardResult.rows[0].id;
               
               // Process card contents
               if (Array.isArray(card.contents)) {
@@ -319,7 +303,7 @@ class FormProcessingService {
                   contentToProcess.order_id = contentIndex;
                   
                   try {
-                    await this.contentProcessor.processContent(cardId, contentToProcess, card.card_type);
+                    await this.contentProcessor.processContent(cardId, contentToProcess, card.card_type, client);
                   } catch (contentError) {
                     console.error(`Error processing content item:`, {
                       contentType: contentToProcess.type,
@@ -374,7 +358,10 @@ class FormProcessingService {
    * @returns {Promise<void>}
    */
   async close() {
-    return await this.dbService.close();
+    if (this.pool) {
+      await this.pool.end();
+      console.log('Database connection pool closed');
+    }
   }
 }
 
