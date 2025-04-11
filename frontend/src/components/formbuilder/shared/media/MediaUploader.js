@@ -1,357 +1,262 @@
 // src/components/formbuilder/shared/MediaUploader.js
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
-  Box, Typography, Card, CircularProgress, TextField, MenuItem, Select, FormControl,
-  InputLabel, Divider, Button, IconButton, Alert, Grid
+  Box, Typography, Button, FormControl, InputLabel, Select, MenuItem,
+  TextField, LinearProgress, Alert, Paper
 } from "@mui/material";
-import ImageIcon from "@mui/icons-material/Image";
-import AudiotrackIcon from '@mui/icons-material/Audiotrack';
-import VideocamIcon from '@mui/icons-material/Videocam';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderIcon from '@mui/icons-material/Folder';
 import mediaApi from '../../../../api/mediaApi';
 
-const MediaUploader = ({ 
-  onSelectMedia, 
-  showAlert,
-  onUploadComplete = () => {}
-}) => {
+const MediaUploader = ({ onSelectMedia, showAlert }) => {
+  const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState('');
+  const [folder, setFolder] = useState('root');
+  const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [mediaName, setMediaName] = useState('');
-  const [mediaType, setMediaType] = useState('');
-  const [folder, setFolder] = useState('');
-  const [uploadError, setUploadError] = useState(null);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [uploadedMediaInfo, setUploadedMediaInfo] = useState(null);
-  
-  const fileInputRef = useRef(null);
+  const [error, setError] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   // Handle file selection
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Reset states
-    setUploadError(null);
-    setUploadSuccess(false);
-    setUploadProgress(0);
-    setUploadedMediaInfo(null);
-
-    // Determine file type
-    let fileType = '';
-    if (file.type.startsWith('image/')) {
-      fileType = 'image';
-    } else if (file.type.startsWith('audio/')) {
-      fileType = 'audio';
-    } else if (file.type.startsWith('video/')) {
-      fileType = 'video';
-    } else {
-      setUploadError("Unsupported file type. Please upload an image, audio, or video file.");
-      if (showAlert) showAlert("Unsupported file type. Please upload an image, audio, or video file.", "error");
-      return;
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+      
+      // Create preview for images
+      if (selectedFile.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreview(e.target.result);
+        };
+        reader.readAsDataURL(selectedFile);
+      } else {
+        setPreview(null);
+      }
     }
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      setUploadError("File is too large. Maximum size is 10MB.");
-      if (showAlert) showAlert("File is too large. Maximum size is 10MB.", "error");
-      return;
-    }
-
-    // Set file info
-    setUploadedFile(file);
-    setMediaType(fileType);
-    setMediaName(file.name.substring(0, file.name.lastIndexOf('.')) || file.name);
   };
 
-  // Handle upload to S3 via API
+  // Handle upload process
   const handleUpload = async () => {
-    if (!uploadedFile || !mediaName) {
-      setUploadError("Please select a file and provide a name.");
-      if (showAlert) showAlert("Please select a file and provide a name.", "error");
+    if (!file) {
+      setError('Please select a file to upload');
       return;
     }
 
     try {
-      setUploadError(null);
       setUploading(true);
-      setUploadProgress(0);
+      setError(null);
+      setProgress(0);
       
-      // Prepare metadata
-      const metadata = {
-        name: mediaName,
-        type: mediaType,
-        folder: folder || undefined
-      };
-      
-      // Upload to S3 via API
+      // Upload the file
       const response = await mediaApi.uploadMedia(
-        uploadedFile, 
-        metadata, 
-        (progress) => setUploadProgress(progress)
+        file,
+        {
+          name: fileName !== file.name ? fileName : undefined,
+          folder: folder
+        },
+        (progress) => setProgress(progress)
       );
       
+      // Handle successful upload
       if (response.success) {
-        setUploadSuccess(true);
-        setUploadedMediaInfo(response.data);
-        if (showAlert) showAlert("File uploaded successfully!", "success");
+        // Reset fields
+        setFile(null);
+        setFileName('');
+        setPreview(null);
         
-        // Notify parent component
-        onUploadComplete(response.data);
+        // Show success message
+        showAlert('File uploaded successfully!', 'success');
+        
+        // Select this media
+        if (response.data) {
+          onSelectMedia(response.data);
+        }
       } else {
         throw new Error(response.message || 'Upload failed');
       }
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      setUploadError(error.message || 'Upload failed. Please try again.');
-      if (showAlert) showAlert(error.message || 'Upload failed. Please try again.', "error");
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      setError(err.message || 'Error uploading file. Please try again.');
+      showAlert('Upload failed: ' + (err.message || 'Unknown error'), 'error');
     } finally {
       setUploading(false);
     }
   };
 
-  // Select the uploaded media
-  const handleSelectUploadedMedia = () => {
-    if (uploadedMediaInfo) {
-      onSelectMedia(uploadedMediaInfo);
-      if (showAlert) showAlert("Media selected! Click 'Select' to add it to your content.", "success");
-    }
-  };
-
-  // Trigger file input click
-  const handleTriggerFileInput = () => {
-    fileInputRef.current.click();
-  };
-
-  // Reset upload states
-  const resetUpload = () => {
-    setUploadedFile(null);
-    setMediaName('');
-    setUploadProgress(0);
-    setUploading(false);
-    setUploadError(null);
-    setUploadSuccess(false);
-    setUploadedMediaInfo(null);
-  };
+  // Get custom file input ID
+  const fileInputId = 'media-file-upload';
 
   return (
-    <Box sx={{ py: 2 }}>
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: 'none' }}
-        onChange={handleFileSelect}
-        accept="image/*,audio/*,video/*"
-      />
-      
-      {uploadError && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setUploadError(null)}>
-          {uploadError}
+    <Box>
+      {/* Error display */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
         </Alert>
       )}
       
-      {uploadSuccess && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setUploadSuccess(false)}>
-          File uploaded successfully!
-        </Alert>
-      )}
-      
-      {!uploadedFile ? (
-        <Box 
+      {/* Upload form */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* File selection section */}
+        <Paper 
+          variant="outlined" 
           sx={{ 
-            border: '2px dashed #ccc', 
-            borderRadius: 2, 
-            p: 4, 
+            p: 3, 
             textAlign: 'center',
-            cursor: 'pointer',
-            backgroundColor: '#f8f8f8',
-            '&:hover': {
-              borderColor: 'primary.main',
-              backgroundColor: '#f0f7ff'
-            }
+            border: '1px dashed',
+            borderColor: 'divider',
+            backgroundColor: 'background.default'
           }}
-          onClick={handleTriggerFileInput}
         >
-          <CloudUploadIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6">Click to select a file</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Supports images, audio, and video files (max 10MB)
-          </Typography>
-        </Box>
-      ) : (
-        <Box>
-          <Card sx={{ mb: 3 }}>
-            <Box sx={{ p: 3, display: 'flex', alignItems: 'center' }}>
-              {uploading ? (
-                <Box sx={{ position: 'relative', display: 'inline-flex', mr: 2 }}>
-                  <CircularProgress variant="determinate" value={uploadProgress} />
-                  <Box
-                    sx={{
-                      top: 0,
-                      left: 0,
-                      bottom: 0,
-                      right: 0,
-                      position: 'absolute',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      {`${Math.round(uploadProgress)}%`}
-                    </Typography>
-                  </Box>
-                </Box>
-              ) : (
-                mediaType === 'image' ? (
-                  <ImageIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
-                ) : mediaType === 'audio' ? (
-                  <AudiotrackIcon sx={{ fontSize: 40, mr: 2, color: 'secondary.main' }} />
-                ) : (
-                  <VideocamIcon sx={{ fontSize: 40, mr: 2, color: 'tertiary.main' }} />
-                )
-              )}
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="subtitle1">{uploadedFile.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB • {mediaType.toUpperCase()} File
-                </Typography>
-              </Box>
-              <IconButton onClick={resetUpload} disabled={uploading}>
-                <DeleteIcon />
-              </IconButton>
-            </Box>
-            
-            {!uploading && (
-              <>
-                <Divider />
-                <Box sx={{ p: 3 }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      {mediaType === 'image' && uploadedFile && (
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
-                          <img 
-                            src={URL.createObjectURL(uploadedFile)} 
-                            alt="Preview" 
-                            style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
-                          />
-                        </Box>
-                      )}
-                      
-                      {mediaType === 'audio' && uploadedFile && (
-                        <Box sx={{ mb: 2 }}>
-                          <audio controls style={{ width: '100%' }}>
-                            <source src={URL.createObjectURL(uploadedFile)} />
-                            Your browser does not support the audio element.
-                          </audio>
-                        </Box>
-                      )}
-                      
-                      {mediaType === 'video' && uploadedFile && (
-                        <Box sx={{ mb: 2 }}>
-                          <video controls style={{ width: '100%', maxHeight: '200px' }}>
-                            <source src={URL.createObjectURL(uploadedFile)} />
-                            Your browser does not support the video element.
-                          </video>
-                        </Box>
-                      )}
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        label="Media Name"
-                        value={mediaName}
-                        onChange={(e) => setMediaName(e.target.value)}
-                        fullWidth
-                        margin="dense"
-                        required
-                      />
-                      
-                      <FormControl fullWidth margin="dense">
-                        <InputLabel>Media Type</InputLabel>
-                        <Select
-                          value={mediaType}
-                          label="Media Type"
-                          onChange={(e) => setMediaType(e.target.value)}
-                        >
-                          <MenuItem value="image">Image</MenuItem>
-                          <MenuItem value="audio">Audio</MenuItem>
-                          <MenuItem value="video">Video</MenuItem>
-                        </Select>
-                      </FormControl>
-                      
-                      <FormControl fullWidth margin="dense">
-                        <InputLabel>Folder (Optional)</InputLabel>
-                        <Select
-                          value={folder}
-                          label="Folder (Optional)"
-                          onChange={(e) => setFolder(e.target.value)}
-                          displayEmpty
-                        >
-                          <MenuItem value="">Root</MenuItem>
-                          <MenuItem value="images">Images</MenuItem>
-                          <MenuItem value="audio">Audio</MenuItem>
-                          <MenuItem value="video">Video</MenuItem>
-                          <MenuItem value="custom">
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <FolderIcon sx={{ mr: 1, fontSize: 20 }} />
-                              Custom Folder
-                            </Box>
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-                      
-                      {folder === 'custom' && (
-                        <TextField
-                          label="Custom Folder Path"
-                          placeholder="e.g., project/assets"
-                          fullWidth
-                          margin="dense"
-                          onChange={(e) => setFolder(e.target.value)}
-                        />
-                      )}
-                    </Grid>
-                  </Grid>
-                </Box>
-              </>
-            )}
-          </Card>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button 
-              variant="outlined" 
-              onClick={handleTriggerFileInput}
-              sx={{ mr: 1 }}
+          <input
+            accept="image/*,audio/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.*"
+            id={fileInputId}
+            type="file"
+            style={{ display: 'none' }}
+            onChange={handleFileSelect}
+          />
+          <label htmlFor={fileInputId}>
+            <Button
+              variant="outlined"
+              component="span"
+              startIcon={<CloudUploadIcon />}
               disabled={uploading}
+              sx={{ mb: 2 }}
             >
-              Change File
+              Select File
             </Button>
+          </label>
+          
+          {file ? (
+            <Box>
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Selected: <strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)
+              </Typography>
+              
+              {/* Image preview */}
+              {preview && (
+                <Box 
+                  sx={{ 
+                    mt: 2, 
+                    mx: 'auto', 
+                    width: '100%', 
+                    maxWidth: 240, 
+                    height: 160, 
+                    overflow: 'hidden',
+                    borderRadius: 1,
+                    boxShadow: 1
+                  }}
+                >
+                  <img 
+                    src={preview} 
+                    alt="Preview" 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'contain' 
+                    }} 
+                  />
+                </Box>
+              )}
+            </Box>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Drag and drop a file here, or click to select a file
+            </Typography>
+          )}
+        </Paper>
+        
+        {/* File settings */}
+        {file && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="File Name"
+              value={fileName}
+              onChange={(e) => setFileName(e.target.value)}
+              fullWidth
+              disabled={uploading}
+            />
             
-            {!uploadSuccess ? (
-              <Button 
-                variant="contained" 
-                color="primary"
-                onClick={handleUpload}
-                disabled={uploading || !mediaName}
-                startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+            <FormControl fullWidth>
+              <InputLabel>Folder</InputLabel>
+              <Select
+                value={folder}
+                label="Folder"
+                onChange={(e) => setFolder(e.target.value)}
+                disabled={uploading}
               >
-                {uploading ? 'Uploading...' : 'Upload to S3'}
-              </Button>
-            ) : (
-              <Button 
-                variant="contained" 
-                color="secondary"
-                onClick={handleSelectUploadedMedia}
-              >
-                Use Uploaded Media
-              </Button>
+                <MenuItem value="root">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <FolderIcon sx={{ mr: 1, fontSize: 20 }} />
+                    Root
+                  </Box>
+                </MenuItem>
+                <MenuItem value="image">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <FolderIcon sx={{ mr: 1, fontSize: 20, color: '#4CAF50' }} />
+                    Image
+                  </Box>
+                </MenuItem>
+                <MenuItem value="audio">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <FolderIcon sx={{ mr: 1, fontSize: 20, color: '#2196F3' }} />
+                    Audio
+                  </Box>
+                </MenuItem>
+                <MenuItem value="video">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <FolderIcon sx={{ mr: 1, fontSize: 20, color: '#FF5722' }} />
+                    Video
+                  </Box>
+                </MenuItem>
+                <MenuItem value="custom">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <FolderIcon sx={{ mr: 1, fontSize: 20, color: '#9C27B0' }} />
+                    Custom Folder
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>
+            
+            {folder === 'custom' && (
+              <TextField
+                label="Custom Folder Path"
+                placeholder="e.g., documents/pdfs"
+                fullWidth
+                disabled={uploading}
+                onChange={(e) => setFolder(e.target.value)}
+              />
             )}
+            
+            {/* Upload progress */}
+            {uploading && (
+              <Box sx={{ width: '100%' }}>
+                <Typography variant="body2" gutterBottom>
+                  Uploading: {progress}%
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={progress} 
+                  sx={{ height: 10, borderRadius: 1 }}
+                />
+              </Box>
+            )}
+            
+            {/* Upload button */}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleUpload}
+              disabled={uploading || !file}
+              startIcon={<CloudUploadIcon />}
+            >
+              {uploading ? 'Uploading...' : 'Upload File'}
+            </Button>
           </Box>
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
   );
 };
