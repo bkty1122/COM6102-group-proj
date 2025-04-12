@@ -211,12 +211,12 @@ const MediaUploader = ({ onSelectMedia, showAlert }) => {
                     Video
                   </Box>
                 </MenuItem>
-                <MenuItem value="custom">
+                {/* <MenuItem value="custom">
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <FolderIcon sx={{ mr: 1, fontSize: 20, color: '#9C27B0' }} />
                     Custom Folder
                   </Box>
-                </MenuItem>
+                </MenuItem> */}
               </Select>
             </FormControl>
             
