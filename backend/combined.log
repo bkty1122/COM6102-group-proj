@@ -527,3 +527,241 @@
 2025-04-09T08:10:43.025Z INFO: PostgreSQL connection pool established
 2025-04-10T08:42:46.945Z INFO: Server running on port 5000
 2025-04-10T08:47:39.354Z INFO: PostgreSQL connection pool established
+2025-04-11T06:37:29.968Z INFO: Server running on port 5000
+2025-04-11T06:38:51.577Z INFO: PostgreSQL connection pool established
+2025-04-11T06:39:04.650Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T06:39:04.651Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T06:39:11.562Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T06:39:11.563Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T06:39:15.763Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T06:39:15.764Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T06:45:23.524Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T06:45:23.529Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T07:03:14.859Z ERROR: Error retrieving form a14c4342-ff66-447d-9321-af8e8bd1d7b4: connect ETIMEDOUT 52.64.61.180:5432
+2025-04-11T07:03:14.868Z ERROR: Error: connect ETIMEDOUT 52.64.61.180:5432
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async DatabaseService.get (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\services\db-service.js:54:22)
+    at async QuestionBankService.getQuestionBankById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\services\question-bank-service.js:46:28)
+    at async FormProcessingService.getQuestionBankById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\models\form-processing-service.js:335:12)
+    at async exports.getFormById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\exportController.js:89:24)
+2025-04-11T07:50:38.960Z ERROR: Error listing forms: connect ETIMEDOUT 52.64.61.180:5432
+2025-04-11T07:50:38.965Z ERROR: Error: connect ETIMEDOUT 52.64.61.180:5432
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async exports.listForms (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\exportController.js:66:20)
+2025-04-11T07:50:56.946Z ERROR: Error retrieving form qb-fallback: connect ETIMEDOUT 52.64.61.180:5432
+2025-04-11T07:50:56.946Z ERROR: Error: connect ETIMEDOUT 52.64.61.180:5432
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async DatabaseService.get (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\services\db-service.js:54:22)
+    at async QuestionBankService.getQuestionBankById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\services\question-bank-service.js:46:28)
+    at async FormProcessingService.getQuestionBankById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\models\form-processing-service.js:335:12)
+    at async exports.getFormById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\exportController.js:89:24)
+2025-04-11T07:51:18.005Z ERROR: Error retrieving form qb-fallback: connect ETIMEDOUT 52.64.61.180:5432
+2025-04-11T07:51:18.005Z ERROR: Error: connect ETIMEDOUT 52.64.61.180:5432
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async DatabaseService.get (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\services\db-service.js:54:22)
+    at async QuestionBankService.getQuestionBankById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\services\question-bank-service.js:46:28)
+    at async FormProcessingService.getQuestionBankById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\models\form-processing-service.js:335:12)
+    at async exports.getFormById (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\exportController.js:89:24)
+2025-04-11T07:51:36.921Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T07:51:36.922Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T07:57:58.513Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T07:57:58.514Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T08:10:57.742Z INFO: Server running on port 5000
+2025-04-11T08:31:17.449Z INFO: Server running on port 5000
+2025-04-11T08:32:34.867Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T08:32:34.869Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T08:32:43.267Z ERROR: Error listing media: Resolved credential object is not valid
+2025-04-11T08:32:43.268Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:36:22)
+2025-04-11T08:35:30.201Z ERROR: Error in S3 upload: Resolved credential object is not valid
+2025-04-11T08:35:30.202Z ERROR: Error uploading media: Resolved credential object is not valid
+2025-04-11T08:35:30.203Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-flexible-checksums\dist-cjs\index.js:318:18
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+2025-04-11T08:35:49.532Z ERROR: Error in S3 upload: Resolved credential object is not valid
+2025-04-11T08:35:49.533Z ERROR: Error uploading media: Resolved credential object is not valid
+2025-04-11T08:35:49.534Z ERROR: Error: Resolved credential object is not valid
+    at SignatureV4S3Express.validateResolvedCredentials (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:553:13)
+    at SignatureV4S3Express.signRequest (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\signature-v4\dist-cjs\index.js:478:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async AwsSdkSigV4Signer.sign (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\core\dist-cjs\submodules\httpAuthSchemes\index.js:106:27)
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:482:15
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@smithy\middleware-retry\dist-cjs\index.js:320:38
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-flexible-checksums\dist-cjs\index.js:318:18
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:110:22
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-sdk-s3\dist-cjs\index.js:137:14
+    at async C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\@aws-sdk\middleware-logger\dist-cjs\index.js:33:22
+2025-04-11T08:43:14.474Z INFO: Server running on port 5000
+2025-04-11T08:43:26.831Z INFO: PostgreSQL connection pool established
+2025-04-11T08:43:29.314Z ERROR: Error listing media: relation "media_files" does not exist
+2025-04-11T08:43:29.316Z ERROR: error: relation "media_files" does not exist
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:44:22)
+2025-04-11T08:47:53.045Z ERROR: Error listing media: relation "media_files" does not exist
+2025-04-11T08:47:53.050Z ERROR: error: relation "media_files" does not exist
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:44:22)
+2025-04-11T08:54:40.896Z ERROR: Error listing media: relation "media_files" does not exist
+2025-04-11T08:54:40.898Z ERROR: error: relation "media_files" does not exist
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:44:22)
+2025-04-11T08:57:31.500Z ERROR: Error listing media: relation "media_files" does not exist
+2025-04-11T08:57:31.501Z ERROR: error: relation "media_files" does not exist
+    at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:44:22)
+2025-04-11T08:57:57.922Z INFO: Server running on port 5000
+2025-04-11T09:19:39.350Z INFO: Server running on port 5000
+2025-04-11T09:26:46.420Z INFO: Server running on port 5000
+2025-04-11T09:42:00.105Z INFO: Server running on port 5000
+2025-04-11T09:42:27.334Z INFO: PostgreSQL connection pool established
+2025-04-11T09:53:55.153Z INFO: Server running on port 5000
+2025-04-11T09:56:24.095Z INFO: PostgreSQL connection pool established
+2025-04-11T10:00:11.848Z INFO: Server running on port 5000
+2025-04-11T10:01:49.122Z INFO: PostgreSQL connection pool established
+2025-04-11T16:22:23.380Z INFO: Server running on port 5000
+2025-04-11T16:27:18.462Z INFO: PostgreSQL connection pool established
+2025-04-12T15:55:00.342Z INFO: Server running on port 5000
+2025-04-12T15:55:32.012Z INFO: PostgreSQL connection pool established
+2025-04-12T16:24:45.040Z INFO: Server running on port 5000
+2025-04-12T17:39:32.951Z INFO: PostgreSQL connection pool established
+2025-04-13T07:27:49.922Z INFO: Server running on port 5000
+2025-04-13T07:28:11.567Z INFO: PostgreSQL connection pool established
+2025-04-13T08:34:20.186Z ERROR: Error deleting form c83a940e-d00b-47c9-a69d-4c489c31df07: Release called on client which has already been released to the pool.
+2025-04-13T08:34:20.188Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T08:34:55.664Z ERROR: Error deleting form c83a940e-d00b-47c9-a69d-4c489c31df07: Release called on client which has already been released to the pool.
+2025-04-13T08:34:55.665Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T09:47:10.345Z ERROR: Error deleting form eaf9dc7a-c8e4-4293-b3ba-c656f6047254: Release called on client which has already been released to the pool.
+2025-04-13T09:47:10.346Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T10:06:55.670Z INFO: Server running on port 5000
+2025-04-13T10:07:05.231Z INFO: PostgreSQL connection pool established
+2025-04-13T10:07:06.156Z ERROR: Error deleting form 98bf4206-6d1b-4b91-abe1-a177b8813e58: Release called on client which has already been released to the pool.
+2025-04-13T10:07:06.159Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T10:08:25.194Z INFO: Server running on port 5000
+2025-04-13T10:10:00.552Z INFO: Server running on port 5000
+2025-04-13T10:10:04.009Z INFO: PostgreSQL connection pool established
+2025-04-13T10:10:04.906Z ERROR: Error deleting form 025a522f-90a8-4403-98aa-96e92c761090: Release called on client which has already been released to the pool.
+2025-04-13T10:10:04.907Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T10:10:08.238Z ERROR: Error deleting form 025a522f-90a8-4403-98aa-96e92c761090: Release called on client which has already been released to the pool.
+2025-04-13T10:10:08.241Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)

@@ -159,7 +159,7 @@ exports.getQuestionBankById = async (req, res, next) => {
               difficulty: q.difficulty,
               marks: q.marks,
               options: q.options_data,
-              correctAnswers: q.correct_answers,
+              correctAnswers: q.correct_answer,
               question_image: q.media_data ? JSON.parse(q.media_data).question_image : null,
               question_audio: q.media_data ? JSON.parse(q.media_data).question_audio : null,
               question_video: q.media_data ? JSON.parse(q.media_data).question_video : null
@@ -687,7 +687,7 @@ async function processMultipleChoiceQuestion(client, content, cardId) {
   
   await client.query(
     `INSERT INTO multiple_choice_questions 
-     (content_id, card_id, order_id, question, answer_id, instruction, difficulty, marks, options_data, correct_answers, media_data) 
+     (content_id, card_id, order_id, question, answer_id, instruction, difficulty, marks, options_data, correct_answer, media_data) 
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
     [
       id || `multiple-choice-${Date.now()}-${Math.floor(Math.random() * 1000)}`,

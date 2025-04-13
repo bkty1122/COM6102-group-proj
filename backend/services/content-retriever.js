@@ -97,7 +97,7 @@ class ContentRetriever {
   reconstructMultipleChoiceQuestion(record) {
     const media = this.safeParseJson(record.media_data, {});
     const options = this.safeParseJson(record.options_data, []);
-    const correctAnswers = this.safeParseJson(record.correct_answers, []);
+    const correctAnswers = this.safeParseJson(record.correct_answer, []);
     
     return {
       id: record.content_id,

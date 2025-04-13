@@ -1,5 +1,6 @@
 // src/components/formbuilder/hooks/useQuestionMedia.js
 import { useState, useCallback } from 'react';
+import { extractMediaUrl } from '../utils/mediaUtils';
 
 export const useQuestionMedia = (initialQuestionMedia = null, initialOptionMedia = {}) => {
   const [questionMedia, setQuestionMedia] = useState(initialQuestionMedia);
@@ -15,12 +16,15 @@ export const useQuestionMedia = (initialQuestionMedia = null, initialOptionMedia
 
   // Handle media selection
   const handleMediaSelect = useCallback((media) => {
+    // Extract just the URL from the media object
+    const mediaUrl = extractMediaUrl(media);
+    
     if (mediaTarget.type === 'question') {
-      setQuestionMedia(media);
+      setQuestionMedia(mediaUrl);
     } else if (mediaTarget.type === 'option' && mediaTarget.index !== null) {
       setOptionMedia(prev => ({
         ...prev,
-        [mediaTarget.index]: media
+        [mediaTarget.index]: mediaUrl
       }));
     }
     setMediaDialogOpen(false);
@@ -28,10 +32,13 @@ export const useQuestionMedia = (initialQuestionMedia = null, initialOptionMedia
 
   // Handle media change from QuestionMedia component
   const handleMediaChange = useCallback((type, media, index = null) => {
+    // Extract just the URL from the media object
+    const mediaUrl = extractMediaUrl(media);
+    
     if (type === 'question') {
-      setQuestionMedia(media);
+      setQuestionMedia(mediaUrl);
     } else if (type === 'option' && index !== null) {
-      if (media === null) {
+      if (mediaUrl === null) {
         // Remove media for this option
         setOptionMedia(prev => {
           const newOptionMedia = { ...prev };
@@ -42,7 +49,7 @@ export const useQuestionMedia = (initialQuestionMedia = null, initialOptionMedia
         // Set media for this option
         setOptionMedia(prev => ({
           ...prev,
-          [index]: media
+          [index]: mediaUrl
         }));
       }
     }

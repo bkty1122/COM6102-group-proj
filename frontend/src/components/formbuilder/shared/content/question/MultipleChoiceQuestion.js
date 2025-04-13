@@ -1,4 +1,3 @@
-// src/components/formbuilder/shared/MultipleChoiceQuestion.js
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, TextField, FormControl, IconButton,
@@ -10,6 +9,7 @@ import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
+import { getMediaType, extractMediaUrl } from "../../../utils/mediaUtils";
 
 const MultipleChoiceQuestion = ({ 
   questionId, 
@@ -31,7 +31,7 @@ const MultipleChoiceQuestion = ({
       ? defaultOptions.map(opt => typeof opt === 'string' ? opt : opt.option_value || '') 
       : ["Option 1", "Option 2"]
   );
-  const [correctAnswers, setCorrectAnswers] = useState(
+  const [correctAnswer, setCorrectAnswers] = useState(
     Array.isArray(defaultCorrectAnswers) ? defaultCorrectAnswers : []
   );
   const [currentAnswerId] = useState(answer_id || 0);
@@ -47,17 +47,28 @@ const MultipleChoiceQuestion = ({
     reindexOptionMedia
   } = useQuestionMedia(defaultQuestionMedia, defaultOptionMedia);
 
-  // Update parent component when data changes
   useEffect(() => {
     // Convert options to the complex format with answer_id
-    const formattedOptions = options.map((option, idx) => ({
-      id: idx,
-      answer_id: currentAnswerId,
-      option_value: option,
-      option_image: optionMedia[idx]?.type === 'image' ? optionMedia[idx] : null,
-      option_audio: optionMedia[idx]?.type === 'audio' ? optionMedia[idx] : null,
-      option_video: optionMedia[idx]?.type === 'video' ? optionMedia[idx] : null,
-    }));
+    const formattedOptions = options.map((option, idx) => {
+      const mediaUrl = optionMedia[idx];
+      const mediaType = getMediaType(mediaUrl);
+      
+      return {
+        id: idx,
+        answer_id: currentAnswerId,
+        option_value: option,
+        option_image: mediaType === 'image' ? mediaUrl : null,
+        option_audio: mediaType === 'audio' ? mediaUrl : null,
+        option_video: mediaType === 'video' ? mediaUrl : null,
+      };
+    });
+  
+    // Determine question media type
+    const questionMediaType = getMediaType(questionMedia);
+  
+    // Convert the array of correct answers to a JSON string or another format
+    // that can be stored in a TEXT field
+    const correctAnswerString = JSON.stringify(correctAnswer);
 
     onUpdate({
       id: questionId,
@@ -69,13 +80,14 @@ const MultipleChoiceQuestion = ({
       instruction,
       difficulty,
       marks,
-      question_image: questionMedia?.type === 'image' ? questionMedia : null,
-      question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
-      question_video: questionMedia?.type === 'video' ? questionMedia : null,
-      correctAnswers
+      question_image: questionMediaType === 'image' ? questionMedia : null,
+      question_audio: questionMediaType === 'audio' ? questionMedia : null,
+      question_video: questionMediaType === 'video' ? questionMedia : null,
+      correct_answer: correctAnswerString,  // For the database column
+      correctAnswers: correctAnswer,        // For the validator
     });
-  }, [question, options, optionMedia, questionMedia, correctAnswers, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
-
+  }, [question, options, optionMedia, questionMedia, correctAnswer, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
+  
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
     const oldValue = newOptions[index];
@@ -83,8 +95,8 @@ const MultipleChoiceQuestion = ({
     setOptions(newOptions);
     
     // If this option was in the correct answers, update it there too
-    if (correctAnswers.includes(oldValue)) {
-      const newCorrectAnswers = correctAnswers.map(answer => 
+    if (correctAnswer.includes(oldValue)) {
+      const newCorrectAnswers = correctAnswer.map(answer => 
         answer === oldValue ? value : answer
       );
       setCorrectAnswers(newCorrectAnswers);
@@ -102,9 +114,9 @@ const MultipleChoiceQuestion = ({
     const newOptions = options.filter((_, i) => i !== index);
     setOptions(newOptions);
     
-    // Remove from correctAnswers if it was selected
-    if (correctAnswers.includes(optionToRemove)) {
-      setCorrectAnswers(correctAnswers.filter(answer => answer !== optionToRemove));
+    // Remove from correctAnswer if it was selected
+    if (correctAnswer.includes(optionToRemove)) {
+      setCorrectAnswers(correctAnswer.filter(answer => answer !== optionToRemove));
     }
     
     // Reindex the media objects for options after the deleted one
@@ -112,12 +124,12 @@ const MultipleChoiceQuestion = ({
   };
 
   const handleCorrectAnswerToggle = (optionValue) => {
-    if (correctAnswers.includes(optionValue)) {
+    if (correctAnswer.includes(optionValue)) {
       // Remove from correct answers
-      setCorrectAnswers(correctAnswers.filter(answer => answer !== optionValue));
+      setCorrectAnswers(correctAnswer.filter(answer => answer !== optionValue));
     } else {
       // Add to correct answers
-      setCorrectAnswers([...correctAnswers, optionValue]);
+      setCorrectAnswers([...correctAnswer, optionValue]);
     }
   };
 
@@ -130,7 +142,7 @@ const MultipleChoiceQuestion = ({
   // Helper to find indices of correct answers for display purposes
   const getCorrectAnswerIndices = () => {
     return options
-      .map((option, index) => correctAnswers.includes(option) ? index : -1)
+      .map((option, index) => correctAnswer.includes(option) ? index : -1)
       .filter(index => index !== -1);
   };
 
@@ -286,6 +298,53 @@ const MultipleChoiceQuestion = ({
           {question}
         </Typography>
         
+        {/* Media preview if available */}
+        {(() => {
+          if (!questionMedia) return null;
+          
+          const mediaType = getMediaType(questionMedia);
+          const mediaUrl = extractMediaUrl(questionMedia);
+          
+          if (!mediaUrl) return null;
+          
+          if (mediaType === 'image') {
+            return (
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Box
+                  component="img"
+                  src={mediaUrl}
+                  alt="Question media"
+                  sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: '4px' }}
+                />
+              </Box>
+            );
+          }
+          
+          if (mediaType === 'audio') {
+            return (
+              <Box sx={{ mb: 3 }}>
+                <Box component="audio" controls sx={{ width: '100%' }}>
+                  <source src={mediaUrl} />
+                  Your browser does not support the audio element.
+                </Box>
+              </Box>
+            );
+          }
+          
+          if (mediaType === 'video') {
+            return (
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Box component="video" controls sx={{ maxWidth: '100%', maxHeight: 200 }}>
+                  <source src={mediaUrl} />
+                  Your browser does not support the video element.
+                </Box>
+              </Box>
+            );
+          }
+          
+          return null;
+        })()}
+        
         {/* Show options in preview */}
         {options.map((option, index) => (
           <Box 
@@ -295,7 +354,7 @@ const MultipleChoiceQuestion = ({
               pl: 2,
               display: 'flex',
               alignItems: 'center',
-              ...(correctAnswers.includes(option) ? {
+              ...(correctAnswer.includes(option) ? {
                 color: 'success.main',
                 fontWeight: 500
               } : {})
@@ -307,15 +366,15 @@ const MultipleChoiceQuestion = ({
                 height: 16, 
                 borderRadius: '2px', 
                 border: '1px solid', 
-                borderColor: correctAnswers.includes(option) ? 'success.main' : 'text.secondary', 
+                borderColor: correctAnswer.includes(option) ? 'success.main' : 'text.secondary', 
                 mr: 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: correctAnswers.includes(option) ? 'success.main' : 'transparent'
+                backgroundColor: correctAnswer.includes(option) ? 'success.main' : 'transparent'
               }}
             >
-              {correctAnswers.includes(option) && (
+              {correctAnswer.includes(option) && (
                 <Box 
                   component="span"
                   sx={{ 
@@ -334,6 +393,48 @@ const MultipleChoiceQuestion = ({
             </Typography>
           </Box>
         ))}
+        
+        {/* Show option media if available */}
+        {options.map((option, index) => {
+          const media = optionMedia[index];
+          if (!media) return null;
+          
+          const mediaType = getMediaType(media);
+          const mediaUrl = extractMediaUrl(media);
+          
+          if (!mediaUrl) return null;
+          
+          return (
+            <Box key={`media-${index}`} sx={{ ml: 4, mt: 1, mb: 2 }}>
+              {mediaType === 'image' && (
+                <Box sx={{ maxWidth: '200px' }}>
+                  <Box
+                    component="img"
+                    src={mediaUrl}
+                    alt={`Media for option ${index + 1}`}
+                    sx={{ width: '100%', borderRadius: '4px' }}
+                  />
+                </Box>
+              )}
+              
+              {mediaType === 'audio' && (
+                <Box component="audio" controls sx={{ width: '200px' }}>
+                  <source src={mediaUrl} />
+                  Your browser does not support the audio element.
+                </Box>
+              )}
+              
+              {mediaType === 'video' && (
+                <Box sx={{ maxWidth: '200px' }}>
+                  <Box component="video" controls sx={{ width: '100%' }}>
+                    <source src={mediaUrl} />
+                    Your browser does not support the video element.
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          );
+        })}
       </Paper>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -346,11 +447,11 @@ const MultipleChoiceQuestion = ({
             <Box key={index} sx={{ mb: 3, border: '1px solid #eee', borderRadius: 1, p: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                 {/* Correct answer selector */}
-                <Tooltip title={correctAnswers.includes(option) ? "Remove as correct answer" : "Add as correct answer"}>
+                <Tooltip title={correctAnswer.includes(option) ? "Remove as correct answer" : "Add as correct answer"}>
                   <Checkbox
                     icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                     checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    checked={correctAnswers.includes(option)}
+                    checked={correctAnswer.includes(option)}
                     onChange={() => handleCorrectAnswerToggle(option)}
                     sx={{ 
                       color: "action.disabled",
@@ -372,7 +473,7 @@ const MultipleChoiceQuestion = ({
                     flexGrow: 1, 
                     mr: 1,
                     // Highlight the correct answer with a subtle border
-                    ...(correctAnswers.includes(option) ? {
+                    ...(correctAnswer.includes(option) ? {
                       "& .MuiOutlinedInput-root": {
                         border: "1px solid",
                         borderColor: "success.light",
@@ -382,7 +483,7 @@ const MultipleChoiceQuestion = ({
                   }}
                   name={`question-${questionId}-option-${index}`}
                   // Add a small indicator in the label for the correct answer
-                  label={correctAnswers.includes(option) ? "Correct Answer" : ""}
+                  label={correctAnswer.includes(option) ? "Correct Answer" : ""}
                 />
                 
                 {/* Remove option button */}
@@ -416,7 +517,7 @@ const MultipleChoiceQuestion = ({
       <Box sx={{ mt: 2, mb: 2, p: 1, backgroundColor: "rgba(76, 175, 80, 0.08)", borderRadius: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="caption" sx={{ display: "block", fontWeight: "medium" }}>
-            Correct Answers: {correctAnswers.length > 0 
+            Correct Answers: {correctAnswer.length > 0 
               ? getCorrectAnswerIndices().map(index => `Option ${index + 1}`).join(", ") 
               : "None selected"}
           </Typography>
@@ -433,9 +534,9 @@ const MultipleChoiceQuestion = ({
           />
         </Box>
         
-        {correctAnswers.length > 0 && (
+        {correctAnswer.length > 0 && (
           <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
-            Selected values: {correctAnswers.map(answer => `"${answer}"`).join(", ")}
+            Selected values: {correctAnswer.map(answer => `"${answer}"`).join(", ")}
           </Typography>
         )}
       </Box>

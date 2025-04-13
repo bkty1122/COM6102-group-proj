@@ -1,7 +1,5 @@
-const { getPool } = require('../db/dbService');
 const logger = require('../utils/logger');
-const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
-const { Upload } = require('@aws-sdk/lib-storage');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs');
@@ -11,8 +9,8 @@ const { Readable } = require('stream');
 const s3Client = new S3Client({
   region: 'us-east-1', // US East (N. Virginia)
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "AKIA4MTWKVTTTX6ISK72",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "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",
   }
 });
 
@@ -22,58 +20,133 @@ const BUCKET_NAME = 'lgsmt-media-store';
 // List all media files
 exports.listMedia = async (req, res, next) => {
   try {
-    const { folder = '', page = 1, limit = 20 } = req.query;
-    const prefix = folder ? `${folder}/` : '';
+    const { folder = 'root', page = 1, limit = 20, search = '', type = '', continuationToken = null } = req.query;
+    
+    // Determine the prefix based on folder
+    let prefix = '';
+    if (folder && folder !== 'root') {
+      prefix = `${folder}/`;
+    }
     
     // List objects from S3 bucket
     const command = new ListObjectsV2Command({
       Bucket: BUCKET_NAME,
       Prefix: prefix,
-      MaxKeys: limit,
-      ContinuationToken: page > 1 ? `page-${page}` : undefined
+      MaxKeys: parseInt(limit),
+      // Only use continuation token if explicitly provided
+      ContinuationToken: continuationToken || undefined,
+      ...(folder === 'root' ? { Delimiter: '/' } : {}) // Use delimiter for root to list only top-level objects
     });
     
     const response = await s3Client.send(command);
     
-    // Also get database metadata for these files
-    const pool = getPool();
-    const fileKeys = response.Contents ? response.Contents.map(item => item.Key) : [];
+    // Process S3 files without database metadata
+    let mediaFiles = [];
     
-    let mediaMetadata = [];
-    if (fileKeys.length > 0) {
-      const result = await pool.query(
-        'SELECT * FROM media_files WHERE file_key = ANY($1)',
-        [fileKeys]
-      );
-      mediaMetadata = result.rows;
+    if (folder === 'root') {
+      // For root folder, only include files at the root level (not in subfolders)
+      mediaFiles = response.Contents ? response.Contents
+        .filter(item => !item.Key.includes('/') || item.Key.split('/').length === 1)
+        .map(item => {
+          const fileType = determineContentType(item.Key);
+          return {
+            id: item.Key,
+            key: item.Key,
+            name: path.basename(item.Key),
+            size: item.Size,
+            type: fileType,
+            url: `https://${BUCKET_NAME}.s3.amazonaws.com/${encodeURIComponent(item.Key).replace(/%2F/g, '/')}`,
+            lastModified: item.LastModified,
+            folder: 'root'  // Use 'root' for root level files
+          };
+        }) : [];
+    } else {
+      // For non-root folders, include all files in that folder
+      mediaFiles = response.Contents ? response.Contents.map(item => {
+        const fileType = determineContentType(item.Key);
+        const itemFolder = path.dirname(item.Key);
+        return {
+          id: item.Key,
+          key: item.Key,
+          name: path.basename(item.Key),
+          size: item.Size,
+          type: fileType,
+          url: `https://${BUCKET_NAME}.s3.amazonaws.com/${encodeURIComponent(item.Key).replace(/%2F/g, '/')}`,
+          lastModified: item.LastModified,
+          folder: itemFolder === '.' ? 'root' : itemFolder
+        };
+      }) : [];
     }
     
-    // Combine S3 data with database metadata
-    const mediaFiles = response.Contents ? response.Contents.map(item => {
-      const metadata = mediaMetadata.find(meta => meta.file_key === item.Key) || {};
-      return {
-        id: metadata.id || item.Key,
-        key: item.Key,
-        name: metadata.name || path.basename(item.Key),
-        size: item.Size,
-        type: metadata.mime_type || 'application/octet-stream',
-        url: `https://${BUCKET_NAME}.s3.amazonaws.com/${item.Key}`,
-        lastModified: item.LastModified,
-        folder: path.dirname(item.Key) === '.' ? '' : path.dirname(item.Key),
-        metadata: metadata
-      };
-    }) : [];
+    // Apply additional filters (search and type) if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      mediaFiles = mediaFiles.filter(file => 
+        file.name.toLowerCase().includes(searchLower) || 
+        (file.folder && file.folder !== 'root' && file.folder.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    if (type && type !== 'all') {
+      mediaFiles = mediaFiles.filter(file => {
+        if (type === 'image') return file.type.startsWith('image/');
+        if (type === 'audio') return file.type.startsWith('audio/');
+        if (type === 'video') return file.type.startsWith('video/');
+        return true;
+      });
+    }
+    
+    // Filter out directory markers (items ending with /)
+    mediaFiles = mediaFiles.filter(file => !file.key.endsWith('/'));
+    
+    // Extract unique folders for the folder dropdown - match exactly what the frontend expects
+    const folderSet = new Set();
+    
+    // Include standard folder options that match the frontend dropdown options exactly
+    folderSet.add('root');    // Root folder
+    folderSet.add('image');   // Image folder
+    folderSet.add('audio');   // Audio folder
+    folderSet.add('video');   // Video folder
+    
+    // Also add any other existing folders found in S3
+    mediaFiles.forEach(file => {
+      if (file.folder && !file.folder.endsWith('/') && 
+          !['root', 'image', 'audio', 'video'].includes(file.folder)) {
+        folderSet.add(file.folder);
+      }
+    });
+    
+    const folders = Array.from(folderSet).map(folderPath => ({
+      path: folderPath,
+      name: folderPath === 'root' ? 'Root' : 
+            (folderPath === 'image' ? 'Image' :
+             folderPath === 'audio' ? 'Audio' :
+             folderPath === 'video' ? 'Video' :
+             folderPath.split('/').pop() || folderPath)
+    }));
+    
+    // If frontend pagination is used (client-side)
+    // We'll calculate pagination info for the frontend
+    const total = mediaFiles.length;
+    const totalPages = Math.ceil(total / parseInt(limit));
+    
+    // For client-side pagination, slice the result
+    const startIndex = (parseInt(page) - 1) * parseInt(limit);
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedFiles = mediaFiles.slice(startIndex, endIndex);
     
     res.status(200).json({
       success: true,
-      data: mediaFiles,
+      data: paginatedFiles,
       pagination: {
         hasMore: response.IsTruncated || false,
-        nextToken: response.NextContinuationToken || null,
-        total: response.KeyCount || 0,
+        nextContinuationToken: response.NextContinuationToken || null,
+        total: total,
+        totalPages: totalPages,
         page: parseInt(page),
         limit: parseInt(limit)
-      }
+      },
+      folders: folders
     });
   } catch (error) {
     logger.error('Error listing media:', error);
@@ -81,65 +154,49 @@ exports.listMedia = async (req, res, next) => {
   }
 };
 
-// Get media details by ID
+// Get media details by ID (which is now the S3 key)
 exports.getMediaDetails = async (req, res, next) => {
   try {
     const { mediaId } = req.params;
-    const pool = getPool();
     
-    // Get metadata from database
-    const result = await pool.query(
-      'SELECT * FROM media_files WHERE id = $1',
-      [mediaId]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Media file not found'
-      });
-    }
-    
-    const fileMetadata = result.rows[0];
-    
-    // Get S3 object information
-    const command = new GetObjectCommand({
+    // Get S3 object information directly
+    const command = new HeadObjectCommand({
       Bucket: BUCKET_NAME,
-      Key: fileMetadata.file_key
+      Key: mediaId
     });
     
     try {
       const s3Response = await s3Client.send(command);
       
+      // Extract metadata from S3 object
+      const metadata = s3Response.Metadata || {};
+      
+      // Determine folder, use 'root' for files at the root level (to match frontend)
+      const folderPath = path.dirname(mediaId);
+      const folder = folderPath === '.' ? 'root' : folderPath;
+      
       res.status(200).json({
         success: true,
         data: {
-          id: fileMetadata.id,
-          key: fileMetadata.file_key,
-          name: fileMetadata.name,
+          id: mediaId,
+          key: mediaId,
+          name: path.basename(mediaId),
           size: s3Response.ContentLength,
-          type: fileMetadata.mime_type || s3Response.ContentType,
-          url: `https://${BUCKET_NAME}.s3.amazonaws.com/${fileMetadata.file_key}`,
+          type: s3Response.ContentType || determineContentType(mediaId),
+          url: `https://${BUCKET_NAME}.s3.amazonaws.com/${encodeURIComponent(mediaId).replace(/%2F/g, '/')}`,
           lastModified: s3Response.LastModified,
-          folder: path.dirname(fileMetadata.file_key) === '.' ? '' : path.dirname(fileMetadata.file_key),
-          metadata: fileMetadata
+          folder: folder,  // 'root' for root level
+          metadata: {
+            originalName: metadata.originalname,
+            uploadedAt: metadata.uploadedat
+          }
         }
       });
     } catch (s3Error) {
-      logger.error(`Error getting S3 object for ${fileMetadata.file_key}:`, s3Error);
-      
-      // Return database info even if S3 object is unavailable
-      res.status(200).json({
-        success: true,
-        data: {
-          id: fileMetadata.id,
-          key: fileMetadata.file_key,
-          name: fileMetadata.name,
-          type: fileMetadata.mime_type,
-          url: `https://${BUCKET_NAME}.s3.amazonaws.com/${fileMetadata.file_key}`,
-          metadata: fileMetadata,
-          s3Error: 'Could not retrieve object from S3'
-        }
+      logger.error(`Error getting S3 object for ${mediaId}:`, s3Error);
+      return res.status(404).json({
+        success: false,
+        message: 'Media file not found'
       });
     }
   } catch (error) {
@@ -160,137 +217,240 @@ exports.uploadMedia = async (req, res, next) => {
     }
     
     const file = req.file || req.files[0];
-    const { folder = '', name } = req.body;
+    let { folder = 'root', name, type } = req.body;
     
-    // Generate unique file ID
-    const fileId = uuidv4();
+    // Handle the 'custom' folder case from the frontend
+    if (folder === 'custom') {
+      return res.status(400).json({
+        success: false,
+        message: 'Please specify a custom folder path instead of "custom"'
+      });
+    }
+    
+    // Convert 'root' folder to empty string for S3 path
+    if (folder === 'root') {
+      folder = '';
+    } 
+    // If type is provided but no folder, use the type to determine folder
+    else if (!folder && type) {
+      switch (type) {
+        case 'image':
+          folder = 'image';
+          break;
+        case 'audio':
+          folder = 'audio';
+          break;
+        case 'video':
+          folder = 'video';
+          break;
+        default:
+          folder = '';  // Default is empty folder (will convert to 'root' later)
+          break;
+      }
+    } 
+    // If no folder and no type, determine from mime type
+    else if (!folder) {
+      const mainType = file.mimetype.split('/')[0];
+      if (mainType === 'image') folder = 'image';
+      else if (mainType === 'audio') folder = 'audio';
+      else if (mainType === 'video') folder = 'video';
+      else folder = '';  // Default is empty folder (will convert to 'root' later)
+    }
+    
+    // Clean folder path (remove leading/trailing slashes)
+    folder = folder.replace(/^\/+|\/+$/g, '');
     
     // Prepare file key (path in S3)
     const fileName = name || file.originalname;
     const fileKey = folder ? `${folder}/${fileName}` : fileName;
     
-    // Upload to S3
-    const upload = new Upload({
-      client: s3Client,
-      params: {
+    try {
+      // Read file as buffer for reliable upload
+      const fileBuffer = fs.readFileSync(file.path);
+      
+      // Use PutObjectCommand for more reliable upload of smaller files
+      const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: fileKey,
-        Body: fs.createReadStream(file.path),
-        ContentType: file.mimetype
-      }
-    });
-    
-    const uploadResult = await upload.done();
-    
-    // Save metadata to database
-    const pool = getPool();
-    const result = await pool.query(
-      `INSERT INTO media_files (
-        id, file_key, name, mime_type, folder, size, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING *`,
-      [
-        fileId,
-        fileKey,
-        fileName,
-        file.mimetype,
-        folder,
-        file.size
-      ]
-    );
-    
-    const mediaFile = result.rows[0];
-    
-    // Clean up temp file if it exists
-    if (file.path) {
-      fs.unlink(file.path, (err) => {
-        if (err) logger.error(`Error removing temp file ${file.path}:`, err);
-      });
-    }
-    
-    res.status(201).json({
-      success: true,
-      message: 'File uploaded successfully',
-      data: {
-        id: mediaFile.id,
-        key: mediaFile.file_key,
-        name: mediaFile.name,
-        type: mediaFile.mime_type,
-        size: mediaFile.size,
-        url: `https://${BUCKET_NAME}.s3.amazonaws.com/${mediaFile.file_key}`,
-        folder: mediaFile.folder
-      }
-    });
-  } catch (error) {
-    logger.error('Error uploading media:', error);
-    
-    // Clean up temp file if it exists and there was an error
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) logger.error(`Error removing temp file ${req.file.path}:`, err);
-      });
-    }
-    
-    next(error);
-  }
-};
-
-// Delete media file
-exports.deleteMedia = async (req, res, next) => {
-  try {
-    const { mediaId } = req.params;
-    const pool = getPool();
-    const client = await pool.connect();
-    
-    try {
-      // Start transaction
-      await client.query('BEGIN');
-      
-      // Get file info
-      const result = await client.query(
-        'SELECT * FROM media_files WHERE id = $1',
-        [mediaId]
-      );
-      
-      if (result.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({
-          success: false,
-          message: 'Media file not found'
-        });
-      }
-      
-      const fileData = result.rows[0];
-      
-      // Delete from S3
-      const command = new DeleteObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: fileData.file_key
+        Body: fileBuffer,
+        ContentType: file.mimetype,
+        ContentDisposition: `inline; filename="${encodeURIComponent(fileName)}"`,
+        Metadata: {
+          originalName: file.originalname,
+          uploadedAt: new Date().toISOString(),
+          mediaType: type || ''
+        }
       });
       
       await s3Client.send(command);
       
-      // Delete from database
-      await client.query(
-        'DELETE FROM media_files WHERE id = $1',
-        [mediaId]
-      );
-      
-      // Commit transaction
-      await client.query('COMMIT');
-      
-      res.status(200).json({
-        success: true,
-        message: 'Media file deleted successfully'
+      // Clean up temp file
+      fs.unlink(file.path, (err) => {
+        if (err) logger.error(`Error removing temp file ${file.path}:`, err);
       });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error(`Error in delete transaction for media ${mediaId}:`, error);
-      throw error;
-    } finally {
-      client.release();
+      
+      // Convert empty folder back to 'root' for display
+      const displayFolder = folder || 'root';
+      
+      res.status(201).json({
+        success: true,
+        message: 'File uploaded successfully',
+        data: {
+          id: fileKey, // Use the key as ID
+          key: fileKey,
+          name: fileName,
+          type: file.mimetype,
+          size: file.size,
+          url: `https://${BUCKET_NAME}.s3.amazonaws.com/${encodeURIComponent(fileKey).replace(/%2F/g, '/')}`,
+          folder: displayFolder // Use 'root' for display when folder is empty
+        }
+      });
+    } catch (uploadError) {
+      // Clean up temp file if upload fails
+      fs.unlink(file.path, (err) => {
+        if (err) logger.error(`Error removing temp file ${file.path}:`, err);
+      });
+      
+      logger.error('Error in S3 upload:', uploadError);
+      throw uploadError;
     }
+  } catch (error) {
+    logger.error('Error uploading media:', error);
+    next(error);
+  }
+};
+
+// Delete media file (mediaId is now the S3 key)
+exports.deleteMedia = async (req, res, next) => {
+  try {
+    const { mediaId } = req.params;
+    
+    // Delete from S3 directly
+    const command = new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: mediaId
+    });
+    
+    await s3Client.send(command);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Media file deleted successfully'
+    });
   } catch (error) {
     logger.error(`Error deleting media ${req.params.mediaId}:`, error);
     next(error);
   }
 };
+
+// Respond with media file directly from S3
+exports.respondMedia = async (req, res, next) => {
+  try {
+    const { mediaId } = req.params;
+    
+    // Get the file from S3 directly
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: mediaId
+    });
+    
+    try {
+      const s3Response = await s3Client.send(command);
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', s3Response.ContentType || determineContentType(mediaId));
+      if (s3Response.ContentLength) {
+        res.setHeader('Content-Length', s3Response.ContentLength);
+      }
+      
+      // Set filename for download
+      const filename = path.basename(mediaId);
+      const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
+      res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(filename)}"`);
+      
+      // Stream the file directly to the response
+      s3Response.Body.pipe(res);
+      
+    } catch (s3Error) {
+      logger.error(`Error getting S3 object for ${mediaId}:`, s3Error);
+      return res.status(404).json({
+        success: false,
+        message: 'File not found in storage'
+      });
+    }
+  } catch (error) {
+    logger.error(`Error responding with media ${req.params.mediaId}:`, error);
+    next(error);
+  }
+};
+
+// Access file directly by key (for public access)
+exports.respondDirectMedia = async (req, res, next) => {
+  try {
+    const { fileKey } = req.params;
+    
+    // Get the file from S3 directly
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileKey
+    });
+    
+    try {
+      const s3Response = await s3Client.send(command);
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', s3Response.ContentType || determineContentType(fileKey));
+      if (s3Response.ContentLength) {
+        res.setHeader('Content-Length', s3Response.ContentLength);
+      }
+      
+      // Set filename for download
+      const filename = path.basename(fileKey);
+      const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
+      res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(filename)}"`);
+      
+      // Stream the file directly to the response
+      s3Response.Body.pipe(res);
+      
+    } catch (s3Error) {
+      logger.error(`Error getting S3 object for ${fileKey}:`, s3Error);
+      return res.status(404).json({
+        success: false,
+        message: 'File not found in storage'
+      });
+    }
+  } catch (error) {
+    logger.error(`Error responding with media ${req.params.fileKey}:`, error);
+    next(error);
+  }
+};
+
+// Helper function to determine content type based on file extension
+function determineContentType(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  
+  const mimeTypes = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mov': 'video/quicktime',
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.xls': 'application/vnd.ms-excel',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.ppt': 'application/vnd.ms-powerpoint',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.txt': 'text/plain',
+    '.json': 'application/json'
+  };
+  
+  return mimeTypes[ext] || 'application/octet-stream';
+}

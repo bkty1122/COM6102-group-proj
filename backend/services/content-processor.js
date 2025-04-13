@@ -107,7 +107,7 @@ class ContentProcessor {
       return await queryExecutor.query(
         `INSERT INTO multiple_choice_questions 
          (content_id, card_id, order_id, question, answer_id, 
-          instruction, difficulty, marks, options_data, correct_answers, media_data) 
+          instruction, difficulty, marks, options_data, correct_answer, media_data) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
         [
           content.id || `multiple-choice-${Date.now()}-${Math.floor(Math.random() * 10000)}`,

@@ -48,7 +48,8 @@ const MediaPicker = ({ open, onClose, onSelectMedia }) => {
         {tabValue === 0 && (
           <MediaGrid 
             selectedMedia={selectedMedia} 
-            onSelectMedia={handleSelect} 
+            onSelectMedia={handleSelect}
+            showAlert={showAlert}
           />
         )}
 

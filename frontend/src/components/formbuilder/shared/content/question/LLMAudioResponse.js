@@ -21,6 +21,7 @@ import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
+import { getMediaType, extractMediaUrl } from "../../../utils/mediaUtils";
 
 const LLMAudioResponseCard = ({
   questionId,
@@ -99,6 +100,9 @@ const LLMAudioResponseCard = ({
 
   // Update parent component when data changes
   useEffect(() => {
+    // Determine question media type
+    const questionMediaType = getMediaType(questionMedia);
+
     onUpdate({
       id: questionId,
       type: 'llm-audio-response',
@@ -112,9 +116,9 @@ const LLMAudioResponseCard = ({
       allowRerecording,
       allowPause,
       showTimer,
-      question_image: questionMedia?.type === 'image' ? questionMedia : null,
-      question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
-      question_video: questionMedia?.type === 'video' ? questionMedia : null,
+      question_image: questionMediaType === 'image' ? questionMedia : null,
+      question_audio: questionMediaType === 'audio' ? questionMedia : null,
+      question_video: questionMediaType === 'video' ? questionMedia : null,
       // LLM specific data
       numberOfQuestions,
       llmSessionType,
@@ -615,21 +619,56 @@ const LLMAudioResponseCard = ({
         </Typography>
         
         {/* Media preview if available */}
-        {questionMedia?.type === 'image' && (
-          <Box sx={{ mb: 3, textAlign: 'center' }}>
-            <Box
-              component="img"
-              src={questionMedia.url || questionMedia.src}
-              alt="Question media"
-              sx={{ 
-                maxWidth: '100%', 
-                maxHeight: 200, 
-                objectFit: 'contain',
-                borderRadius: '4px'
-              }}
-            />
-          </Box>
-        )}
+        {(() => {
+          if (!questionMedia) return null;
+          
+          const mediaType = getMediaType(questionMedia);
+          const mediaUrl = extractMediaUrl(questionMedia);
+          
+          if (!mediaUrl) return null;
+          
+          if (mediaType === 'image') {
+            return (
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Box
+                  component="img"
+                  src={mediaUrl}
+                  alt="Question media"
+                  sx={{ 
+                    maxWidth: '100%', 
+                    maxHeight: 200, 
+                    objectFit: 'contain',
+                    borderRadius: '4px'
+                  }}
+                />
+              </Box>
+            );
+          }
+          
+          if (mediaType === 'audio') {
+            return (
+              <Box sx={{ mb: 3 }}>
+                <Box component="audio" controls sx={{ width: '100%' }}>
+                  <source src={mediaUrl} />
+                  Your browser does not support the audio element.
+                </Box>
+              </Box>
+            );
+          }
+          
+          if (mediaType === 'video') {
+            return (
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Box component="video" controls sx={{ maxWidth: '100%', maxHeight: 200 }}>
+                  <source src={mediaUrl} />
+                  Your browser does not support the video element.
+                </Box>
+              </Box>
+            );
+          }
+          
+          return null;
+        })()}
         
         {/* Preview tabs for each question */}
         <Tabs 

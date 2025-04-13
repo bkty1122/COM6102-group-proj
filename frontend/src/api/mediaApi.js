@@ -9,10 +9,15 @@ import apiClient from './apiClient';
 const listMedia = async (params = {}) => {
   try {
     const response = await apiClient.get('/media', { params });
+    // Return the data as is without restructuring
     return response.data;
   } catch (error) {
     console.error('Error listing media:', error);
-    throw error;
+    return {
+      success: false,
+      message: error.message || 'Failed to load media',
+      data: [] // Ensure we always return an array for data
+    };
   }
 };
 
@@ -31,7 +36,9 @@ const uploadMedia = async (file, metadata = {}, onProgress = () => {}) => {
     
     // Add metadata
     Object.keys(metadata).forEach(key => {
-      formData.append(key, metadata[key]);
+      if (metadata[key] !== undefined) {
+        formData.append(key, metadata[key]);
+      }
     });
     
     // Configure request with progress tracking
@@ -85,11 +92,33 @@ const getMediaDetails = async (mediaId) => {
   }
 };
 
+/**
+ * Get direct URL for media file
+ * @param {string} mediaId - ID of the media
+ * @param {boolean} download - Whether to force download
+ * @returns {string} - Direct URL to the media file
+ */
+const getMediaFileUrl = (mediaId, download = false) => {
+  return `${apiClient.defaults.baseURL}/media/file/${mediaId}${download ? '?download=true' : ''}`;
+};
+
+/**
+ * Get direct URL for media file by key
+ * @param {string} fileKey - S3 key of the media file
+ * @param {boolean} download - Whether to force download
+ * @returns {string} - Direct URL to the media file
+ */
+const getDirectFileUrl = (fileKey, download = false) => {
+  return `${apiClient.defaults.baseURL}/media/direct/${encodeURIComponent(fileKey)}${download ? '?download=true' : ''}`;
+};
+
 export const mediaApi = {
   listMedia,
   uploadMedia,
   deleteMedia,
-  getMediaDetails
+  getMediaDetails,
+  getMediaFileUrl,
+  getDirectFileUrl
 };
 
 export default mediaApi;

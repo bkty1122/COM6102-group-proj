@@ -8,6 +8,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../../hooks/useQuestionMedia";
+import { getMediaType } from "../../../utils/mediaUtils";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
 
 const SingleChoiceQuestion = ({ 
@@ -45,33 +46,41 @@ const SingleChoiceQuestion = ({
   } = useQuestionMedia(defaultQuestionMedia, defaultOptionMedia);
 
   // Update parent component when data changes
-  useEffect(() => {
-    // Convert options to the complex format with answer_id
-    const formattedOptions = options.map((option, idx) => ({
+useEffect(() => {
+  // Convert options to the complex format with answer_id
+  const formattedOptions = options.map((option, idx) => {
+    const mediaUrl = optionMedia[idx];
+    const mediaType = getMediaType(mediaUrl);
+    
+    return {
       id: idx,
       answer_id: currentAnswerId,
       option_value: option,
-      option_image: optionMedia[idx]?.type === 'image' ? optionMedia[idx] : null,
-      option_audio: optionMedia[idx]?.type === 'audio' ? optionMedia[idx] : null,
-      option_video: optionMedia[idx]?.type === 'video' ? optionMedia[idx] : null,
-    }));
+      option_image: mediaType === 'image' ? mediaUrl : null,
+      option_audio: mediaType === 'audio' ? mediaUrl : null,
+      option_video: mediaType === 'video' ? mediaUrl : null,
+    };
+  });
 
-    onUpdate({
-      id: questionId,
-      type: 'single-choice',
-      order_id,
-      answer_id: currentAnswerId,
-      question,
-      options: formattedOptions,
-      instruction,
-      difficulty,
-      marks,
-      question_image: questionMedia?.type === 'image' ? questionMedia : null,
-      question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
-      question_video: questionMedia?.type === 'video' ? questionMedia : null,
-      correctAnswer
-    });
-  }, [question, options, optionMedia, questionMedia, correctAnswer, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
+  // Determine question media type
+  const questionMediaType = getMediaType(questionMedia);
+
+  onUpdate({
+    id: questionId,
+    type: 'single-choice',
+    order_id,
+    answer_id: currentAnswerId,
+    question,
+    options: formattedOptions,
+    instruction,
+    difficulty,
+    marks,
+    question_image: questionMediaType === 'image' ? questionMedia : null,
+    question_audio: questionMediaType === 'audio' ? questionMedia : null,
+    question_video: questionMediaType === 'video' ? questionMedia : null,
+    correctAnswer
+  });
+}, [question, options, optionMedia, questionMedia, correctAnswer, instruction, difficulty, marks, questionId, order_id, currentAnswerId, onUpdate]);
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
