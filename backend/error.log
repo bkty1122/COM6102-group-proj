@@ -565,3 +565,42 @@
     at C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\node_modules\pg-pool\index.js:45:11
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
     at async exports.listMedia (C:\Users\celiachan\Desktop\gppj\COM6102-group-proj\backend\controllers\mediaController.js:44:22)
+2025-04-13T08:34:20.186Z ERROR: Error deleting form c83a940e-d00b-47c9-a69d-4c489c31df07: Release called on client which has already been released to the pool.
+2025-04-13T08:34:20.188Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T08:34:55.664Z ERROR: Error deleting form c83a940e-d00b-47c9-a69d-4c489c31df07: Release called on client which has already been released to the pool.
+2025-04-13T08:34:55.665Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T09:47:10.345Z ERROR: Error deleting form eaf9dc7a-c8e4-4293-b3ba-c656f6047254: Release called on client which has already been released to the pool.
+2025-04-13T09:47:10.346Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T10:07:06.156Z ERROR: Error deleting form 98bf4206-6d1b-4b91-abe1-a177b8813e58: Release called on client which has already been released to the pool.
+2025-04-13T10:07:06.159Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T10:10:04.906Z ERROR: Error deleting form 025a522f-90a8-4403-98aa-96e92c761090: Release called on client which has already been released to the pool.
+2025-04-13T10:10:04.907Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-13T10:10:08.238Z ERROR: Error deleting form 025a522f-90a8-4403-98aa-96e92c761090: Release called on client which has already been released to the pool.
+2025-04-13T10:10:08.241Z ERROR: Error: Release called on client which has already been released to the pool.
+    at throwOnDoubleRelease (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:27:9)
+    at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
+    at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
