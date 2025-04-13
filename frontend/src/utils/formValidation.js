@@ -164,7 +164,7 @@ export const validateForm = (formData) => {
     // For multiple-choice, check correctAnswers
     if (content.type === 'multiple-choice' && (!content.correctAnswers || !Array.isArray(content.correctAnswers) || content.correctAnswers.length === 0)) {
       errors.push({ 
-        field: `${path}.correctAnswers`, 
+        field: `${path}.correctAnswer`, 
         message: 'Multiple choice question must have at least one correct answer'
       });
     }
