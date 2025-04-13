@@ -14,6 +14,7 @@ import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
+import { getMediaType, extractMediaUrl } from "../../../utils/mediaUtils";
 
 const MatchingQuestion = ({ 
   questionId, 
@@ -38,11 +39,11 @@ const MatchingQuestion = ({
   if (defaultBlanks && defaultBlanks.length > 0) {
     defaultBlanks.forEach((blank, index) => {
       if (blank.option_image) {
-        defaultBlankMedia[index] = { ...blank.option_image, type: 'image' };
+        defaultBlankMedia[index] = blank.option_image;
       } else if (blank.option_audio) {
-        defaultBlankMedia[index] = { ...blank.option_audio, type: 'audio' };
+        defaultBlankMedia[index] = blank.option_audio;
       } else if (blank.option_video) {
-        defaultBlankMedia[index] = { ...blank.option_video, type: 'video' };
+        defaultBlankMedia[index] = blank.option_video;
       }
     });
   }
@@ -108,12 +109,20 @@ const MatchingQuestion = ({
   // Update parent component when data changes
   useEffect(() => {
     // Format blanks with media for update
-    const formattedBlanks = blanks.map((blank, idx) => ({
-      ...blank,
-      option_image: blankMedia[idx]?.type === 'image' ? blankMedia[idx] : null,
-      option_audio: blankMedia[idx]?.type === 'audio' ? blankMedia[idx] : null,
-      option_video: blankMedia[idx]?.type === 'video' ? blankMedia[idx] : null,
-    }));
+    const formattedBlanks = blanks.map((blank, idx) => {
+      const mediaUrl = blankMedia[idx];
+      const mediaType = getMediaType(mediaUrl);
+      
+      return {
+        ...blank,
+        option_image: mediaType === 'image' ? mediaUrl : null,
+        option_audio: mediaType === 'audio' ? mediaUrl : null,
+        option_video: mediaType === 'video' ? mediaUrl : null,
+      };
+    });
+
+    // Determine question media type
+    const questionMediaType = getMediaType(questionMedia);
 
     onUpdate({
       id: questionId,
@@ -123,9 +132,9 @@ const MatchingQuestion = ({
       blanks: formattedBlanks,
       instruction,
       difficulty,
-      question_image: questionMedia?.type === 'image' ? questionMedia : null,
-      question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
-      question_video: questionMedia?.type === 'video' ? questionMedia : null
+      question_image: questionMediaType === 'image' ? questionMedia : null,
+      question_audio: questionMediaType === 'audio' ? questionMedia : null,
+      question_video: questionMediaType === 'video' ? questionMedia : null
     });
   }, [question, blanks, blankMedia, instruction, difficulty, questionMedia, questionId, order_id, onUpdate]);
 
@@ -281,9 +290,11 @@ const MatchingQuestion = ({
     const media = blankMedia[index];
     if (!media) return null;
     
-    if (media.type === 'image') return <ImageIcon color="primary" fontSize="small" />;
-    if (media.type === 'audio') return <AudiotrackIcon color="secondary" fontSize="small" />;
-    if (media.type === 'video') return <VideocamIcon color="error" fontSize="small" />;
+    const mediaType = getMediaType(media);
+    
+    if (mediaType === 'image') return <ImageIcon color="primary" fontSize="small" />;
+    if (mediaType === 'audio') return <AudiotrackIcon color="secondary" fontSize="small" />;
+    if (mediaType === 'video') return <VideocamIcon color="error" fontSize="small" />;
     return null;
   };
 
@@ -292,9 +303,11 @@ const MatchingQuestion = ({
     const media = blankMedia[index];
     if (!media) return "None";
     
-    if (media.type === 'image') return "Image";
-    if (media.type === 'audio') return "Audio";
-    if (media.type === 'video') return "Video";
+    const mediaType = getMediaType(media);
+    
+    if (mediaType === 'image') return "Image";
+    if (mediaType === 'audio') return "Audio";
+    if (mediaType === 'video') return "Video";
     return "Unknown";
   };
 
@@ -415,16 +428,51 @@ const MatchingQuestion = ({
           </Typography>
           
           {/* Media preview if available */}
-          {questionMedia?.type === 'image' && (
-            <Box sx={{ mb: 3, textAlign: 'center' }}>
-              <Box
-                component="img"
-                src={questionMedia.url || questionMedia.src}
-                alt="Question media"
-                sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: '4px' }}
-              />
-            </Box>
-          )}
+          {(() => {
+            if (!questionMedia) return null;
+            
+            const mediaType = getMediaType(questionMedia);
+            const mediaUrl = extractMediaUrl(questionMedia);
+            
+            if (!mediaUrl) return null;
+            
+            if (mediaType === 'image') {
+              return (
+                <Box sx={{ mb: 3, textAlign: 'center' }}>
+                  <Box
+                    component="img"
+                    src={mediaUrl}
+                    alt="Question media"
+                    sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: '4px' }}
+                  />
+                </Box>
+              );
+            }
+            
+            if (mediaType === 'audio') {
+              return (
+                <Box sx={{ mb: 3 }}>
+                  <Box component="audio" controls sx={{ width: '100%' }}>
+                    <source src={mediaUrl} />
+                    Your browser does not support the audio element.
+                  </Box>
+                </Box>
+              );
+            }
+            
+            if (mediaType === 'video') {
+              return (
+                <Box sx={{ mb: 3, textAlign: 'center' }}>
+                  <Box component="video" controls sx={{ maxWidth: '100%', maxHeight: 200 }}>
+                    <source src={mediaUrl} />
+                    Your browser does not support the video element.
+                  </Box>
+                </Box>
+              );
+            }
+            
+            return null;
+          })()}
           
           {/* Blank fields below */}
           <Box sx={{ mt: 3 }}>
@@ -486,40 +534,58 @@ const MatchingQuestion = ({
                       </Box>
                       
                       {/* Display blank media preview if available */}
-                      {media?.type === 'image' && (
-                        <Box sx={{ mb: 1, textAlign: 'center' }}>
-                          <Box
-                            component="img"
-                            src={media.url || media.src}
-                            alt={`Media for ${blank.label}`}
-                            sx={{ 
-                              width: '100%', 
-                              maxHeight: 80, 
-                              objectFit: 'contain', 
-                              borderRadius: '4px',
-                              border: '1px solid #eee'
-                            }}
-                          />
-                        </Box>
-                      )}
-                      
-                      {media?.type === 'audio' && (
-                        <Box sx={{ mb: 1, textAlign: 'center' }}>
-                          <AudiotrackIcon color="secondary" />
-                          <Typography variant="caption" sx={{ display: 'block' }}>
-                            Audio attached
-                          </Typography>
-                        </Box>
-                      )}
-                      
-                      {media?.type === 'video' && (
-                        <Box sx={{ mb: 1, textAlign: 'center' }}>
-                          <VideocamIcon color="error" />
-                          <Typography variant="caption" sx={{ display: 'block' }}>
-                            Video attached
-                          </Typography>
-                        </Box>
-                      )}
+                      {(() => {
+                        const media = blankMedia[blankIndex];
+                        if (!media) return null;
+                        
+                        const mediaType = getMediaType(media);
+                        const mediaUrl = extractMediaUrl(media);
+                        
+                        if (!mediaUrl) return null;
+                        
+                        if (mediaType === 'image') {
+                          return (
+                            <Box sx={{ mb: 1, textAlign: 'center' }}>
+                              <Box
+                                component="img"
+                                src={mediaUrl}
+                                alt={`Media for ${blank.label}`}
+                                sx={{ 
+                                  width: '100%', 
+                                  maxHeight: 80, 
+                                  objectFit: 'contain', 
+                                  borderRadius: '4px',
+                                  border: '1px solid #eee'
+                                }}
+                              />
+                            </Box>
+                          );
+                        }
+                        
+                        if (mediaType === 'audio') {
+                          return (
+                            <Box sx={{ mb: 1, textAlign: 'center' }}>
+                              <AudiotrackIcon color="secondary" />
+                              <Typography variant="caption" sx={{ display: 'block' }}>
+                                Audio attached
+                              </Typography>
+                            </Box>
+                          );
+                        }
+                        
+                        if (mediaType === 'video') {
+                          return (
+                            <Box sx={{ mb: 1, textAlign: 'center' }}>
+                              <VideocamIcon color="error" />
+                              <Typography variant="caption" sx={{ display: 'block' }}>
+                                Video attached
+                              </Typography>
+                            </Box>
+                          );
+                        }
+                        
+                        return null;
+                      })()}
                       
                       <TextField
                         fullWidth

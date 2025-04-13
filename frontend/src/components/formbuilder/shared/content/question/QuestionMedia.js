@@ -6,6 +6,7 @@ import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { MediaPicker } from "../../media/MediaComponents";
+import { getMediaType, getFilenameFromUrl } from "../../../utils/mediaUtils";
 
 const QuestionMedia = ({ 
   media, 
@@ -16,14 +17,10 @@ const QuestionMedia = ({
 }) => {
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
   
-  // This function handles extracting just the URL from the media object
+  // Pass the complete media object to the parent component
+  // The hook will extract just the URL
   const handleSelectMedia = (selectedMedia) => {
-    // If the selectedMedia is a full object with url property, extract just the URL
-    const mediaUrl = typeof selectedMedia === 'object' && selectedMedia !== null 
-      ? selectedMedia.url // Extract just the URL from the media object
-      : selectedMedia;    // If it's already a string or null, use as is
-    
-    onMediaChange(type, mediaUrl, index);
+    onMediaChange(type, selectedMedia, index);
     setMediaDialogOpen(false);
   };
   
@@ -35,14 +32,15 @@ const QuestionMedia = ({
   const getMediaIcon = () => {
     if (!media) return <ImageIcon />;
     
-    // Check if the URL ends with common extensions
-    const url = media.toString().toLowerCase();
-    if (url.match(/\.(mp3|wav|ogg|aac)$/)) {
-      return <AudiotrackIcon />;
-    } else if (url.match(/\.(mp4|webm|mov|avi)$/)) {
-      return <VideocamIcon />;
-    } else {
-      return <ImageIcon />;
+    const mediaType = getMediaType(media);
+    
+    switch (mediaType) {
+      case 'audio':
+        return <AudiotrackIcon />;
+      case 'video':
+        return <VideocamIcon />;
+      default:
+        return <ImageIcon />;
     }
   };
   
@@ -50,44 +48,45 @@ const QuestionMedia = ({
   const renderMediaPreview = () => {
     if (!media) return null;
     
-    const url = media.toString();
+    const mediaType = getMediaType(media);
+    const url = String(media);
     
-    // Simple extension check to determine type
-    if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
-      return (
-        <Box
-          component="img"
-          src={url}
-          alt="Question media"
-          sx={{
-            maxWidth: '100%',
-            maxHeight: '200px',
-            objectFit: 'contain',
-            borderRadius: '4px'
-          }}
-        />
-      );
-    } else if (url.match(/\.(mp3|wav|ogg|aac)$/i)) {
-      return (
-        <Box component="audio" controls sx={{ width: '100%' }}>
-          <source src={url} />
-          Your browser does not support the audio element.
-        </Box>
-      );
-    } else if (url.match(/\.(mp4|webm|mov|avi)$/i)) {
-      return (
-        <Box component="video" controls sx={{ width: '100%', maxHeight: '200px' }}>
-          <source src={url} />
-          Your browser does not support the video element.
-        </Box>
-      );
-    } else {
-      // If we can't determine the type, show the URL
-      return (
-        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-          {url}
-        </Typography>
-      );
+    switch (mediaType) {
+      case 'image':
+        return (
+          <Box
+            component="img"
+            src={url}
+            alt="Question media"
+            sx={{
+              maxWidth: '100%',
+              maxHeight: '200px',
+              objectFit: 'contain',
+              borderRadius: '4px'
+            }}
+          />
+        );
+      case 'audio':
+        return (
+          <Box component="audio" controls sx={{ width: '100%' }}>
+            <source src={url} />
+            Your browser does not support the audio element.
+          </Box>
+        );
+      case 'video':
+        return (
+          <Box component="video" controls sx={{ width: '100%', maxHeight: '200px' }}>
+            <source src={url} />
+            Your browser does not support the video element.
+          </Box>
+        );
+      default:
+        // If we can't determine the type, show the URL
+        return (
+          <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+            {url}
+          </Typography>
+        );
     }
   };
   
@@ -122,7 +121,7 @@ const QuestionMedia = ({
           
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-              {media.split('/').pop()} {/* Show filename from URL */}
+              {getFilenameFromUrl(media)} {/* Show filename from URL */}
             </Typography>
             
             <Box>

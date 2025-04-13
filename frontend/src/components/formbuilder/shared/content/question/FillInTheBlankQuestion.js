@@ -10,6 +10,7 @@ import GradeIcon from "@mui/icons-material/Grade";
 import QuestionMedia from "./QuestionMedia";
 import useQuestionMedia from "../../../hooks/useQuestionMedia";
 import DifficultySelector, { getDifficultyColor } from "./DifficultySelector";
+import { getMediaType, extractMediaUrl } from "../../../utils/mediaUtils";
 
 const FillInTheBlankQuestion = ({ 
   questionId, 
@@ -126,6 +127,10 @@ const FillInTheBlankQuestion = ({
 
   // Update parent component when data changes
   useEffect(() => {
+    // Determine question media type using the utility
+    const questionMediaType = getMediaType(questionMedia);
+    const questionMediaUrl = extractMediaUrl(questionMedia);
+
     onUpdate({
       id: questionId,
       type: 'fill-in-the-blank',
@@ -134,9 +139,9 @@ const FillInTheBlankQuestion = ({
       blanks,
       instruction,
       difficulty,
-      question_image: questionMedia?.type === 'image' ? questionMedia : null,
-      question_audio: questionMedia?.type === 'audio' ? questionMedia : null,
-      question_video: questionMedia?.type === 'video' ? questionMedia : null
+      question_image: questionMediaType === 'image' ? questionMedia : null,
+      question_audio: questionMediaType === 'audio' ? questionMedia : null,
+      question_video: questionMediaType === 'video' ? questionMedia : null
     });
   }, [question, blanks, instruction, difficulty, questionMedia, questionId, order_id, onUpdate]);
 
@@ -378,6 +383,55 @@ const FillInTheBlankQuestion = ({
     return colors[index % colors.length];
   };
 
+  // Helper to render media preview based on type
+  const renderMediaPreview = () => {
+    if (!questionMedia) return null;
+    
+    const mediaType = getMediaType(questionMedia);
+    const mediaUrl = extractMediaUrl(questionMedia);
+    
+    if (!mediaUrl) return null;
+    
+    switch (mediaType) {
+      case 'image':
+        return (
+          <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
+            <Box
+              component="img"
+              src={mediaUrl}
+              alt="Question media"
+              sx={{ 
+                maxWidth: '100%', 
+                maxHeight: 200, 
+                objectFit: 'contain',
+                borderRadius: '4px' 
+              }}
+            />
+          </Box>
+        );
+      case 'audio':
+        return (
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <Box component="audio" controls sx={{ width: '100%' }}>
+              <source src={mediaUrl} />
+              Your browser does not support the audio element.
+            </Box>
+          </Box>
+        );
+      case 'video':
+        return (
+          <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
+            <Box component="video" controls sx={{ maxWidth: '100%', maxHeight: 200 }}>
+              <source src={mediaUrl} />
+              Your browser does not support the video element.
+            </Box>
+          </Box>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Box>
       {/* Display IDs for debugging */}
@@ -517,6 +571,9 @@ const FillInTheBlankQuestion = ({
           <Typography variant="body1">
             {renderFormattedQuestion()}
           </Typography>
+          
+          {/* Media preview using the helper function */}
+          {renderMediaPreview()}
         </Paper>
       )}
       
