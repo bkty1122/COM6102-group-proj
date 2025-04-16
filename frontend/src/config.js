@@ -3,7 +3,7 @@
 const config = {
   // API URLs
   api: {
-    baseUrl: 'http://localhost:5000/api', // GitHub Codespaces URL, change base on the server config
+    baseUrl: `${window.location.protocol}//${window.location.hostname}:5000/api`, // GitHub Codespaces URL, change base on the server config
   },
   
   // Authentication
