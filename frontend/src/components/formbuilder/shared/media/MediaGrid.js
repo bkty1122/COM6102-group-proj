@@ -1,22 +1,44 @@
 // src/components/formbuilder/shared/MediaGrid.js
-import React, { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Grid, Card, CardMedia, CardContent, CardActionArea,
-  CircularProgress, Alert, Pagination, TextField, InputAdornment, IconButton,
-  Select, MenuItem, FormControl, InputLabel, Chip, Dialog, DialogTitle,
-  DialogContent, DialogContentText, DialogActions, Button, Menu, Tooltip
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActionArea,
+  CircularProgress,
+  Alert,
+  Pagination,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  Menu,
+  Tooltip,
 } from "@mui/material";
-import AudiotrackIcon from '@mui/icons-material/Audiotrack';
-import VideocamIcon from '@mui/icons-material/Videocam';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
-import SearchIcon from '@mui/icons-material/Search';
-import FolderIcon from '@mui/icons-material/Folder';
-import DeleteIcon from '@mui/icons-material/Delete';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DownloadIcon from '@mui/icons-material/Download';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import mediaApi from '../../../../api/mediaApi';
+import AudiotrackIcon from "@mui/icons-material/Audiotrack";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import ImageIcon from "@mui/icons-material/Image";
+import SearchIcon from "@mui/icons-material/Search";
+import FolderIcon from "@mui/icons-material/Folder";
+import DeleteIcon from "@mui/icons-material/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DownloadIcon from "@mui/icons-material/Download";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import mediaApi from "../../../../api/mediaApi";
 
 const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
   const [loading, setLoading] = useState(true);
@@ -28,58 +50,83 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
     limit: 24,
     total: 0,
     totalPages: 0,
-    continuationToken: null
+    continuationToken: null,
   });
-  const [search, setSearch] = useState('');
-  const [mediaType, setMediaType] = useState('all');
-  const [folder, setFolder] = useState('root');
-  
+  const [search, setSearch] = useState("");
+  const [mediaType, setMediaType] = useState("all");
+  const [folder, setFolder] = useState("root");
+
   // Menu state for each media item
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [menuMedia, setMenuMedia] = useState(null);
-  
+
   // Delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [mediaToDelete, setMediaToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  
+
   // Download state
   const [downloadingMedia, setDownloadingMedia] = useState(null);
 
   // Get the correct file type for filtering based on file extension
   const getFileType = (media) => {
-    if (!media.key) return 'unknown';
-    
-    const extension = media.key.split('.').pop().toLowerCase();
-    const fileUrl = media.url || '';
-    
+    if (!media.key) return "unknown";
+
+    const extension = media.key.split(".").pop().toLowerCase();
+    const fileUrl = media.url || "";
+
     // Check media.type first if available
     if (media.type) {
-      if (media.type.startsWith('image/')) return 'image';
-      if (media.type.startsWith('audio/')) return 'audio';
-      if (media.type.startsWith('video/')) return 'video';
-      if (media.type.startsWith('application/')) return 'application';
+      if (media.type.startsWith("image/")) return "image";
+      if (media.type.startsWith("audio/")) return "audio";
+      if (media.type.startsWith("video/")) return "video";
+      if (media.type.startsWith("application/")) return "application";
     }
-    
+
     // Check by extension if type is not reliable
-    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-    const audioExtensions = ['mp3', 'wav', 'ogg', 'm4a'];
-    const videoExtensions = ['mp4', 'webm', 'mov', 'avi'];
-    const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
-    
-    if (imageExtensions.includes(extension) || fileUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)/i)) return 'image';
-    if (audioExtensions.includes(extension) || fileUrl.match(/\.(mp3|wav|ogg|m4a)/i)) return 'audio';
-    if (videoExtensions.includes(extension) || fileUrl.match(/\.(mp4|webm|mov|avi)/i)) return 'video';
-    if (documentExtensions.includes(extension) || fileUrl.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)/i)) return 'application';
-    
-    return 'unknown';
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg"];
+    const audioExtensions = ["mp3", "wav", "ogg", "m4a"];
+    const videoExtensions = ["mp4", "webm", "mov", "avi"];
+    const documentExtensions = [
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
+    ];
+
+    if (
+      imageExtensions.includes(extension) ||
+      fileUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)/i)
+    )
+      return "image";
+    if (
+      audioExtensions.includes(extension) ||
+      fileUrl.match(/\.(mp3|wav|ogg|m4a)/i)
+    )
+      return "audio";
+    if (
+      videoExtensions.includes(extension) ||
+      fileUrl.match(/\.(mp4|webm|mov|avi)/i)
+    )
+      return "video";
+    if (
+      documentExtensions.includes(extension) ||
+      fileUrl.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)/i)
+    )
+      return "application";
+
+    return "unknown";
   };
 
   // Filter media items by type
   const filterMediaByType = (items, type) => {
-    if (type === 'all') return items;
-    
-    return items.filter(item => {
+    if (type === "all") return items;
+
+    return items.filter((item) => {
       const fileType = getFileType(item);
       return fileType === type;
     });
@@ -90,99 +137,105 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Prepare params for API call
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        folder: folder
+        folder: folder,
       };
-      
+
       // Add search filter if set
       if (search) params.search = search;
-      
+
       // Add type filter if set (for server-side filtering)
-      if (mediaType !== 'all') params.type = mediaType;
-      
+      if (mediaType !== "all") params.type = mediaType;
+
       // Add continuation token for S3 pagination (if available)
       if (pagination.continuationToken) {
         params.continuationToken = pagination.continuationToken;
       }
-      
+
       // Call the API
       const response = await mediaApi.listMedia(params);
-      
+
       if (response.success) {
         // Set the media items
         let items = [];
         if (Array.isArray(response.data)) {
-          items = response.data.filter(item => item && !item.key.endsWith('/'));
-          
+          items = response.data.filter(
+            (item) => item && !item.key.endsWith("/")
+          );
+
           // If server-side filtering doesn't work, apply client-side filtering
-          if (mediaType !== 'all' && items.some(item => getFileType(item) !== mediaType)) {
+          if (
+            mediaType !== "all" &&
+            items.some((item) => getFileType(item) !== mediaType)
+          ) {
             items = filterMediaByType(items, mediaType);
           }
-          
+
           setMediaItems(items);
         } else {
-          console.error('Unexpected response data format:', response.data);
+          console.error("Unexpected response data format:", response.data);
           setMediaItems([]);
         }
-        
+
         // Update folder options if available
         if (response.folders && Array.isArray(response.folders)) {
           setFolderOptions(response.folders);
         }
-        
+
         // Update pagination info
         if (response.pagination) {
           setPagination({
             ...pagination,
             total: response.pagination.total || 0,
             totalPages: response.pagination.totalPages || 1,
-            continuationToken: response.pagination.nextContinuationToken || null
+            continuationToken:
+              response.pagination.nextContinuationToken || null,
           });
         }
       } else {
-        throw new Error(response.message || 'Failed to load media');
+        throw new Error(response.message || "Failed to load media");
       }
     } catch (err) {
-      console.error('Error loading media:', err);
-      setError(err.message || 'Failed to load media. Please try again.');
+      console.error("Error loading media:", err);
+      setError(err.message || "Failed to load media. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   // Load media on initial render and when filters change
   useEffect(() => {
     loadMedia();
   }, [pagination.page, pagination.limit, mediaType, folder]);
-  
+
   // Handle search submit
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPagination({ ...pagination, page: 1, continuationToken: null }); // Reset pagination
     loadMedia();
   };
-  
+
   // Handle page change
   const handlePageChange = (event, value) => {
     setPagination({ ...pagination, page: value });
   };
-  
+
   // Handle media type change
   const handleMediaTypeChange = (e) => {
     setMediaType(e.target.value);
     setPagination({ ...pagination, page: 1, continuationToken: null }); // Reset pagination
   };
-  
+
   // Handle folder change
   const handleFolderChange = (e) => {
     setFolder(e.target.value);
     setPagination({ ...pagination, page: 1, continuationToken: null }); // Reset pagination
   };
-  
+
   // Handle menu open
   const handleMenuOpen = (event, media) => {
     event.preventDefault();
@@ -190,215 +243,261 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
     setMenuAnchorEl(event.currentTarget);
     setMenuMedia(media);
   };
-  
+
   // Handle menu close
   const handleMenuClose = () => {
     setMenuAnchorEl(null);
     setMenuMedia(null);
   };
-  
+
   // Handle delete confirm dialog open
   const handleDeleteDialogOpen = (media) => {
     handleMenuClose();
     setMediaToDelete(media);
     setDeleteDialogOpen(true);
   };
-  
+
   // Handle delete confirm dialog close
   const handleDeleteDialogClose = () => {
     setDeleteDialogOpen(false);
     setMediaToDelete(null);
   };
-  
+
   // Handle delete media
   const handleDeleteMedia = async () => {
     if (!mediaToDelete) return;
-    
+
     try {
       setDeleteLoading(true);
-      
+
       const mediaId = mediaToDelete.id || mediaToDelete.key;
       const response = await mediaApi.deleteMedia(mediaId);
-      
+
       if (response.success) {
         // Remove deleted media from the list
-        setMediaItems(prevItems => prevItems.filter(item => 
-          (item.id || item.key) !== (mediaToDelete.id || mediaToDelete.key)
-        ));
-        
+        setMediaItems((prevItems) =>
+          prevItems.filter(
+            (item) =>
+              (item.id || item.key) !== (mediaToDelete.id || mediaToDelete.key)
+          )
+        );
+
         // Show success message
         if (showAlert) {
-          showAlert('Media deleted successfully', 'success');
+          showAlert("Media deleted successfully", "success");
         } else {
-          console.log('Media deleted successfully');
+          console.log("Media deleted successfully");
         }
-        
+
         // Deselect if the deleted item was selected
-        if (selectedMedia && (selectedMedia.id === mediaToDelete.id || selectedMedia.key === mediaToDelete.key)) {
+        if (
+          selectedMedia &&
+          (selectedMedia.id === mediaToDelete.id ||
+            selectedMedia.key === mediaToDelete.key)
+        ) {
           onSelectMedia(null);
         }
       } else {
-        throw new Error(response.message || 'Failed to delete media');
+        throw new Error(response.message || "Failed to delete media");
       }
     } catch (err) {
-      console.error('Error deleting media:', err);
+      console.error("Error deleting media:", err);
       if (showAlert) {
-        showAlert(`Error deleting media: ${err.message || 'Unknown error'}`, 'error');
+        showAlert(
+          `Error deleting media: ${err.message || "Unknown error"}`,
+          "error"
+        );
       }
     } finally {
       setDeleteLoading(false);
       handleDeleteDialogClose();
     }
   };
-  
+
   // Handle copy URL to clipboard
   const handleCopyUrl = (media) => {
     if (!media || !media.url) return;
-    
-    navigator.clipboard.writeText(media.url)
+
+    navigator.clipboard
+      .writeText(media.url)
       .then(() => {
         if (showAlert) {
-          showAlert('URL copied to clipboard', 'success');
+          showAlert("URL copied to clipboard", "success");
         }
       })
-      .catch(err => {
-        console.error('Error copying URL:', err);
+      .catch((err) => {
+        console.error("Error copying URL:", err);
         if (showAlert) {
-          showAlert('Failed to copy URL', 'error');
+          showAlert("Failed to copy URL", "error");
         }
       });
-    
+
     handleMenuClose();
   };
-  
+
   // Handle download
   const handleDownload = (media) => {
     if (!media || !media.url) return;
-    
-    // Close the menu first
-    handleMenuClose();
-    
-    // Set downloading state
-    setDownloadingMedia(media);
-    
+
     try {
-      // Get the file name from the media object
-      const fileName = media.name || media.key.split('/').pop() || 'download';
-      
-      // For images and other browser-supported formats, use direct download
-      if (getFileType(media) === 'image' || !media.url.includes('?')) {
-        // Create a temporary link element
-        const link = document.createElement('a');
-        link.href = media.url;
-        link.download = fileName;
-        link.target = '_blank';
-        
-        // Append to document, click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Show success message after a short delay to ensure browser started the download
-        setTimeout(() => {
-          if (showAlert) {
-            showAlert(`Downloading ${fileName}`, 'success');
-          }
-          setDownloadingMedia(null);
-        }, 500);
-      } else {
-        // For other files, use the API helper with proper content-disposition
-        const downloadUrl = mediaApi.getMediaFileUrl(media.id || media.key, true);
-        
-        // Use fetch API for better control
-        fetch(downloadUrl)
-          .then(response => {
-            if (!response.ok) throw new Error('Download failed: ' + response.statusText);
-            return response.blob();
-          })
-          .then(blob => {
-            // Create an object URL for the blob
-            const url = window.URL.createObjectURL(blob);
-            
-            // Create a link to download it
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            
-            // Clean up
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(link);
-            
-            if (showAlert) {
-              showAlert(`Downloading ${fileName}`, 'success');
-            }
-          })
-          .catch(error => {
-            console.error('Download error:', error);
-            if (showAlert) {
-              showAlert('Download failed: ' + (error.message || 'Unknown error'), 'error');
-            }
-          })
-          .finally(() => {
-            setDownloadingMedia(null);
-          });
-      }
-    } catch (error) {
-      console.error('Error initiating download:', error);
+      // Create a download URL with proper content-disposition header
+      const downloadUrl = mediaApi.getMediaFileUrl(media.id || media.key, true);
+
+      // First close the menu
+      handleMenuClose();
+
+      // Show a temporary loading alert
       if (showAlert) {
-        showAlert('Error initiating download: ' + (error.message || 'Unknown error'), 'error');
+        showAlert("Preparing download...", "info");
       }
-      setDownloadingMedia(null);
+
+      // Create a fetch request to check if the file is accessible
+      fetch(downloadUrl, { method: "HEAD" })
+        .then((response) => {
+          if (response.ok) {
+            // File is accessible, proceed with download
+
+            // Fetch the file as a blob
+            return fetch(downloadUrl)
+              .then((res) => {
+                if (!res.ok) throw new Error("Download failed");
+                return res.blob();
+              })
+              .then((blob) => {
+                // Create a download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.style.display = "none";
+                a.href = url;
+                a.download = media.name || "download";
+
+                // Trigger download
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // Show success message
+                if (showAlert) {
+                  showAlert("File downloaded successfully", "success");
+                }
+              });
+          } else {
+            throw new Error("File not accessible");
+          }
+        })
+        .catch((err) => {
+          console.error("Download error:", err);
+          if (showAlert) {
+            showAlert(
+              "Download failed: " + (err.message || "Unknown error"),
+              "error"
+            );
+          }
+        });
+    } catch (error) {
+      console.error("Error setting up download:", error);
+      if (showAlert) {
+        showAlert(
+          "Error setting up download: " + (error.message || "Unknown error"),
+          "error"
+        );
+      }
+      handleMenuClose();
     }
   };
-  
+
   // Render media thumbnail based on type
   const renderMediaThumbnail = (media) => {
     const fileType = getFileType(media);
-    
-    if (fileType === 'image') {
+
+    if (fileType === "image") {
       return (
         <CardMedia
           component="img"
           height="120"
           image={media.url}
           alt={media.name}
-          sx={{ objectFit: 'contain', p: 1 }}
+          sx={{ objectFit: "contain", p: 1 }}
         />
       );
-    } else if (fileType === 'audio') {
+    } else if (fileType === "audio") {
       return (
-        <Box sx={{ height: 120, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-          <AudiotrackIcon sx={{ fontSize: '3rem', color: 'primary.main' }} />
+        <Box
+          sx={{
+            height: 120,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <AudiotrackIcon sx={{ fontSize: "3rem", color: "primary.main" }} />
         </Box>
       );
-    } else if (fileType === 'video') {
+    } else if (fileType === "video") {
       return (
-        <Box sx={{ height: 120, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-          <VideocamIcon sx={{ fontSize: '3rem', color: 'primary.main' }} />
+        <Box
+          sx={{
+            height: 120,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <VideocamIcon sx={{ fontSize: "3rem", color: "primary.main" }} />
         </Box>
       );
-    } else if (fileType === 'application') {
+    } else if (fileType === "application") {
       return (
-        <Box sx={{ height: 120, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-          <InsertDriveFileIcon sx={{ fontSize: '3rem', color: 'primary.main' }} />
+        <Box
+          sx={{
+            height: 120,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <InsertDriveFileIcon
+            sx={{ fontSize: "3rem", color: "primary.main" }}
+          />
         </Box>
       );
     } else {
       // Unknown type
       return (
-        <Box sx={{ height: 120, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-          <InsertDriveFileIcon sx={{ fontSize: '3rem', color: 'primary.main' }} />
+        <Box
+          sx={{
+            height: 120,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <InsertDriveFileIcon
+            sx={{ fontSize: "3rem", color: "primary.main" }}
+          />
         </Box>
       );
     }
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: "100%" }}>
       {/* Search, folder and type filters */}
-      <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+        }}
+      >
         <form onSubmit={handleSearchSubmit} style={{ flexGrow: 1 }}>
           <TextField
             fullWidth
@@ -416,28 +515,29 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
             }}
           />
         </form>
-        
+
         {/* Folder dropdown */}
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Folder</InputLabel>
-          <Select
-            value={folder}
-            label="Folder"
-            onChange={handleFolderChange}
-          >
+          <Select value={folder} label="Folder" onChange={handleFolderChange}>
             {folderOptions.map((folderOption) => (
               <MenuItem key={folderOption.path} value={folderOption.path}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <FolderIcon 
-                    sx={{ 
-                      mr: 1, 
-                      fontSize: 20, 
-                      color: 
-                        folderOption.path === 'image' ? '#4CAF50' : 
-                        folderOption.path === 'audio' ? '#2196F3' : 
-                        folderOption.path === 'video' ? '#FF5722' : 
-                        folderOption.path === 'root' ? 'text.primary' : '#9C27B0'
-                    }} 
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <FolderIcon
+                    sx={{
+                      mr: 1,
+                      fontSize: 20,
+                      color:
+                        folderOption.path === "image"
+                          ? "#4CAF50"
+                          : folderOption.path === "audio"
+                          ? "#2196F3"
+                          : folderOption.path === "video"
+                          ? "#FF5722"
+                          : folderOption.path === "root"
+                          ? "text.primary"
+                          : "#9C27B0",
+                    }}
                   />
                   {folderOption.name}
                 </Box>
@@ -445,7 +545,7 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
             ))}
           </Select>
         </FormControl>
-        
+
         {/* Type dropdown */}
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Type</InputLabel>
@@ -455,214 +555,263 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
             onChange={handleMediaTypeChange}
           >
             <MenuItem value="all">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
                 All Types
               </Box>
             </MenuItem>
             <MenuItem value="image">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <ImageIcon sx={{ mr: 1, fontSize: 20, color: '#4CAF50' }} />
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <ImageIcon sx={{ mr: 1, fontSize: 20, color: "#4CAF50" }} />
                 Images
               </Box>
             </MenuItem>
             <MenuItem value="audio">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AudiotrackIcon sx={{ mr: 1, fontSize: 20, color: '#2196F3' }} />
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <AudiotrackIcon
+                  sx={{ mr: 1, fontSize: 20, color: "#2196F3" }}
+                />
                 Audio
               </Box>
             </MenuItem>
             <MenuItem value="video">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <VideocamIcon sx={{ mr: 1, fontSize: 20, color: '#FF5722' }} />
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <VideocamIcon sx={{ mr: 1, fontSize: 20, color: "#FF5722" }} />
                 Video
               </Box>
             </MenuItem>
             <MenuItem value="application">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <InsertDriveFileIcon sx={{ mr: 1, fontSize: 20, color: '#607D8B' }} />
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <InsertDriveFileIcon
+                  sx={{ mr: 1, fontSize: 20, color: "#607D8B" }}
+                />
                 Documents
               </Box>
             </MenuItem>
           </Select>
         </FormControl>
       </Box>
-      
+
       {/* Filter badges */}
-      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <Box sx={{ mb: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
         {folder && (
-          <Chip 
-            icon={<FolderIcon />} 
-            label={`Folder: ${folderOptions.find(f => f.path === folder)?.name || folder}`}
+          <Chip
+            icon={<FolderIcon />}
+            label={`Folder: ${
+              folderOptions.find((f) => f.path === folder)?.name || folder
+            }`}
             size="small"
             color="primary"
             variant="outlined"
             onDelete={() => {
-              if (folder !== 'root') {
-                setFolder('root');
-                setPagination({ ...pagination, page: 1, continuationToken: null });
+              if (folder !== "root") {
+                setFolder("root");
+                setPagination({
+                  ...pagination,
+                  page: 1,
+                  continuationToken: null,
+                });
               }
             }}
           />
         )}
-        
-        {mediaType !== 'all' && (
-          <Chip 
+
+        {mediaType !== "all" && (
+          <Chip
             icon={
-              mediaType === 'image' ? <ImageIcon /> :
-              mediaType === 'audio' ? <AudiotrackIcon /> :
-              mediaType === 'video' ? <VideocamIcon /> :
-              <InsertDriveFileIcon />
+              mediaType === "image" ? (
+                <ImageIcon />
+              ) : mediaType === "audio" ? (
+                <AudiotrackIcon />
+              ) : mediaType === "video" ? (
+                <VideocamIcon />
+              ) : (
+                <InsertDriveFileIcon />
+              )
             }
-            label={`Type: ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}`}
+            label={`Type: ${
+              mediaType.charAt(0).toUpperCase() + mediaType.slice(1)
+            }`}
             size="small"
             color="secondary"
             variant="outlined"
             onDelete={() => {
-              setMediaType('all');
-              setPagination({ ...pagination, page: 1, continuationToken: null });
+              setMediaType("all");
+              setPagination({
+                ...pagination,
+                page: 1,
+                continuationToken: null,
+              });
             }}
           />
         )}
-        
+
         {search && (
-          <Chip 
-            icon={<SearchIcon />} 
+          <Chip
+            icon={<SearchIcon />}
             label={`Search: ${search}`}
             size="small"
             color="info"
             variant="outlined"
             onDelete={() => {
-              setSearch('');
-              setPagination({ ...pagination, page: 1, continuationToken: null });
+              setSearch("");
+              setPagination({
+                ...pagination,
+                page: 1,
+                continuationToken: null,
+              });
               loadMedia();
             }}
           />
         )}
       </Box>
-      
+
       {/* Error message */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-      
+
       {/* Loading indicator */}
       {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
           <CircularProgress />
         </Box>
       )}
-      
+
       {/* No results message */}
       {!loading && mediaItems.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Box sx={{ textAlign: "center", py: 4 }}>
           <Typography variant="body1" color="text.secondary">
             No media found. Try adjusting your filters or upload new media.
           </Typography>
         </Box>
       )}
-      
+
       {/* Media grid */}
       {!loading && mediaItems.length > 0 && (
         <Grid container spacing={2}>
           {mediaItems.map((media) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={media.id || media.key}>
-              <Card 
-                sx={{ 
-                  border: selectedMedia?.id === media.id || selectedMedia?.key === media.key ? '2px solid #1976d2' : '1px solid #eee',
-                  transition: 'all 0.2s',
-                  height: '100%',
-                  position: 'relative',
-                  opacity: downloadingMedia && (downloadingMedia.id === media.id || downloadingMedia.key === media.key) ? 0.7 : 1
+              <Card
+                sx={{
+                  border:
+                    selectedMedia?.id === media.id ||
+                    selectedMedia?.key === media.key
+                      ? "2px solid #1976d2"
+                      : "1px solid #eee",
+                  transition: "all 0.2s",
+                  height: "100%",
+                  position: "relative",
+                  opacity:
+                    downloadingMedia &&
+                    (downloadingMedia.id === media.id ||
+                      downloadingMedia.key === media.key)
+                      ? 0.7
+                      : 1,
                 }}
               >
-                {downloadingMedia && (downloadingMedia.id === media.id || downloadingMedia.key === media.key) && (
-                  <Box 
-                    sx={{ 
-                      position: 'absolute', 
-                      top: 0, 
-                      left: 0, 
-                      right: 0, 
-                      bottom: 0, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255,255,255,0.8)',
-                      zIndex: 2
-                    }}
-                  >
-                    <Box sx={{ textAlign: 'center' }}>
-                      <CircularProgress size={40} sx={{ mb: 1 }} />
-                      <Typography variant="body2" color="text.secondary">
-                        Downloading...
-                      </Typography>
+                {downloadingMedia &&
+                  (downloadingMedia.id === media.id ||
+                    downloadingMedia.key === media.key) && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(255,255,255,0.8)",
+                        zIndex: 2,
+                      }}
+                    >
+                      <Box sx={{ textAlign: "center" }}>
+                        <CircularProgress size={40} sx={{ mb: 1 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          Downloading...
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-                
-                <CardActionArea 
+                  )}
+
+                <CardActionArea
                   onClick={() => onSelectMedia(media)}
-                  sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                  }}
                 >
-                  <Box sx={{ position: 'relative', flexGrow: 0 }}>
+                  <Box sx={{ position: "relative", flexGrow: 0 }}>
                     {renderMediaThumbnail(media)}
                     {/* File type indicator */}
                     <Chip
                       label={getFileType(media)}
                       size="small"
                       sx={{
-                        position: 'absolute',
+                        position: "absolute",
                         top: 8,
                         left: 8,
-                        fontSize: '0.7rem',
+                        fontSize: "0.7rem",
                         height: 20,
-                        backgroundColor: 
-                          getFileType(media) === 'image' ? 'rgba(76, 175, 80, 0.8)' :
-                          getFileType(media) === 'audio' ? 'rgba(33, 150, 243, 0.8)' :
-                          getFileType(media) === 'video' ? 'rgba(255, 87, 34, 0.8)' :
-                          'rgba(96, 125, 139, 0.8)',
-                        color: '#fff'
+                        backgroundColor:
+                          getFileType(media) === "image"
+                            ? "rgba(76, 175, 80, 0.8)"
+                            : getFileType(media) === "audio"
+                            ? "rgba(33, 150, 243, 0.8)"
+                            : getFileType(media) === "video"
+                            ? "rgba(255, 87, 34, 0.8)"
+                            : "rgba(96, 125, 139, 0.8)",
+                        color: "#fff",
                       }}
                     />
-                    
+
                     {/* Show folder tag if not in the current folder view */}
                     {media.folder && media.folder !== folder && (
                       <Chip
-                        label={folderOptions.find(f => f.path === media.folder)?.name || media.folder}
+                        label={
+                          folderOptions.find((f) => f.path === media.folder)
+                            ?.name || media.folder
+                        }
                         size="small"
                         sx={{
-                          position: 'absolute',
+                          position: "absolute",
                           top: 8,
                           right: 8,
-                          fontSize: '0.7rem',
+                          fontSize: "0.7rem",
                           height: 20,
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          color: '#fff'
+                          backgroundColor: "rgba(0,0,0,0.6)",
+                          color: "#fff",
                         }}
                       />
                     )}
                   </Box>
                   <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                    <Typography variant="body2" noWrap>{media.name}</Typography>
+                    <Typography variant="body2" noWrap>
+                      {media.name}
+                    </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
                       {(media.size / 1024).toFixed(1)} KB
                     </Typography>
                   </CardContent>
                 </CardActionArea>
-                
+
                 {/* Menu button */}
-                <IconButton 
+                <IconButton
                   size="small"
-                  sx={{ 
-                    position: 'absolute', 
-                    top: 4, 
+                  sx={{
+                    position: "absolute",
+                    top: 4,
                     right: 4,
-                    backgroundColor: 'rgba(255,255,255,0.7)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255,255,255,0.9)'
+                    backgroundColor: "rgba(255,255,255,0.7)",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.9)",
                     },
-                    zIndex: 3
+                    zIndex: 3,
                   }}
                   onClick={(e) => handleMenuOpen(e, media)}
                   disabled={downloadingMedia !== null}
@@ -674,7 +823,7 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
           ))}
         </Grid>
       )}
-      
+
       {/* Media actions menu */}
       <Menu
         anchorEl={menuAnchorEl}
@@ -689,15 +838,15 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
           <DownloadIcon fontSize="small" sx={{ mr: 1 }} />
           Download
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => handleDeleteDialogOpen(menuMedia)}
-          sx={{ color: 'error.main' }}
+          sx={{ color: "error.main" }}
         >
           <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
           Delete
         </MenuItem>
       </Menu>
-      
+
       {/* Delete confirmation dialog */}
       <Dialog
         open={deleteDialogOpen}
@@ -705,39 +854,37 @@ const MediaGrid = ({ selectedMedia, onSelectMedia, showAlert }) => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">
-          Confirm Delete
-        </DialogTitle>
+        <DialogTitle id="delete-dialog-title">Confirm Delete</DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete "{mediaToDelete?.name}"? This action cannot be undone.
+            Are you sure you want to delete "{mediaToDelete?.name}"? This action
+            cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button 
-            onClick={handleDeleteDialogClose} 
-            disabled={deleteLoading}
-          >
+          <Button onClick={handleDeleteDialogClose} disabled={deleteLoading}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleDeleteMedia} 
-            color="error" 
+          <Button
+            onClick={handleDeleteMedia}
+            color="error"
             autoFocus
             disabled={deleteLoading}
-            startIcon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+            startIcon={
+              deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />
+            }
           >
-            {deleteLoading ? 'Deleting...' : 'Delete'}
+            {deleteLoading ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Pagination */}
       {!loading && pagination.totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
-          <Pagination 
-            count={pagination.totalPages} 
-            page={pagination.page} 
+        <Box sx={{ display: "flex", justifyContent: "center", pt: 4 }}>
+          <Pagination
+            count={pagination.totalPages}
+            page={pagination.page}
             onChange={handlePageChange}
             color="primary"
           />
