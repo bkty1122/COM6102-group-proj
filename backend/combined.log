@@ -765,3 +765,4 @@
     at Client.release (D:\Linguo-Smart\COM6102-group-proj\backend\node_modules\pg-pool\index.js:327:9)
     at exports.deleteForm (D:\Linguo-Smart\COM6102-group-proj\backend\controllers\exportController.js:200:14)
     at processTicksAndRejections (node:internal/process/task_queues:96:5)
+2025-04-16T01:36:47.871Z INFO: Server running on port 5000
